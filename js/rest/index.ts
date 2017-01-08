@@ -3,7 +3,7 @@ interface TweekConfig{
     baseServiceUrl:string;
     casing: "snake" | "camelCase";
     restGetter: <T>(url)=>Promise<T>;
-    isTyped: false;
+    convertTyping: boolean;
 }
 
 function captialize(string) {
@@ -22,7 +22,7 @@ function snakeToCamelCase(target){
     
 }
 
-function convertTyping(target){
+function convertTypingFromJSON(target){
     if (typeof(target) === "string"){
       try {
         return JSON.parse(target);
@@ -32,24 +32,31 @@ function convertTyping(target){
     }
     if (typeof(target) === "object"){
        return Object.keys(target).reduce((o, key) => {
-         o[key] = convertTyping(target[key]);
+         o[key] = convertTypingFromJSON(target[key]);
          return o;
        },{});
     }
 }
 
-export class TweekClient { 
+export default class TweekClient { 
     constructor( private _config:TweekConfig){}
     
-    async fetch<T>(path:string):Promise<T>{
-      let {casing, baseServiceUrl, restGetter, isTyped} = this._config;
+    async fetch<T>(path:string, _config= {} ):Promise<T>{
+      const {casing, baseServiceUrl, restGetter, convertTyping} = <TweekConfig>{...this._config, ..._config};
       let result = await restGetter<any>(`${baseServiceUrl}/${path}`);
       if (casing === "camelCase" ){
           result = snakeToCamelCase(result);
       }
-      if (isTyped){
-          result = convertTyping(result);
+      if (convertTyping){
+          result = convertTypingFromJSON(result);
       }
       return <T>result;
     }
+}
+
+export function createTweekClient(baseServiceUrl:string){
+    return new TweekClient({baseServiceUrl, 
+        casing:"camelCase", 
+        convertTyping:true,
+        restGetter: <T>(url)=>fetch(url).then(x=>x.json<T>())});
 }
