@@ -1,5 +1,4 @@
-
-interface TweekConfig{
+export interface TweekConfig{
     baseServiceUrl:string;
     casing: "snake" | "camelCase";
     restGetter: <T>(url)=>Promise<T>;
