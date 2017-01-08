@@ -1,0 +1,6 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "umd"
+  }
+}
