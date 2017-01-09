@@ -38,18 +38,19 @@ function convertTypingFromJSON(target){
 }
 
 export default class TweekClient { 
-    constructor( private _config:TweekConfig){}
+    constructor( public config:TweekConfig){}
     
-    async fetch<T>(path:string, _config= {} ):Promise<T>{
-      const {casing, baseServiceUrl, restGetter, convertTyping} = <TweekConfig>{...this._config, ..._config};
-      let result = await restGetter<any>(`${baseServiceUrl}/${path}`);
+    fetch<T>(path:string, _config= {} ):Promise<T>{
+      const {casing, baseServiceUrl, restGetter, convertTyping} = <TweekConfig>{...this.config, ..._config};
+      let result = restGetter<any>(`${baseServiceUrl}/${path}`);
+
       if (casing === "camelCase" ){
-          result = snakeToCamelCase(result);
+          result = result.then(snakeToCamelCase);
       }
       if (convertTyping){
-          result = convertTypingFromJSON(result);
+          result = result.then(convertTypingFromJSON);
       }
-      return <T>result;
+      return <Promise<T>>result;
     }
 }
 

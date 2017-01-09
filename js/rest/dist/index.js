@@ -1,19 +1,19 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
-    });
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
 };
-(function (factory) {
+(function (dependencies, factory) {
     if (typeof module === 'object' && typeof module.exports === 'object') {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports"], factory);
+        define(dependencies, factory);
     }
-})(function (require, exports) {
+})(["require", "exports"], function (require, exports) {
     "use strict";
     function captialize(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -45,22 +45,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
     }
     var TweekClient = (function () {
-        function TweekClient(_config) {
-            this._config = _config;
+        function TweekClient(config) {
+            this.config = config;
         }
         TweekClient.prototype.fetch = function (path, _config) {
-            return __awaiter(this, void 0, Promise, function* () {
-                if (_config === void 0) { _config = {}; }
-                var _a = { this: ._config, _config: _config }, casing = _a.casing, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping;
-                var result = yield restGetter(baseServiceUrl + "/" + path);
-                if (casing === "camelCase") {
-                    result = snakeToCamelCase(result);
-                }
-                if (convertTyping) {
-                    result = convertTypingFromJSON(result);
-                }
-                return result;
-            });
+            if (_config === void 0) { _config = {}; }
+            var _a = __assign({}, this.config, _config), casing = _a.casing, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping;
+            var result = restGetter(baseServiceUrl + "/" + path);
+            if (casing === "camelCase") {
+                result = result.then(snakeToCamelCase);
+            }
+            if (convertTyping) {
+                result = result.then(convertTypingFromJSON);
+            }
+            return result;
         };
         return TweekClient;
     }());
@@ -74,3 +72,4 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     }
     exports.createTweekClient = createTweekClient;
 });
+//# sourceMappingURL=index.js.map
