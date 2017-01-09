@@ -1,9 +1,11 @@
+/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
 
 export type IdentityContext = {
     type:string;
     id:string;
     [prop:string]:string;
 }
+
 
 export type TweekConfig = {
     baseServiceUrl:string;
@@ -12,6 +14,8 @@ export type TweekConfig = {
     convertTyping: boolean;
     context:IdentityContext[];
 }
+
+
 
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -45,12 +49,24 @@ function convertTypingFromJSON(target){
     }
 }
 
+function encodeContextUri(context:IdentityContext){
+    return [`${context.type}=${context.id}`, ...Object.keys(context).filter(x=> x!== "id" && x!== "type")
+                                                .map(prop=> `${context.type}.${prop}=${context[prop]}`)].join("&")
+}
+
 export default class TweekClient { 
-    constructor( public config:TweekConfig){}
+    config:TweekConfig;
     
-    fetch<T>(path:string, _config= {} ):Promise<T>{
-      const {casing, baseServiceUrl, restGetter, convertTyping} = <TweekConfig>{...this.config, ..._config};
-      let result = restGetter<any>(`${baseServiceUrl}/${path}`);
+    constructor(config:Partial<TweekConfig>)
+    {
+        this.config = <TweekConfig>{...{camelCase:"snake", convertTyping:false, context:[]}, ...config};
+    }
+    
+    fetch<T>(path:string, _config?: Partial<TweekConfig> ):Promise<T>{
+      const {casing, baseServiceUrl, restGetter, convertTyping, context} = <TweekConfig>{...this.config, ..._config};
+      const url = `${baseServiceUrl}/${path}?` + context.map(encodeContextUri).join("&");
+
+      let result = restGetter<any>(url);
 
       if (casing === "camelCase" ){
           result = result.then(snakeToCamelCase);
