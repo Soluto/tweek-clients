@@ -65,9 +65,14 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     exports.__esModule = true;
     exports["default"] = TweekClient;
     function createTweekClient(baseServiceUrl) {
+        var context = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            context[_i - 1] = arguments[_i];
+        }
         return new TweekClient({ baseServiceUrl: baseServiceUrl,
             casing: "camelCase",
             convertTyping: true,
+            context: context,
             restGetter: function (url) { return fetch(url).then(function (x) { return x.json(); }); } });
     }
     exports.createTweekClient = createTweekClient;

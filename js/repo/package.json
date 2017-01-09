@@ -1,17 +1,17 @@
 {
-  "name": "tweek-js",
+  "name": "tweek-js-repo",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
-  "dependencies": {},
+  "dependencies": {
+      "tweek-js-rest": ""
+  },
   "devDependencies": {
-    "@types/es6-promise": "0.0.32",
-    "@types/whatwg-fetch": "0.0.33",
     "typescript": "^2.1.4"
   },
   "scripts": {
     "dev": "tsc -w",
-    "test": "mocha-typescript",
+    "test": "mocha --compilers ts:ts-node/register",
     "build": "tsc"
   },
   "author": "",

@@ -1,8 +1,15 @@
 {
   "compileOnSave": true,
+  "exclude": [
+        "dist",
+        "node_modules",
+        "**/*.spec.ts"
+  ],
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "module": "umd",
     "declaration": true,
+    "sourceMap": true,
     "outDir": "./dist"
   }
 }

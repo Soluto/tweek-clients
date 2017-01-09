@@ -1,8 +1,16 @@
-export interface TweekConfig{
+
+export type IdentityContext = {
+    type:string;
+    id:string;
+    [prop:string]:string;
+}
+
+export type TweekConfig = {
     baseServiceUrl:string;
     casing: "snake" | "camelCase";
     restGetter: <T>(url)=>Promise<T>;
     convertTyping: boolean;
+    context:IdentityContext[];
 }
 
 function captialize(string) {
@@ -54,9 +62,10 @@ export default class TweekClient {
     }
 }
 
-export function createTweekClient(baseServiceUrl:string){
+export function createTweekClient(baseServiceUrl:string, ...context:IdentityContext[]){
     return new TweekClient({baseServiceUrl, 
         casing:"camelCase", 
         convertTyping:true,
+        context,
         restGetter: <T>(url)=>fetch(url).then(x=>x.json<T>())});
 }
