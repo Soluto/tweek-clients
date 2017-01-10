@@ -1,21 +1,34 @@
 /// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
 
-export type IdentityContext = {
+export type Identity = {
     type:string;
     id:string;
+}
+
+export type IdentityContext = Identity & {
     [prop:string]:string;
 }
 
+export type TweekCasing = "snake" | "camelCase";
 
 export type TweekConfig = {
-    baseServiceUrl:string;
-    casing: "snake" | "camelCase";
-    restGetter: <T>(url)=>Promise<T>;
+    casing: TweekCasing;
     convertTyping: boolean;
     context:IdentityContext[];
 }
 
+type Test = Record<"a", "abc"> & Record<"b", number | null>;
 
+let a:Test = {
+    a:"abc",
+    b:5
+}
+
+
+export type TweekInitConfig = Partial<TweekConfig> & {
+    baseServiceUrl:string;
+    restGetter: <T>(url)=>Promise<T>;
+}
 
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -23,7 +36,6 @@ function captialize(string) {
 
 function snakeToCamelCase(target){
     if (typeof(target) !== "object") return target;
-    
        return Object.keys(target).reduce((o, key) => {
          let [firstKey, ...others] = key.split("_");
          let newKey = [firstKey, ...others.map(captialize)].join("");
@@ -55,15 +67,15 @@ function encodeContextUri(context:IdentityContext){
 }
 
 export default class TweekClient { 
-    config:TweekConfig;
+    config:TweekInitConfig;
     
-    constructor(config:Partial<TweekConfig>)
+    constructor(config:TweekInitConfig)
     {
-        this.config = <TweekConfig>{...{camelCase:"snake", convertTyping:false, context:[]}, ...config};
+        this.config = <TweekInitConfig>{...{camelCase:"snake", convertTyping:false, context:[]}, ...config};
     }
     
     fetch<T>(path:string, _config?: Partial<TweekConfig> ):Promise<T>{
-      const {casing, baseServiceUrl, restGetter, convertTyping, context} = <TweekConfig>{...this.config, ..._config};
+      const {casing, baseServiceUrl, restGetter, convertTyping, context} = <TweekInitConfig>{...this.config, ..._config};
       const url = `${baseServiceUrl}/${path}?` + context.map(encodeContextUri).join("&");
 
       let result = restGetter<any>(url);
