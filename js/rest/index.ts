@@ -18,7 +18,6 @@ export type TweekConfig = {
     context:IdentityContext[];
 }
 
-
 export type TweekInitConfig = Partial<TweekConfig> & {
     baseServiceUrl:string;
     restGetter: <T>(url)=>Promise<T>;
