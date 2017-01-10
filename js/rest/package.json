@@ -7,10 +7,8 @@
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/es6-shim": "^0.31.32",
-    "@types/fetch-mock": "^5.0.5",
     "@types/isomorphic-fetch": "0.0.31",
     "@types/mocha": "^2.2.36",
-    "@types/node": "^6.0.58",
     "@types/sinon": "^1.16.34",
     "@types/sinon-chai": "^2.7.27",
     "chai": "^3.5.0",

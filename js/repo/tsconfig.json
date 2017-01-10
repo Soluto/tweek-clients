@@ -7,7 +7,7 @@
   ],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "module": "umd",
+    "module": "commonjs",
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist"

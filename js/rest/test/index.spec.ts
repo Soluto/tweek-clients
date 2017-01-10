@@ -52,4 +52,10 @@ describe("tweek client", ()=>{
         let result = await client.fetch("_", {convertTyping:true});
         expect(result).to.eql({some_path:{some_key:true}});
     });
+    it("flatten ignore casing", async ()=>{
+        const {client, stub} = prepare();
+        stub.returns(Promise.resolve({"some_path/some_key": "true"} ));
+        let result = await client.fetch("_", {casing:"camelCase", convertTyping:true, flatten:true});
+        expect(result).to.eql({"some_path/some_key":true});
+    });
 })

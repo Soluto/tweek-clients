@@ -4,9 +4,19 @@
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
-      "tweek-js-rest": ""
+    "@types/core-js": "^0.9.35"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.36",
+    "@types/node": "^6.0.58",
+    "@types/sinon": "^1.16.34",
+    "@types/sinon-chai": "^2.7.27",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.8.0",
+    "ts-node": "^2.0.0",
     "typescript": "^2.1.4"
   },
   "scripts": {

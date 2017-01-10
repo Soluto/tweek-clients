@@ -14,14 +14,8 @@ export type TweekCasing = "snake" | "camelCase";
 export type TweekConfig = {
     casing: TweekCasing;
     convertTyping: boolean;
+    flatten: boolean;
     context:IdentityContext[];
-}
-
-type Test = Record<"a", "abc"> & Record<"b", number | null>;
-
-let a:Test = {
-    a:"abc",
-    b:5
 }
 
 
@@ -71,16 +65,18 @@ export default class TweekClient {
     
     constructor(config:TweekInitConfig)
     {
-        this.config = <TweekInitConfig>{...{camelCase:"snake", convertTyping:false, context:[]}, ...config};
+        this.config = <TweekInitConfig>{...{camelCase:"snake", flatten:false, convertTyping:false, context:[]}, ...config};
     }
     
     fetch<T>(path:string, _config?: Partial<TweekConfig> ):Promise<T>{
-      const {casing, baseServiceUrl, restGetter, convertTyping, context} = <TweekInitConfig>{...this.config, ..._config};
-      const url = `${baseServiceUrl}/${path}?` + context.map(encodeContextUri).join("&");
-
+      const {casing, flatten, baseServiceUrl, restGetter, convertTyping, context} = <TweekInitConfig>{...this.config, ..._config};
+      let url = `${baseServiceUrl}/${path}?` + context.map(encodeContextUri).join("&");
+      if (flatten){
+          url += "$flatten=true"
+      }
       let result = restGetter<any>(url);
 
-      if (casing === "camelCase" ){
+      if (!flatten && casing === "camelCase" ){
           result = result.then(snakeToCamelCase);
       }
       if (convertTyping){

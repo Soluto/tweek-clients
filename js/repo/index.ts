@@ -4,7 +4,8 @@ export type KeyCollection = {
    [key:string]:any;
 }
 
-const TweekKeySplitJoin = {
+
+export const TweekKeySplitJoin = {
     split: (key:string)=> key.split("/"),
     join: (fragments:string[]) => fragments.join("/")
 }
