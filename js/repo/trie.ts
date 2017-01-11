@@ -35,8 +35,8 @@ export default class Trie<TValue>{
        return this.list(key, fragments.length); 
     }
 
-    list(key:string, index=0): {[key:string]:TValue }{
-       const fragments = this._splitJoin.split(key);
+    list(key?:string, index=0): {[key:string]:TValue }{
+       const fragments = key && this._splitJoin.split(key) || [];
        let node = fragments.reduce((acc, next)=>{
            if (!acc) return null;
            return acc[next];
