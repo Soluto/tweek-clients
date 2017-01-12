@@ -8,6 +8,10 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "module": "commonjs",
+    "strictNullChecks": true,
+    "types": [
+      "core-js"
+    ],
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist"

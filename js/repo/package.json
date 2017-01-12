@@ -4,9 +4,10 @@
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
-    "@types/core-js": "^0.9.35"
+    
   },
   "devDependencies": {
+    "@types/core-js": "^0.9.35",
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.36",
     "@types/node": "^6.0.58",
