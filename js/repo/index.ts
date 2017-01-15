@@ -11,26 +11,26 @@ export const TweekKeySplitJoin = {
 }
 
 type RequestedKey = {
-    state:"requested",
-    requested_ttl?:number;
+    state:"requested"
 }
 
 type CachedKey<T> = {
-    state:"offline",
-    value: ()=>T;
+    state:"cached";
+    value: T;
+    isScan:false;
+    isExpired:boolean;
 }
 
-type DownloadedKey<T> = Pick<CachedKey<T>, "value"> & {
-    state:"downloaded";
-    lastUpdated: Date;
-    ttl:number;
+type ScanNode = {
+    state:"cached";
+    isScan: true;
+    isExpired:boolean;
 }
 
-type RepositoryKey<T> =  CachedKey<T> | DownloadedKey<T> | RequestedKey;
+type RepositoryKey<T> =  CachedKey<T> | RequestedKey | ScanNode;
 
 export type TweekRepositoryConfig = {
     client:TweekClient;
-    ttl?:number;
     keys?:KeyCollection;
 }
 
@@ -41,88 +41,88 @@ export type GetOptions= {
     allowExpiredValues: boolean
 }
 
-let isExpired = (node: DownloadedKey<any>)=> {
-    return new Date().getTime() - node.lastUpdated.getTime() > node.ttl;
-}
-
-
 export class TweekRepository{
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
     private _client:TweekClient;
     private _ttl:number;
 
-    constructor({client, keys={}, ttl=12}:TweekRepositoryConfig){
+    constructor({client, keys={}}:TweekRepositoryConfig){
         this._client = client;
-        this._ttl = ttl;
         Object.entries(keys).forEach(([key, value])=> this._cache.set(key, {
-            state:"offline",
-            value: value
+            state:"cached",
+            isScan:false,
+            value: value,
+            isExpired:true
         }));
     }
 
-    prepare(key:string, ttl?:number){
+    expire(key:string){
         let node = this._cache.get(key);
         if (node === null){
-            this._cache.set(key, {state:"requested", requested_ttl: ttl})
+            this._cache.set(key, {state:"requested"})
             return;
         }
-        if (node.state === "downloaded" ){
-            //update ttl;
+        if (node.state === "cached" ){
+            node.isExpired = true;
         }
     }
 
-    _get(){}
-
-    get(key:string, options:GetOptions = {location:["local"], allowExpiredValues:true}){
-        let location = options.location[0];
-        let fallback = ()=> options.location.length ? this.get(key, {location: options.location.slice(1),
-            allowExpiredValues: options.allowExpiredValues}) : Promise.reject("no value was found");
-
-        if (location === "remote"){
-            this._refreshKey().then(()=>{
-                
-            })
+    get(key:string){
+        let isScan = key.slice(-1) === "_";
+        let node = this._cache.get(key);
+        if (isScan && !node){
+            return Promise.resolve(this._extractScanResult(key));
         }
-        if (location === "local"){
-            
-            let node = this._cache.get(key);
-            if (!node) return fallback();
-            if (node.state === "requested") return fallback();
-            if (options.allowExpiredValues){
-                return Promise.resolve(node.value());
-            }
-            else{
-                if (node.state === "offline" || isExpired(node)){
-                    return fallback();
-                }
-                return Promise.resolve(node.value());
-            }
-        }
-        
+        if (!node) return;
+        if (node.state === "requested") return Promise.reject("value not available");
+        if (!node.isScan) return Promise.resolve(node.value);
     }
     
-    private _refreshKey(key:string, node:RepositoryKey<any>, ttl?:number){
+    private _extractScanResult(key){
+        let prefix = key.replace("/_", "");
+        return this._cache.listRelative(prefix);
+    }
+    
+    private _refreshKey(key:string){
         let isScan = key.slice(-1) === "_";
-        return this._client.fetch<string>(key, {flatten:true, casing:"camelCase"} )
+        return this._client.fetch<any>(key, {flatten:true, casing:"camelCase"} )
         .then(config =>{
-            let node:DownloadedKey<any> = {
-                    state: "downloaded",
-                    value: ()=>config,
-                    lastUpdated: new Date(),
-                    ttl: ttl || this._ttl
-                };
-            this._cache.set(key, node);
+            if (isScan){
+                let prefix = key.replace("/_", '');
+                
+                Object.entries(config).forEach(([subKey, value])=>{
+                    this._cache.set(`${prefix}/${subKey}`, {
+                    state: "cached",
+                    isExpired:false,
+                    isScan:false,
+                    value: ()=>value
+                    });
+                })
+
+                this._cache.set(key, {
+                    state: "cached",
+                    isScan:true,
+                    isExpired:false
+                });
+            }
+            else{
+                this._cache.set(key, {
+                    state: "cached",
+                    isScan:false,
+                    isExpired:false,
+                    value: ()=>config
+                });
+            }
             return node.value();
         });
-
     }
 
-    refresh(){
+    private refresh(){
         for (let [key, cacheNode] of  <[string, RepositoryKey<any>][]>Object.entries(this._cache.list())   ){
-            if (cacheNode.state === "offline"){
-                
+            if (cacheNode.state === "requested" || cacheNode.isExpired ){
+                this._refreshKey("_");
+                return;
             }
-
         };
     }
 }
