@@ -23,6 +23,8 @@ export type TweekInitConfig = Partial<TweekConfig> & {
     restGetter: <T>(url)=>Promise<T>;
 }
 
+export type TweekFullConfig = TweekConfig & TweekInitConfig;
+
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -60,15 +62,15 @@ function encodeContextUri(context:IdentityContext){
 }
 
 export default class TweekClient { 
-    config:TweekInitConfig;
+    config:TweekFullConfig;
     
     constructor(config:TweekInitConfig)
     {
-        this.config = <TweekInitConfig>{...{camelCase:"snake", flatten:false, convertTyping:false, context:[]}, ...config};
+        this.config = <TweekFullConfig>{...{camelCase:"snake", flatten:false, convertTyping:false, context:[]}, ...config};
     }
     
     fetch<T>(path:string, _config?: Partial<TweekConfig> ):Promise<T>{
-      const {casing, flatten, baseServiceUrl, restGetter, convertTyping, context} = <TweekInitConfig>{...this.config, ..._config};
+      const {casing, flatten, baseServiceUrl, restGetter, convertTyping, context} = <TweekFullConfig>{...this.config, ..._config};
       let url = `${baseServiceUrl}/${path}?` + context.map(encodeContextUri).join("&");
       if (flatten){
           url += "$flatten=true"
