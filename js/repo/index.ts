@@ -107,7 +107,6 @@ export class TweekRepository{
                     value: ()=>config
                 });
             }
-            return node.value();
         });
     }
 
