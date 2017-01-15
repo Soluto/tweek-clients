@@ -34,6 +34,18 @@ export type TweekRepositoryConfig = {
     keys?:KeyCollection;
 }
 
+export type ConfigurationLocation = "local" | "remote";
+
+export type GetOptions= {
+    location: ConfigurationLocation[];
+    allowExpiredValues: boolean
+}
+
+let isExpired = (node: DownloadedKey<any>)=> {
+    return new Date().getTime() - node.lastUpdated.getTime() > node.ttl;
+}
+
+
 export class TweekRepository{
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
     private _client:TweekClient;
@@ -54,34 +66,53 @@ export class TweekRepository{
             this._cache.set(key, {state:"requested", requested_ttl: ttl})
             return;
         }
-        if (node.state === "offline") return;
-        if (node.state === "downloaded"){
+        if (node.state === "downloaded" ){
             //update ttl;
         }
+    }
+
+    _get(){}
+
+    get(key:string, options:GetOptions = {location:["local"], allowExpiredValues:true}){
+        let location = options.location[0];
+        let fallback = ()=> options.location.length ? this.get(key, {location: options.location.slice(1),
+            allowExpiredValues: options.allowExpiredValues}) : Promise.reject("no value was found");
+
+        if (location === "remote"){
+            this._refreshKey().then(()=>{
+                
+            })
+        }
+        if (location === "local"){
+            
+            let node = this._cache.get(key);
+            if (!node) return fallback();
+            if (node.state === "requested") return fallback();
+            if (options.allowExpiredValues){
+                return Promise.resolve(node.value());
+            }
+            else{
+                if (node.state === "offline" || isExpired(node)){
+                    return fallback();
+                }
+                return Promise.resolve(node.value());
+            }
+        }
+        
     }
     
     private _refreshKey(key:string, node:RepositoryKey<any>, ttl?:number){
         let isScan = key.slice(-1) === "_";
-        this._client.fetch<string>(key, {flatten:true, casing:"camelCase"} )
+        return this._client.fetch<string>(key, {flatten:true, casing:"camelCase"} )
         .then(config =>{
-            if (!isScan)
-            {
-                this._cache.set(key, {
+            let node:DownloadedKey<any> = {
                     state: "downloaded",
                     value: ()=>config,
                     lastUpdated: new Date(),
                     ttl: ttl || this._ttl
-                })
-            }
-            else{
-                this._cache.set(key, {
-                    state: "downloaded",
-                    value: ()=>config,
-                    lastUpdated: new Date(),
-                    ttl: ttl || this._ttl
-                })
-            }
-            
+                };
+            this._cache.set(key, node);
+            return node.value();
         });
 
     }
