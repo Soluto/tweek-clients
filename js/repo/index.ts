@@ -36,15 +36,9 @@ export type TweekRepositoryConfig = {
 
 export type ConfigurationLocation = "local" | "remote";
 
-export type GetOptions= {
-    location: ConfigurationLocation[];
-    allowExpiredValues: boolean
-}
-
 export class TweekRepository{
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
     private _client:TweekClient;
-    private _ttl:number;
 
     constructor({client, keys={}}:TweekRepositoryConfig){
         this._client = client;
