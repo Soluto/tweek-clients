@@ -18,8 +18,9 @@ export declare type TweekInitConfig = Partial<TweekConfig> & {
     baseServiceUrl: string;
     restGetter: <T>(url) => Promise<T>;
 };
+export declare type TweekFullConfig = TweekConfig & TweekInitConfig;
 export default class TweekClient {
-    config: TweekInitConfig;
+    config: TweekFullConfig;
     constructor(config: TweekInitConfig);
     fetch<T>(path: string, _config?: Partial<TweekConfig>): Promise<T>;
 }

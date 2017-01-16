@@ -1,4 +1,5 @@
-export declare type TrieNode<TValue> = any | {
+export declare type ValueNode<TValue> = any;
+export declare type TrieNode<TValue> = ValueNode<TValue> | {
     [key: string]: TrieNode<TValue>;
 };
 export declare type SplitJoin = {
@@ -9,8 +10,8 @@ export default class Trie<TValue> {
     private _splitJoin;
     constructor(_splitJoin: SplitJoin);
     private _root;
-    add(key: string, value: TValue): void;
-    get(key: string): TrieNode<TValue> | null;
+    set(key: string, value: TValue): void;
+    get(key: string): TValue | null;
     listRelative(key: string): {
         [key: string]: TValue;
     };

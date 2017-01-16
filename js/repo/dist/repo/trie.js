@@ -7,13 +7,13 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-var val = Symbol();
+var val = Symbol["for"]("value");
 var Trie = (function () {
     function Trie(_splitJoin) {
         this._splitJoin = _splitJoin;
         this._root = {};
     }
-    Trie.prototype.add = function (key, value) {
+    Trie.prototype.set = function (key, value) {
         var fragments = this._splitJoin.split(key);
         var node = fragments.reduce(function (acc, next) {
             if (!acc[next]) {

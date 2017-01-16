@@ -4,11 +4,11 @@
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
-    
+    "object.entries": "^1.0.4"
   },
   "devDependencies": {
-    "@types/core-js": "^0.9.35",
     "@types/chai": "^3.4.34",
+    "@types/core-js": "^0.9.35",
     "@types/mocha": "^2.2.36",
     "@types/node": "^6.0.58",
     "@types/sinon": "^1.16.34",
