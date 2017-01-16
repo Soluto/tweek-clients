@@ -64,7 +64,7 @@ export default class TweekRepository{
 
     prepare(key:string){
         let node = this._cache.get(key);
-        if (node === null) this._cache.set(key, {state:"requested"});
+        if (!node) this._cache.set(key, {state:"requested"});
         this.setScanNodes("", getAllPrefixes(key), "requested");
     }
 
@@ -78,7 +78,7 @@ export default class TweekRepository{
             }
             return Promise.resolve(this._extractScanResult(key));
         }
-        if (!node) return Promise.reject("key not managed, use expire to add it to cache");
+        if (!node) return Promise.reject(`key ${key} not managed, use prepare to add it to cache`);
         if (node.state === "requested") return Promise.reject("value not available yet");
         if (!node.isScan) return Promise.resolve(node.value);
     }

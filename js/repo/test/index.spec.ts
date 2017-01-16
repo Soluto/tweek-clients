@@ -33,7 +33,7 @@ describe("tweek repo test", ()=>{
         expect(val).to.eql({innerPath:{my:"0", otherKey:"1"}});
     });
 
-    it("get key from init and request refresh", async ()=>{
+    it("get key from init and request refresh should get updated value", async ()=>{
         let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}});
         await tweekRepo.refresh();
         let val = await tweekRepo.get("some/inner_path/my_key")
@@ -41,4 +41,28 @@ describe("tweek repo test", ()=>{
         val = await tweekRepo.get("some/_")
         expect(val).to.eql({innerPath:{myKey:"3"}});
     });
+
+    it("prepare key and refresh should get server value", async ()=>{
+        let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/other_key":"1"}});
+        tweekRepo.prepare("some/inner_path/my_key");
+        await tweekRepo.refresh();
+        let val = await tweekRepo.get("some/inner_path/my_key");
+        expect(val).to.eql("3");
+        val = await tweekRepo.get("some/_")
+        expect(val).to.eql({innerPath:{myKey:"3", otherKey:"1"}});
+    });
+
+    /*
+    describe("error flows", ()=>{
+        it("get key which was never requested or init", async ()=>{
+            let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}});
+            await tweekRepo.refresh();
+            let val = await tweekRepo.get("some/inner_path/my_key")
+            expect(val).to.eql("3");
+            val = await tweekRepo.get("some/_")
+            expect(val).to.eql({innerPath:{myKey:"3"}});
+            });
+        });
+        })
+    */
 })
