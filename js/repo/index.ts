@@ -2,7 +2,9 @@ import Trie from './trie';
 import TweekClient from '../rest';
 import {partitionByIndex, snakeToCamelCase, distinct} from './utils';
 import e = require("object.entries");
+import e2 = require("object.values");
 e.shim();
+e2.shim();
 
 export type KeyCollection = {
    [key:string]:any;
@@ -21,13 +23,11 @@ type CachedKey<T> = {
     state:"cached";
     value: T;
     isScan:false;
-    isExpired:boolean;
 }
 
 type ScanNode = {
-    state:"cached";
+    state:"cached" | "requested";
     isScan: true;
-    isExpired:boolean;
 }
 
 type RepositoryKey<T> =  CachedKey<T> | RequestedKey | ScanNode;
@@ -35,78 +35,77 @@ type RepositoryKey<T> =  CachedKey<T> | RequestedKey | ScanNode;
 export type TweekRepositoryConfig = {
     client:TweekClient;
     keys?:KeyCollection;
-    scheduler?: Scheduler;
 }
-
-export type Scheduler = (fn:()=>void)=>void;
 
 export type ConfigurationLocation = "local" | "remote";
 
+let getAllPrefixes = (key)=> partitionByIndex(key.split("/"), -1)[0].reduce((acc,next)=>
+    ([...acc, [...acc,next].join("/")])
+, []);
+
 let getKeyPrefix = (key) => partitionByIndex(key.split("/"), -1)[0].join("/");
+
+let flatMap = (arr, fn)=>  Array.prototype.concat.apply([],arr.map(fn))
 
 export default class TweekRepository{
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
     private _client:TweekClient;
-    private _scheduler: Scheduler;
 
-    constructor({client, keys={}, scheduler=setImmediate}:TweekRepositoryConfig){
+    constructor({client, keys={}}:TweekRepositoryConfig){
         this._client = client;
-        this._scheduler = scheduler;
-        Object.entries(keys).forEach(([key, value])=> this._cache.set(key, {
+        let entries = Object.entries(keys);
+        entries.forEach(([key, value])=> this._cache.set(key, {
             state:"cached",
             isScan:false,
-            value: value,
-            isExpired:true
+            value: value
         }));
+        this.setScanNodes("", entries, "cached");
     }
 
-    expire(key:string){
+    prepare(key:string){
         let node = this._cache.get(key);
-        if (node === null){
-            this._cache.set(key, {state:"requested"})
-            return;
-        }
-        if (node.state === "cached" ){
-            node.isExpired = true;
-        }
-        this._scheduler(()=>this.refresh());
+        if (node === null) this._cache.set(key, {state:"requested"});
+        this.setScanNodes("", getAllPrefixes(key), "requested");
     }
 
     get(key:string){
         let isScan = key.slice(-1) === "_";
-        if (isScan){
+        let node = this._cache.get(key);
+        if (isScan && node){
+            let prefix = getKeyPrefix(key);
+            if (node.state === "requested" && Object.entries(this._cache.listRelative(prefix)).some(([key,value])=> !value.isScan && value.state === "requested")){
+                return Promise.reject("value not available yet for key: " + key);
+            }
             return Promise.resolve(this._extractScanResult(key));
         }
-        let node = this._cache.get(key);
         if (!node) return Promise.reject("key not managed, use expire to add it to cache");
-        if (node.state === "requested") return Promise.reject("value not available");
+        if (node.state === "requested") return Promise.reject("value not available yet");
         if (!node.isScan) return Promise.resolve(node.value);
     }
     
     private _extractScanResult(key){
         let prefix = getKeyPrefix(key);
         return Object.entries(this._cache.listRelative(prefix))
-        .filter(([key, value])=> value.state === "cached" && !value.isScan )
-        .reduce((acc, [key, value])=>{
-            let [fragments, [name]] = partitionByIndex(key.split("/").map(snakeToCamelCase), -1);
-            let node = fragments.reduce((node, fragment)=>{
-                if (!acc[fragment]){
-                    acc[fragment] = {};
-                }
-                return acc[fragment];
-            }, acc);
-            node[name] = value.value;
-            return acc;
-        }, {});
+            .filter(([key, valueNode])=> valueNode.state === "cached" && !valueNode.isScan )
+            .reduce((acc, [key, valueNode])=>{
+                let [fragments, [name]] = partitionByIndex(key.split("/").map(snakeToCamelCase), -1);
+                let node = fragments.reduce((node, fragment)=>{
+                    if (!acc[fragment]){
+                        acc[fragment] = {};
+                    }
+                    return acc[fragment];
+                }, acc);
+                node[name] = valueNode.value;
+                return acc;
+            }, {});
     }
 
-    private addScanNodes(prefix, entries){
-        distinct(entries.map(([key, _])=> getKeyPrefix(key)))
-               .map(dir=> [...(prefix ==="" ? [] : [prefix]), dir, "_"].join("/") )
+    private setScanNodes(prefix, entries, state){
+        distinct(flatMap(entries,([key, _])=> getAllPrefixes(key)))
+               .map(path=> [...(prefix ==="" ? [] : [prefix]), path, "_"].join("/") )
                .forEach(key=> this._cache.set(key, {
-                    state: "cached",
-                    isScan:true,
-                    isExpired:false
+                    state: state,
+                    isScan:true
                }));
     }
     
@@ -119,30 +118,28 @@ export default class TweekRepository{
                 let entries = Object.entries(config);
                 entries.forEach(([subKey, value])=>{
                     let k = [...(prefix ==="" ? [] : [prefix]), subKey].join("/");
-                    this._cache.set(k, {
-                    state: "cached",
-                    isExpired:false,
-                    isScan:false,
-                    value
-                    });
+
+                    let node = this._cache.get(k);
+                    if (node){
+                        this._cache.set(k, {state: "cached",
+                                isScan:false,
+                                value
+                                });
+                    }
                 });
-                this.addScanNodes(prefix, entries);
+                this.setScanNodes(prefix, entries, "cached");
             }
             else{
                 this._cache.set(key, {
                     state: "cached",
                     isScan:false,
-                    isExpired:false,
                     value: config
                 });
             }
         });
     }
 
-    private refresh(){
-        let keys =  <[string, RepositoryKey<any>][]>Object.entries(this._cache.list());
-        if (keys.some( ([key, cachenode])=> cachenode.state === "requested" || cachenode.isExpired )){
-            this._refreshKey("_");
-        }
+    refresh(){
+        return this._refreshKey("_");
     }
 }

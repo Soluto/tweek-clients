@@ -23,10 +23,11 @@ export default class Trie<TValue>{
 
     get(key:string):TValue | null{
        const fragments = this._splitJoin.split(key);
-       return fragments.reduce((acc, next)=>{
+       let node = fragments.reduce((acc, next)=>{
            if (!acc) return null;
            return acc[next];
-       }, this._root)[val];
+       }, this._root);
+       return node && node[val];
     }
 
     listRelative(key:string){

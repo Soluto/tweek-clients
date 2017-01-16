@@ -21,7 +21,7 @@ describe("tweek repo test", ()=>{
 
     it("get key from init", async ()=>{
         let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}});
-        let val = await tweekRepo.get("some/inner_path/my_key")
+        let val = await tweekRepo.get("some/inner_path/my_key");
         expect(val).to.eq("0");
     });
 
@@ -34,9 +34,8 @@ describe("tweek repo test", ()=>{
     });
 
     it("get key from init and request refresh", async ()=>{
-        let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}, scheduler});
-        tweekRepo.expire("some/inner_path/my_key");
-        await Promise.resolve();
+        let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}});
+        await tweekRepo.refresh();
         let val = await tweekRepo.get("some/inner_path/my_key")
         expect(val).to.eql("3");
         val = await tweekRepo.get("some/_")
