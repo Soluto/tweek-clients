@@ -1,0 +1,17 @@
+{
+  "compileOnSave": true,
+  "exclude": [
+        "dist",
+        "node_modules",
+        "**/*.spec.ts"
+  ],
+  "compilerOptions": {
+    "target": "es6",
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "strictNullChecks": true,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist"
+  }
+}

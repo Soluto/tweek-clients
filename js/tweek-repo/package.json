@@ -1,0 +1,30 @@
+{
+  "name": "tweek-js-repo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "dependencies": {
+    "object.entries": "^1.0.4",
+    "object.values": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.36",
+    "@types/node": "^6.0.58",
+    "@types/sinon": "^1.16.34",
+    "@types/sinon-chai": "^2.7.27",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.8.0",
+    "ts-node": "^2.0.0",
+    "typescript": "^2.1.4"
+  },
+  "scripts": {
+    "dev": "tsc -w",
+    "test": "mocha --compilers ts:ts-node/register",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "APL"
+}
