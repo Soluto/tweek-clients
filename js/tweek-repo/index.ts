@@ -136,10 +136,18 @@ export default class TweekRepository{
         .then(config =>{
             if (isScan){
                 let prefix = getKeyPrefix(key);
+                let configResults = new Trie(TweekKeySplitJoin);
+                Object.entries(config).forEach(([k,v])=> configResults.set(k,v));
                 let entries = Object.entries(this._cache.list(prefix));
                 entries.forEach(([subKey, valueNode])=>{
-                    let fullKey = [...(prefix ==="" ? [] : [prefix]), subKey].join("/");
                     this.updateNode(subKey, valueNode, config[subKey]);
+                    if (valueNode.state !== "missing" && valueNode.isScan){
+                        let nodes = configResults.list(getKeyPrefix(subKey));
+                        Object.entries(nodes).forEach(([n, value])=>{
+                            let fullKey = [...(prefix ==="" ? [] : [prefix]), n].join("/");
+                            this._cache.set(fullKey, {state:"cached", value, isScan:false});
+                        })
+                    }
                 });
                 this.setScanNodes(prefix, entries, "cached");
             }

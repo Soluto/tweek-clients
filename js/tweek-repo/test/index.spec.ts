@@ -61,8 +61,17 @@ describe("tweek repo test", ()=>{
         //tweekRepo.prepare("some/a");
         val = await tweekRepo.get("some/_")
         expect(val).to.eql({innerPath:{myKey:"3"}});
-
     });
+
+
+    it("prepare scan and get key", async ()=>{
+        let tweekRepo = new TweekRepository({client:tweekClient, keys:{}});
+        tweekRepo.prepare("some/_");
+        await tweekRepo.refresh();
+        let val = await tweekRepo.get("some/inner_path/my_key");
+        expect(val.value).to.eql("3");
+    });
+
     /*
     describe("error flows", ()=>{
         it("get key which was never requested or init", async ()=>{

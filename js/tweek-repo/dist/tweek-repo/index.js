@@ -110,11 +110,23 @@ var TweekRepository = (function () {
             .then(function (config) {
             if (isScan) {
                 var prefix_1 = getKeyPrefix(key);
+                var configResults_1 = new trie_1.default(exports.TweekKeySplitJoin);
+                Object.entries(config).forEach(function (_a) {
+                    var k = _a[0], v = _a[1];
+                    return configResults_1.set(k, v);
+                });
                 var entries = Object.entries(_this._cache.list(prefix_1));
                 entries.forEach(function (_a) {
                     var subKey = _a[0], valueNode = _a[1];
-                    var fullKey = (prefix_1 === "" ? [] : [prefix_1]).concat([subKey]).join("/");
                     _this.updateNode(subKey, valueNode, config[subKey]);
+                    if (valueNode.state !== "missing" && valueNode.isScan) {
+                        var nodes = configResults_1.list(getKeyPrefix(subKey));
+                        Object.entries(nodes).forEach(function (_a) {
+                            var n = _a[0], value = _a[1];
+                            var fullKey = (prefix_1 === "" ? [] : [prefix_1]).concat([n]).join("/");
+                            _this._cache.set(fullKey, { state: "cached", value: value, isScan: false });
+                        });
+                    }
                 });
                 _this.setScanNodes(prefix_1, entries, "cached");
             }
