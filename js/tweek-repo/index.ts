@@ -1,5 +1,5 @@
 import Trie from './trie';
-import TweekClient from '../tweek-rest';
+import TweekClient, {Context} from '../tweek-rest';
 import {partitionByIndex, snakeToCamelCase, distinct} from './utils';
 import Optional from "./optional";
 
@@ -55,6 +55,7 @@ let flatMap = (arr, fn)=>  Array.prototype.concat.apply([],arr.map(fn))
 export default class TweekRepository{
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
     private _client:TweekClient;
+    public context: Context = {};
 
     constructor({client, keys={}}:TweekRepositoryConfig){
         this._client = client;
@@ -132,7 +133,7 @@ export default class TweekRepository{
 
     private _refreshKey(key:string){
         let isScan = key.slice(-1) === "_";
-        return this._client.fetch<any>(key, {flatten:true, casing:"snake"} )
+        return this._client.fetch<any>(key, {flatten:true, casing:"snake", context:this.context} )
         .then(config =>{
             if (isScan){
                 let prefix = getKeyPrefix(key);
