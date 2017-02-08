@@ -2,7 +2,7 @@
   "name": "tweek-js-repo",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/index.js",
+  "main": "./dist/tweek-repo/index.js",
   "dependencies": {
     "object.entries": "^1.0.4",
     "object.values": "^1.0.4"

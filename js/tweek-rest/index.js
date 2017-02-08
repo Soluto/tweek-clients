@@ -76,4 +76,3 @@ function createTweekClient(baseServiceUrl) {
         restGetter: function (url) { return fetch(url).then(function (x) { return x.json(); }); } });
 }
 exports.createTweekClient = createTweekClient;
-//# sourceMappingURL=index.js.map

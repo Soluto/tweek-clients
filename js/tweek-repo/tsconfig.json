@@ -11,7 +11,7 @@
       "es2015",
       "es2017.object"
     ],
-    "target": "es6",
+    "target": "es5",
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "strictNullChecks": true,

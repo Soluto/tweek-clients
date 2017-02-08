@@ -1,3 +1,4 @@
+"use strict";
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];
@@ -6,51 +7,53 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-let val = Symbol.for("value");
-export default class Trie {
-    constructor(_splitJoin) {
+var val = Symbol.for("value");
+var Trie = (function () {
+    function Trie(_splitJoin) {
         this._splitJoin = _splitJoin;
         this._root = {};
     }
-    set(key, value) {
-        const fragments = this._splitJoin.split(key);
-        let node = fragments.reduce((acc, next) => {
+    Trie.prototype.set = function (key, value) {
+        var fragments = this._splitJoin.split(key);
+        var node = fragments.reduce(function (acc, next) {
             if (!acc[next]) {
                 acc[next] = {};
             }
             return acc[next];
         }, this._root);
         node[val] = value;
-    }
-    get(key) {
-        const fragments = this._splitJoin.split(key);
-        let node = fragments.reduce((acc, next) => {
+    };
+    Trie.prototype.get = function (key) {
+        var fragments = this._splitJoin.split(key);
+        var node = fragments.reduce(function (acc, next) {
             if (!acc)
                 return null;
             return acc[next];
         }, this._root);
         return node && node[val];
-    }
-    listRelative(key) {
-        const fragments = this._splitJoin.split(key);
+    };
+    Trie.prototype.listRelative = function (key) {
+        var fragments = this._splitJoin.split(key);
         return this.list(key, fragments.length);
-    }
-    list(key, index = 0) {
-        const fragments = key && this._splitJoin.split(key) || [];
-        let node = fragments.reduce((acc, next) => {
+    };
+    Trie.prototype.list = function (key, index) {
+        var _this = this;
+        if (index === void 0) { index = 0; }
+        var fragments = key && this._splitJoin.split(key) || [];
+        var node = fragments.reduce(function (acc, next) {
             if (!acc)
                 return null;
             return acc[next];
         }, this._root);
-        let results = [
-            ...[
-                ...Object.keys(node)
-                    .map(name => this.list(this._splitJoin.join([...fragments, name]), index))
-            ]
-        ].reduce((acc, next) => (__assign({}, acc, next)), node[val] ? {
-            [this._splitJoin.join(fragments.slice(index))]: node[val]
-        } : {});
+        var results = Object.keys(node)
+            .map(function (name) { return _this.list(_this._splitJoin.join(fragments.concat([name])), index); }).slice().reduce(function (acc, next) { return (__assign({}, acc, next)); }, node[val] ? (_a = {},
+            _a[this._splitJoin.join(fragments.slice(index))] = node[val],
+            _a) : {});
         return results;
-    }
-}
+        var _a;
+    };
+    return Trie;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = Trie;
 //# sourceMappingURL=trie.js.map

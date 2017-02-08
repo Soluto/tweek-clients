@@ -6,7 +6,11 @@
         "**/*.spec.ts"
   ],
   "compilerOptions": {
-    "target": "es6",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "target": "es5",
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "strictNullChecks": true,

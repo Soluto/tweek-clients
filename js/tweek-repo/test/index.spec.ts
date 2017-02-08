@@ -2,6 +2,7 @@ import 'mocha';
 import {expect} from 'chai';
 import TweekRepository from '../';
 import TweekClient from '../../tweek-rest';
+import Optional from '../optional'
 
 const scheduler = (fn:()=>void)=>fn();
 
@@ -20,7 +21,7 @@ describe("tweek repo test", ()=>{
     it("get key from init", async ()=>{
         let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}});
         let val = await tweekRepo.get("some/inner_path/my_key");
-        expect(val).to.eq("0");
+        expect(val.value).to.eq("0");
     });
 
     it("get key from init using scan", async ()=>{
@@ -35,7 +36,7 @@ describe("tweek repo test", ()=>{
         let tweekRepo = new TweekRepository({client:tweekClient, keys:{"some/inner_path/my_key":"0"}});
         await tweekRepo.refresh();
         let val = await tweekRepo.get("some/inner_path/my_key")
-        expect(val).to.eql("3");
+        expect(val.value).to.eql("3");
         val = await tweekRepo.get("some/_")
         expect(val).to.eql({innerPath:{myKey:"3"}});
     });
@@ -45,7 +46,7 @@ describe("tweek repo test", ()=>{
         tweekRepo.prepare("some/inner_path/my_key");
         await tweekRepo.refresh();
         let val = await tweekRepo.get("some/inner_path/my_key");
-        expect(val).to.eql("3");
+        expect(val.value).to.eql("3");
         val = await tweekRepo.get("some/_")
         expect(val).to.eql({innerPath:{myKey:"3", otherKey:"1"}});
     });
@@ -56,8 +57,8 @@ describe("tweek repo test", ()=>{
         tweekRepo.prepare("some/inner_path/my_key");
         await tweekRepo.refresh();
         let val = await tweekRepo.get("some/inner_path/my_key");
-        expect(val).to.eql("3");
-        tweekRepo.prepare("some/a");
+        expect(val.value).to.eql("3");
+        //tweekRepo.prepare("some/a");
         val = await tweekRepo.get("some/_")
         expect(val).to.eql({innerPath:{myKey:"3"}});
 

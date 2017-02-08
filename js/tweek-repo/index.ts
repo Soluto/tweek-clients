@@ -73,7 +73,7 @@ export default class TweekRepository{
         if (!node) this._cache.set(key, {state:"requested", isScan});
     }
 
-    get(key:string){
+    get(key:string):Promise<never|Optional<any>|any>{
         let isScan = key.slice(-1) === "_";
         let node = this._cache.get(key);
         if (isScan && node){
@@ -86,7 +86,9 @@ export default class TweekRepository{
         if (!node) return Promise.reject(`key ${key} not managed, use prepare to add it to cache`);
         if (node.state === "requested") return Promise.reject("value not available yet");
         if (node.state === "missing") return Promise.resolve(Optional.none());
-        if (!node.isScan) return Promise.resolve(Optional.some(node.value));
+        if (node.isScan) return Promise.reject('corrupted cache'); 
+        return Promise.resolve(Optional.some(node.value));
+        
     }
     
     private _extractScanResult(key){
