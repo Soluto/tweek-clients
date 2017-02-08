@@ -31,6 +31,16 @@ describe("read data from trie", ()=>{
       });
     });
 
+    it("list falsy items", ()=>{
+      let trie = new Trie(splitJoin);
+      trie.set("hello", false);
+      trie.set("hell", 0);
+      expect(trie.list("he")).to.eql({
+        hello: false,
+        hell: 0
+      });
+    });
+
     it("list relative", ()=>{
       let trie = new Trie(splitJoin);
       trie.set("hello", "world");
