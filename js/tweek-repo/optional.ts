@@ -1,7 +1,7 @@
 type Fallback<T> = ()=>T|never
 
 export default class Optional<T>{
-    value:T | null = null;
+    value:T | undefined = undefined;
     hasValue:boolean = false;
     constructor(...args){
        if (args.length ===1){

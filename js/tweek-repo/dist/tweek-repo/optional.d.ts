@@ -1,5 +1,5 @@
 export default class Optional<T> {
-    value: T | null;
+    value: T | undefined;
     hasValue: boolean;
     constructor(...args: any[]);
     static some: <T>(value: T) => Optional<T>;

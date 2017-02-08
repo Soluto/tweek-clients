@@ -6,7 +6,7 @@ var Optional = (function () {
             args[_i] = arguments[_i];
         }
         var _this = this;
-        this.value = null;
+        this.value = undefined;
         this.hasValue = false;
         this.map = function (fn) { return _this.flatMap(function (v) { return Optional.some(fn(v)); }); };
         this.flatMap = function (fn) { return _this.hasValue ? fn(_this.value) : Optional.none(); };
