@@ -46,7 +46,7 @@ var Trie = (function () {
             return acc[next];
         }, this._root);
         var results = Object.keys(node)
-            .map(function (name) { return _this.list(_this._splitJoin.join(fragments.concat([name])), index); }).slice().reduce(function (acc, next) { return (__assign({}, acc, next)); }, node[val] ? (_a = {},
+            .map(function (name) { return _this.list(_this._splitJoin.join(fragments.concat([name])), index); }).slice().reduce(function (acc, next) { return (__assign({}, acc, next)); }, node[val] !== undefined ? (_a = {},
             _a[this._splitJoin.join(fragments.slice(index))] = node[val],
             _a) : {});
         return results;

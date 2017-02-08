@@ -2,7 +2,7 @@
 
 export type Identity = {
     type:string;
-    id:string;
+    id?:string;
 }
 
 export type IdentityContext = Identity & {
@@ -57,7 +57,7 @@ function convertTypingFromJSON(target){
 }
 
 function encodeContextUri(context:IdentityContext){
-    return [`${context.type}=${context.id}`, ...Object.keys(context).filter(x=> x!== "id" && x!== "type")
+    return [ ...(context.id ? [`${context.type}=${context.id}`] : []) , ...Object.keys(context).filter(x=> x!== "id" && x!== "type")
                                                 .map(prop=> `${context.type}.${prop}=${context[prop]}`)].join("&")
 }
 

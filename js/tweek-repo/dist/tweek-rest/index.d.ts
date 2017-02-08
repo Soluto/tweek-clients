@@ -1,7 +1,7 @@
 /// <reference path="../../../tweek-rest/node_modules/@types/isomorphic-fetch/index.d.ts" />
 export declare type Identity = {
     type: string;
-    id: string;
+    id?: string;
 };
 export declare type IdentityContext = Identity & {
     [prop: string]: string;

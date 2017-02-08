@@ -46,7 +46,7 @@ export default class Trie<TValue>{
                ...Object.keys(node)
            .map(name=> this.list(this._splitJoin.join([...fragments,name]), index))
            ]
-       ].reduce((acc,next)=>({...acc,...next}), node[val] ? {
+       ].reduce((acc,next)=>({...acc,...next}), node[val]!==undefined ? {
            [this._splitJoin.join(fragments.slice(index))]: node[val]
        } : {});
        return results;

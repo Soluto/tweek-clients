@@ -38,7 +38,7 @@ function convertTypingFromJSON(target) {
     }
 }
 function encodeContextUri(context) {
-    return [context.type + "=" + context.id].concat(Object.keys(context).filter(function (x) { return x !== "id" && x !== "type"; })
+    return (context.id ? [context.type + "=" + context.id] : []).concat(Object.keys(context).filter(function (x) { return x !== "id" && x !== "type"; })
         .map(function (prop) { return context.type + "." + prop + "=" + context[prop]; })).join("&");
 }
 var TweekClient = (function () {
