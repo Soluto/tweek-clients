@@ -37,17 +37,17 @@ function convertTypingFromJSON(target) {
         }, {});
     }
 }
-function encodeContextUri(context) {
-    return [context.type + "=" + context.id].concat(Object.keys(context).filter(function (x) { return x !== "id" && x !== "type"; })
-        .map(function (prop) { return context.type + "." + prop + "=" + context[prop]; })).join("&");
+function encodeContextUri(identityType, context) {
+    return (context.id ? [identityType + "=" + context.id] : []).concat(Object.keys(context).filter(function (x) { return x !== "id" && x !== "type"; })
+        .map(function (prop) { return identityType + "." + prop + "=" + context[prop]; })).join("&");
 }
 var TweekClient = (function () {
     function TweekClient(config) {
-        this.config = __assign({ camelCase: "snake", flatten: false, convertTyping: false, context: [] }, config);
+        this.config = __assign({ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, config);
     }
     TweekClient.prototype.fetch = function (path, _config) {
         var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping, context = _a.context;
-        var url = baseServiceUrl + "/" + path + "?" + context.map(encodeContextUri).join("&");
+        var url = baseServiceUrl + "/" + path + "?" + Object.keys(context).map(function (identityType) { return encodeContextUri(identityType, context[identityType]); }).join("&");
         if (flatten) {
             url += "$flatten=true";
         }
@@ -64,11 +64,8 @@ var TweekClient = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TweekClient;
-function createTweekClient(baseServiceUrl) {
-    var context = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        context[_i - 1] = arguments[_i];
-    }
+function createTweekClient(baseServiceUrl, context) {
+    if (context === void 0) { context = {}; }
     return new TweekClient({ baseServiceUrl: baseServiceUrl,
         casing: "camelCase",
         convertTyping: true,

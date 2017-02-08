@@ -10,9 +10,10 @@ import TweekClient from '../index';
 describe("tweek client", ()=>{
     
     let identity = {
-        id:"userid",
-        type:"user",
-        gender:"male"
+        user:{
+            id:"userid",
+            gender:"male"
+        }
     };
     
     let prepare = ()=> {
@@ -29,7 +30,7 @@ describe("tweek client", ()=>{
 
     it("request configuration url contains the right context", async ()=>{
         const {client, stub} = prepare();
-        await client.fetch("_", {context:[identity]});
+        await client.fetch("_", {context:identity});
         expect(stub).to.have.been.calledOnce;
         expect(stub).to.have.been.calledWithMatch(sinon.match(/\?.*user=userid/));
         expect(stub).to.have.been.calledWithMatch(sinon.match(/\?.*user.gender=male/));

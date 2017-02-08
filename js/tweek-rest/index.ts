@@ -1,12 +1,11 @@
 /// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
 
-export type Identity = {
-    type:string;
-    id?:string;
+export type IdentityContext = {id?:string;} & {
+    [prop:string]:string;
 }
 
-export type IdentityContext = Identity & {
-    [prop:string]:string;
+export type Context = {
+    [identityType:string]:IdentityContext
 }
 
 export type TweekCasing = "snake" | "camelCase";
@@ -15,7 +14,7 @@ export type TweekConfig = {
     casing: TweekCasing;
     convertTyping: boolean;
     flatten: boolean;
-    context:IdentityContext[];
+    context:Context;
 }
 
 export type TweekInitConfig = Partial<TweekConfig> & {
@@ -56,9 +55,9 @@ function convertTypingFromJSON(target){
     }
 }
 
-function encodeContextUri(context:IdentityContext){
-    return [ ...(context.id ? [`${context.type}=${context.id}`] : []) , ...Object.keys(context).filter(x=> x!== "id" && x!== "type")
-                                                .map(prop=> `${context.type}.${prop}=${context[prop]}`)].join("&")
+function encodeContextUri(identityType:string, context:IdentityContext){
+    return [ ...(context.id ? [`${identityType}=${context.id}`] : []) , ...Object.keys(context).filter(x=> x!== "id" && x!== "type")
+                                                .map(prop=> `${identityType}.${prop}=${context[prop]}`)].join("&")
 }
 
 export default class TweekClient { 
@@ -66,12 +65,12 @@ export default class TweekClient {
     
     constructor(config:TweekInitConfig)
     {
-        this.config = <TweekFullConfig>{...{camelCase:"snake", flatten:false, convertTyping:false, context:[]}, ...config};
+        this.config = <TweekFullConfig>{...{camelCase:"snake", flatten:false, convertTyping:false, context:{}}, ...config};
     }
     
     fetch<T>(path:string, _config?: Partial<TweekConfig> ):Promise<T>{
       const {casing, flatten, baseServiceUrl, restGetter, convertTyping, context} = <TweekFullConfig>{...this.config, ..._config};
-      let url = `${baseServiceUrl}/${path}?` + context.map(encodeContextUri).join("&");
+      let url = `${baseServiceUrl}/${path}?` + Object.keys(context).map(identityType=> encodeContextUri(identityType, context[identityType]) ).join("&");
       if (flatten){
           url += "$flatten=true"
       }
@@ -87,7 +86,7 @@ export default class TweekClient {
     }
 }
 
-export function createTweekClient(baseServiceUrl:string, ...context:IdentityContext[]){
+export function createTweekClient(baseServiceUrl:string, context= {}){
     return new TweekClient({baseServiceUrl, 
         casing:"camelCase", 
         convertTyping:true,

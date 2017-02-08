@@ -1,17 +1,18 @@
 /// <reference path="../node_modules/@types/isomorphic-fetch/index.d.ts" />
-export declare type Identity = {
-    type: string;
-    id: string;
-};
-export declare type IdentityContext = Identity & {
+export declare type IdentityContext = {
+    id?: string;
+} & {
     [prop: string]: string;
+};
+export declare type Context = {
+    [identityType: string]: IdentityContext;
 };
 export declare type TweekCasing = "snake" | "camelCase";
 export declare type TweekConfig = {
     casing: TweekCasing;
     convertTyping: boolean;
     flatten: boolean;
-    context: IdentityContext[];
+    context: Context;
 };
 export declare type TweekInitConfig = Partial<TweekConfig> & {
     baseServiceUrl: string;
@@ -23,4 +24,4 @@ export default class TweekClient {
     constructor(config: TweekInitConfig);
     fetch<T>(path: string, _config?: Partial<TweekConfig>): Promise<T>;
 }
-export declare function createTweekClient(baseServiceUrl: string, ...context: IdentityContext[]): TweekClient;
+export declare function createTweekClient(baseServiceUrl: string, context?: {}): TweekClient;
