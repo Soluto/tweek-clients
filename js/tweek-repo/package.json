@@ -1,6 +1,6 @@
 {
-  "name": "tweek-js-repo",
-  "version": "1.0.0",
+  "name": "@npmsoluto/tweek-js-repo",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/tweek-repo/index.js",
   "dependencies": {
