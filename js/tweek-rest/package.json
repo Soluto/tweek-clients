@@ -1,6 +1,6 @@
 {
-  "name": "tweek-rest",
-  "version": "0.0.1",
+  "name": "@npmsoluto/tweek-rest",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {},
