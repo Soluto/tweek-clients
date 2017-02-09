@@ -1,5 +1,5 @@
 export type ValueNode<TValue> = any;
-let val = Symbol.for("value");
+let val = Symbol(); // .for("value");
 
 export type TrieNode<TValue> = ValueNode<TValue> | {[key:string]: TrieNode<TValue>;} 
 export type SplitJoin = {

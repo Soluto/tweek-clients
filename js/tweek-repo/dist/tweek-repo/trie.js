@@ -7,7 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-var val = Symbol.for("value");
+var val = Symbol(); // .for("value");
 var Trie = (function () {
     function Trie(_splitJoin) {
         this._splitJoin = _splitJoin;
