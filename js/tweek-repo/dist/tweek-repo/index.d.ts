@@ -1,4 +1,4 @@
-import TweekClient from '../tweek-rest';
+import TweekClient, { Context } from '../tweek-rest';
 import Optional from "./optional";
 export declare type KeyCollection = {
     [key: string]: any;
@@ -15,6 +15,7 @@ export declare type ConfigurationLocation = "local" | "remote";
 export default class TweekRepository {
     private _cache;
     private _client;
+    context: Context;
     constructor({client, keys}: TweekRepositoryConfig);
     prepare(key: string): void;
     get(key: string): Promise<never | Optional<any> | any>;

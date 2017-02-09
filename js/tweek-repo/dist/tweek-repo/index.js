@@ -18,6 +18,7 @@ var TweekRepository = (function () {
         var client = _a.client, _b = _a.keys, keys = _b === void 0 ? {} : _b;
         var _this = this;
         this._cache = new trie_1.default(exports.TweekKeySplitJoin);
+        this.context = {};
         this._client = client;
         var entries = Object.entries(keys);
         entries.forEach(function (_a) {
@@ -106,7 +107,7 @@ var TweekRepository = (function () {
     TweekRepository.prototype._refreshKey = function (key) {
         var _this = this;
         var isScan = key.slice(-1) === "_";
-        return this._client.fetch(key, { flatten: true, casing: "snake" })
+        return this._client.fetch(key, { flatten: true, casing: "snake", context: this.context })
             .then(function (config) {
             if (isScan) {
                 var prefix_1 = getKeyPrefix(key);
