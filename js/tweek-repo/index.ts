@@ -5,6 +5,8 @@ import Optional from "./optional";
 
 require("object.entries").shim();
 require("object.values").shim();
+var Symbol = require('es6-symbol');
+
 
 export type KeyCollection = {
    [key:string]:any;
