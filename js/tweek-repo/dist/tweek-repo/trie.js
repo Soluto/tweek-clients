@@ -7,11 +7,11 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-var val = Symbol(); // .for("value");
 var Trie = (function () {
     function Trie(_splitJoin) {
         this._splitJoin = _splitJoin;
         this._root = {};
+        this._valueMap = new WeakMap();
     }
     Trie.prototype.set = function (key, value) {
         var fragments = this._splitJoin.split(key);
@@ -21,7 +21,7 @@ var Trie = (function () {
             }
             return acc[next];
         }, this._root);
-        node[val] = value;
+        this._valueMap.set(node, value);
     };
     Trie.prototype.get = function (key) {
         var fragments = this._splitJoin.split(key);
@@ -30,7 +30,7 @@ var Trie = (function () {
                 return null;
             return acc[next];
         }, this._root);
-        return node && node[val];
+        return node && this._valueMap.get(node);
     };
     Trie.prototype.listRelative = function (key) {
         var fragments = this._splitJoin.split(key);
@@ -46,8 +46,8 @@ var Trie = (function () {
             return acc[next];
         }, this._root);
         var results = Object.keys(node)
-            .map(function (name) { return _this.list(_this._splitJoin.join(fragments.concat([name])), index); }).slice().reduce(function (acc, next) { return (__assign({}, acc, next)); }, node[val] !== undefined ? (_a = {},
-            _a[this._splitJoin.join(fragments.slice(index))] = node[val],
+            .map(function (name) { return _this.list(_this._splitJoin.join(fragments.concat([name])), index); }).slice().reduce(function (acc, next) { return (__assign({}, acc, next)); }, this._valueMap.has(node) ? (_a = {},
+            _a[this._splitJoin.join(fragments.slice(index))] = this._valueMap.get(node),
             _a) : {});
         return results;
         var _a;

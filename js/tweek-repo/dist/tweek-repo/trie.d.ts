@@ -10,8 +10,9 @@ export default class Trie<TValue> {
     private _splitJoin;
     constructor(_splitJoin: SplitJoin);
     private _root;
+    private _valueMap;
     set(key: string, value: TValue): void;
-    get(key: string): TValue | null;
+    get(key: string): TValue | undefined;
     listRelative(key: string): {
         [key: string]: TValue;
     };
