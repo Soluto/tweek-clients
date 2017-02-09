@@ -1,5 +1,6 @@
 
 import React, {Component} from 'react';
+import {camelize} from 'humps';
 
 const prepareRequests = [];
 let globalTweekRepository = null;
@@ -19,10 +20,14 @@ export const mapTweekToProps = (path, mapToProps = tweekResult => tweekResult) =
       }
 
       componentWillMount() {
-          globalTweekRepository.get(path)
-            .then(tweekResult => {console.log(tweekResult); return tweekResult;})
-            .then(tweekResult => mapToProps(tweekResult))
-            .then(tweekProps => this.setState({tweekProps}));
+          const promise = globalTweekRepository.get(path);
+          if (path.split('/').pop() === "_") {         
+              promise.then(result => this.setState({tweekProps: result}));
+          }
+          else {
+              const propName = path.split('/').pop();
+              promise.then(result => this.setState({tweekProps: {[camelize(propName)]: result.value}}));
+          }
       }
 
       render() {
