@@ -1,11 +1,14 @@
 {
   "name": "@npmsoluto/react-tweek",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "react bindings for tweek",
   "main": "index.js",
   "author": "Soluto",
   "license": "MIT",
   "peerDependencies": {
     "react": "^15.4.1"
+  },
+  "dependencies": {
+    "humps": "^2.0.0"
   }
 }
