@@ -5,7 +5,7 @@ import {camelize} from 'humps';
 const prepareRequests = [];
 let globalTweekRepository = null;
 
-export const mapTweekToProps = (path, mapToProps = tweekResult => tweekResult) => {
+export const withTweekKeys = (path) => {
   if (globalTweekRepository) {
       globalTweekRepository.prepare(path);
   }
