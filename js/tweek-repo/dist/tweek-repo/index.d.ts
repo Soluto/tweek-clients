@@ -7,21 +7,35 @@ export declare const TweekKeySplitJoin: {
     split: (key: string) => string[];
     join: (fragments: string[]) => string;
 };
+export interface TweekStore {
+    save: (keys: KeyCollection) => Promise<void>;
+    load: () => Promise<KeyCollection>;
+}
 export declare type TweekRepositoryConfig = {
     client: TweekClient;
-    keys?: KeyCollection;
+    store: TweekStore;
 };
 export declare type ConfigurationLocation = "local" | "remote";
+export declare class MemoryStore implements TweekStore {
+    _keys: any;
+    constructor(initialKeys?: {});
+    save(keys: any): Promise<void>;
+    load(): Promise<any>;
+}
 export default class TweekRepository {
     private _cache;
+    private _store;
     private _client;
     context: Context;
-    constructor({client, keys}: TweekRepositoryConfig);
+    constructor({client, store}: TweekRepositoryConfig);
+    init(): Promise<void>;
     prepare(key: string): void;
     get(key: string): Promise<never | Optional<any> | any>;
-    private _extractScanResult(key);
-    private setScanNodes(prefix, entries, state);
-    private updateNode(key, node, value);
-    private _refreshKey(key);
     refresh(): Promise<any>;
+    private _refreshKey(key);
+    private _updateTrie(key, isScan, config);
+    private _extractScanResult(key);
+    private setScanNodes(prefix, keys, state);
+    private updateNode(key, node, value);
+    private _persist(config);
 }

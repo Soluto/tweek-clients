@@ -64,13 +64,14 @@ var TweekClient = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TweekClient;
-function createTweekClient(baseServiceUrl, context) {
-    if (context === void 0) { context = {}; }
+function createTweekClient(baseServiceUrl, context, restGetter) {
+    if (restGetter === void 0) { restGetter = function (url) { return fetch(url).then(function (r) { return r.json(); }); }; }
     return new TweekClient({ baseServiceUrl: baseServiceUrl,
         casing: "camelCase",
         convertTyping: true,
         context: context,
-        restGetter: function (url) { return fetch(url).then(function (x) { return x.json(); }); } });
+        restGetter: restGetter
+    });
 }
 exports.createTweekClient = createTweekClient;
 //# sourceMappingURL=index.js.map

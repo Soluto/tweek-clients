@@ -15,6 +15,12 @@ export const TweekKeySplitJoin = {
     join: (fragments:string[]) => fragments.join("/")
 }
 
+
+export interface TweekStore {
+    save: (keys: KeyCollection) => Promise<void>;
+    load: () => Promise<KeyCollection>;
+}
+
 type RequestedKey = {
     state:"requested"
     isScan: boolean;
@@ -38,34 +44,54 @@ type ScanNode = {
 type RepositoryKey<T> =  CachedKey<T> | RequestedKey | ScanNode | MissingKey;
 
 export type TweekRepositoryConfig = {
-    client:TweekClient;
-    keys?:KeyCollection;
+    client: TweekClient;
+    store: TweekStore;
 }
 
 export type ConfigurationLocation = "local" | "remote";
 
-let getAllPrefixes = (key)=> partitionByIndex(key.split("/"), -1)[0].reduce((acc,next)=>
-    ([...acc, [...acc,next].join("/")])
-, []);
+let getAllPrefixes = (key )=> {
+    return partitionByIndex(key.split("/"), -1)[0].reduce((acc,next) =>
+        ([...acc, [ ...acc.slice(-1) ,next].join("/")]), []);
+}
 
-let getKeyPrefix = (key) => partitionByIndex(key.split("/"), -1)[0].join("/");
+let getKeyPrefix = (key) => key === "_" ? "" : partitionByIndex(key.split("/"), -1)[0].join("/");
 
 let flatMap = (arr, fn)=>  Array.prototype.concat.apply([],arr.map(fn))
 
+export class MemoryStore implements TweekStore {
+    _keys;
+
+    constructor(initialKeys = {}) {
+        this._keys = initialKeys
+    }
+    
+    save(keys) {
+        this._keys = keys || {};
+        return Promise.resolve();
+    }
+
+    load() {
+        return Promise.resolve(this._keys);
+    }
+}
+
 export default class TweekRepository{
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
+    private _store: TweekStore;
     private _client:TweekClient;
     public context: Context = {};
 
-    constructor({client, keys={}}:TweekRepositoryConfig){
+    constructor({client, store = new MemoryStore()}: TweekRepositoryConfig) {
         this._client = client;
-        let entries = Object.entries(keys);
-        entries.forEach(([key, value])=> this._cache.set(key, {
-            state:"cached",
-            isScan:false,
-            value: value
-        }));
-        this.setScanNodes("", entries, "cached");
+        this._store = store;
+    }
+
+    init() {
+        return this._store.load().then(nodes => {
+            nodes = nodes || {};
+            Object.entries(nodes).forEach(([key, value]) => this._cache.set(key, value));
+        }); 
     }
 
     prepare(key:string){
@@ -92,6 +118,46 @@ export default class TweekRepository{
         
     }
     
+    refresh() {
+        return this._refreshKey("_").then(() => this._store.save(this._cache.list()))
+    }
+
+    private _refreshKey(key:string){
+        let isScan = key.slice(-1) === "_";
+        return this._client.fetch<any>(key, {flatten:true, casing:"snake", context:this.context})
+            .then(config => this._updateTrie(key, isScan, config))
+            .catch((e)=> {
+                this.updateNode(key, this._cache.get(key), undefined)
+            });
+    }    
+
+    private _updateTrie(key, isScan, config) {
+        if (isScan) {
+            let prefix = getKeyPrefix(key);
+            let configResults = new Trie(TweekKeySplitJoin);
+            Object.entries(config).forEach(([k,v])=> {
+                configResults.set(k,v)
+            });
+            let entries = Object.entries(this._cache.list(prefix));
+            entries.forEach(([subKey, valueNode])=>{
+                this.updateNode(subKey, valueNode, config[subKey]);
+                if (valueNode.state !== "missing" && valueNode.isScan){
+                    this._cache.set(subKey, {state:"cached", isScan:true});
+                    let fullPrefix = getKeyPrefix(subKey);
+                    let nodes = fullPrefix === "" ? configResults.list(): configResults.listRelative(fullPrefix);
+                    this.setScanNodes(fullPrefix, Object.keys(nodes), "cached");
+                    Object.entries(nodes).forEach(([n, value])=>{
+                        let fullKey = [...(fullPrefix === "" ? [] : [fullPrefix]), n].join("/");
+                        this._cache.set(fullKey, {state:"cached", value, isScan:false});
+                    })
+                }
+            });
+        }
+        else {
+            this.updateNode(key, this._cache.get(key), config);
+        }        
+    }
+
     private _extractScanResult(key){
         let prefix = getKeyPrefix(key);
         return Object.entries(this._cache.listRelative(prefix))
@@ -109,13 +175,10 @@ export default class TweekRepository{
             }, {});
     }
 
-    private setScanNodes(prefix, entries, state){
-        distinct(flatMap(entries,([key, _])=> getAllPrefixes(key)))
-               .map(path=> [...(prefix ==="" ? [] : [prefix]), path, "_"].join("/") )
-               .forEach(key=> this._cache.set(key, {
-                    state: state,
-                    isScan:true
-               }));
+    private setScanNodes(prefix, keys, state){
+        distinct(flatMap(keys,(key)=> getAllPrefixes(key)))
+               .map(path => [...(prefix ==="" ? [] : [prefix]), path, "_"].join("/"))
+               .forEach(key => this._cache.set(key, {state: state, isScan:true}));               
     }
 
     private updateNode(key, node, value){
@@ -131,34 +194,7 @@ export default class TweekRepository{
         }
     }
 
-    private _refreshKey(key:string){
-        let isScan = key.slice(-1) === "_";
-        return this._client.fetch<any>(key, {flatten:true, casing:"snake", context:this.context} )
-        .then(config =>{
-            if (isScan){
-                let prefix = getKeyPrefix(key);
-                let configResults = new Trie(TweekKeySplitJoin);
-                Object.entries(config).forEach(([k,v])=> configResults.set(k,v));
-                let entries = Object.entries(this._cache.list(prefix));
-                entries.forEach(([subKey, valueNode])=>{
-                    this.updateNode(subKey, valueNode, config[subKey]);
-                    if (valueNode.state !== "missing" && valueNode.isScan){
-                        let nodes = configResults.list(getKeyPrefix(subKey));
-                        Object.entries(nodes).forEach(([n, value])=>{
-                            let fullKey = [...(prefix ==="" ? [] : [prefix]), n].join("/");
-                            this._cache.set(fullKey, {state:"cached", value, isScan:false});
-                        })
-                    }
-                });
-                this.setScanNodes(prefix, entries, "cached");
-            }
-            else{
-                this.updateNode(key, this._cache.get(key), config);
-            }
-        }).catch(()=>this.updateNode(key, this._cache.get(key), undefined));
-    }
-
-    refresh(){
-        return this._refreshKey("_");
-    }
+    private _persist(config) {
+        return this._store.save(config).then(() => config);
+    }    
 }

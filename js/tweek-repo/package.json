@@ -1,5 +1,5 @@
 {
-  "name": "@npmsoluto/tweek-js-repo",
+  "name": "@npmsoluto/tweek-repo",
   "version": "0.1.6",
   "description": "",
   "main": "./dist/tweek-repo/index.js",
@@ -13,8 +13,10 @@
     "@types/node": "^6.0.58",
     "@types/sinon": "^1.16.34",
     "@types/sinon-chai": "^2.7.27",
+    "axios": "^0.15.3",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
+    "simple-fake-server": "^0.1.2",
     "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0",
     "ts-node": "^2.0.0",
@@ -22,7 +24,7 @@
   },
   "scripts": {
     "dev": "tsc -w",
-    "test": "mocha --compilers ts:ts-node/register",
+    "test": "tsc && mocha --compilers ts:ts-node/register ",
     "build": "tsc"
   },
   "author": "",

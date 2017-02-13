@@ -49,6 +49,10 @@ describe("read data from trie", ()=>{
           lo: "world",
           l: "diablo"
       });
+      expect(trie.listRelative("")).to.eql({
+          hello: "world",
+          hell: "diablo"
+      });
     });
 
     it("update value", ()=>{
