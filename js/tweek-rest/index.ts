@@ -63,8 +63,7 @@ function encodeContextUri(identityType:string, context:IdentityContext){
 export default class TweekClient { 
     config:TweekFullConfig;
     
-    constructor(config:TweekInitConfig)
-    {
+    constructor(config:TweekInitConfig) {
         this.config = <TweekFullConfig>{...{camelCase:"snake", flatten:false, convertTyping:false, context:{}}, ...config};
     }
     
@@ -86,10 +85,11 @@ export default class TweekClient {
     }
 }
 
-export function createTweekClient(baseServiceUrl:string, context= {}){
+export function createTweekClient(baseServiceUrl: string, context: any, restGetter = <T>(url) => fetch(url).then(r => r.json<T>())){
     return new TweekClient({baseServiceUrl, 
         casing:"camelCase", 
-        convertTyping:true,
+        convertTyping: true,
         context,
-        restGetter: <T>(url)=>fetch(url).then(x=>x.json<T>())});
+        restGetter
+    });
 }

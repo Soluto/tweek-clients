@@ -24,4 +24,4 @@ export default class TweekClient {
     constructor(config: TweekInitConfig);
     fetch<T>(path: string, _config?: Partial<TweekConfig>): Promise<T>;
 }
-export declare function createTweekClient(baseServiceUrl: string, context?: {}): TweekClient;
+export declare function createTweekClient(baseServiceUrl: string, context: any, restGetter?: <T>(url: any) => Promise<T>): TweekClient;
