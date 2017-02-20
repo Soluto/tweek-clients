@@ -10,4 +10,4 @@ dependencies:
 test:
   override:
     - cd js/tweek-repo && npm run test
-    - cd js/tweek-test && npm run test
+    - cd js/tweek-rest && npm run test
