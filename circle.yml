@@ -1,0 +1,13 @@
+machine:
+  environment:
+    NODE_ENV: development
+  node: 
+    version: 6.9.1
+dependencies:
+  override:
+    - cd js/tweek-repo && npm i
+    - cd js/tweek-rest && npm i
+test:
+  override:
+    - cd js/tweek-repo && npm run test
+    - cd js/tweek-test && npm run test
