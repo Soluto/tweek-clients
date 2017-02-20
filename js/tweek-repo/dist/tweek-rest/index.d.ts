@@ -16,12 +16,18 @@ export declare type TweekConfig = {
 };
 export declare type TweekInitConfig = Partial<TweekConfig> & {
     baseServiceUrl: string;
-    restGetter: <T>(url) => Promise<T>;
+    restGetter: <T>(url: string) => Promise<T>;
 };
 export declare type TweekFullConfig = TweekConfig & TweekInitConfig;
-export default class TweekClient {
-    config: TweekFullConfig;
-    constructor(config: TweekInitConfig);
-    fetch<T>(path: string, _config?: Partial<TweekConfig>): Promise<T>;
+export interface ITweekClient {
+    fetch<T>(keys: string[], config?: Partial<TweekConfig>): Promise<T>;
 }
-export declare function createTweekClient(baseServiceUrl: string, context: any, restGetter?: <T>(url: any) => Promise<T>): TweekClient;
+export declare class TweekClient implements ITweekClient {
+    config: TweekFullConfig;
+    private static ENCODE_$_CHARACTER;
+    private static ENCODE_SLASH_CHARACTER;
+    constructor(config: TweekInitConfig);
+    fetch<T>(keys: string[], _config?: Partial<TweekConfig>): Promise<T>;
+    private _contextToQueryParams;
+}
+export declare function createTweekClient(baseServiceUrl: string, context: any, restGetter?: <T>(url: string) => Promise<T>): TweekClient;

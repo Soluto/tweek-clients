@@ -1,4 +1,4 @@
-import TweekClient, { Context } from '../tweek-rest';
+import { ITweekClient, Context } from '../tweek-rest';
 import Optional from "./optional";
 export declare type KeyCollection = {
     [key: string]: any;
@@ -12,7 +12,7 @@ export interface TweekStore {
     load: () => Promise<KeyCollection>;
 }
 export declare type TweekRepositoryConfig = {
-    client: TweekClient;
+    client: ITweekClient;
     store: TweekStore;
 };
 export declare type ConfigurationLocation = "local" | "remote";
@@ -32,8 +32,9 @@ export default class TweekRepository {
     prepare(key: string): void;
     get(key: string): Promise<never | Optional<any> | any>;
     refresh(): Promise<any>;
-    private _refreshKey(key);
-    private _updateTrie(key, isScan, config);
+    private _refreshKeys(keys);
+    private _updateTrieKey(key, config);
+    private _updateTrieKeys(keys, config);
     private _extractScanResult(key);
     private setScanNodes(prefix, keys, state);
     private updateNode(key, node, value);

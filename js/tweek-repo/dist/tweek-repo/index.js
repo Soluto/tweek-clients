@@ -59,10 +59,11 @@ var TweekRepository = (function () {
         var node = this._cache.get(key);
         if (isScan && node) {
             var prefix = getKeyPrefix(key);
-            if (node.state === "requested" || Object.entries(this._cache.listRelative(prefix)).some(function (_a) {
-                var key = _a[0], value = _a[1];
-                return value.state === "requested" && !value.isScan;
-            })) {
+            if (node.state === "requested" ||
+                Object.entries(this._cache.listRelative(prefix)).some(function (_a) {
+                    var key = _a[0], value = _a[1];
+                    return value.state === "requested" && !value.isScan;
+                })) {
                 return Promise.reject("value not available yet for key: " + key);
             }
             return Promise.resolve(this._extractScanResult(key));
@@ -79,46 +80,54 @@ var TweekRepository = (function () {
     };
     TweekRepository.prototype.refresh = function () {
         var _this = this;
-        return this._refreshKey("_").then(function () { return _this._store.save(_this._cache.list()); });
+        var keysToRefresh = Object.keys(this._cache.list());
+        return this._refreshKeys(keysToRefresh)
+            .then(function () { return _this._store.save(_this._cache.list()); });
     };
-    TweekRepository.prototype._refreshKey = function (key) {
+    TweekRepository.prototype._refreshKeys = function (keys) {
         var _this = this;
-        var isScan = key.slice(-1) === "_";
-        return this._client.fetch(key, { flatten: true, casing: "snake", context: this.context })
-            .then(function (config) { return _this._updateTrie(key, isScan, config); })
+        return this._client.fetch(keys, { flatten: true, casing: "snake", context: this.context })
+            .then(function (config) { return _this._updateTrieKeys(keys, config); })
             .catch(function (e) {
-            _this.updateNode(key, _this._cache.get(key), undefined);
+            console.warn('failed refreshing keys', keys, e);
         });
     };
-    TweekRepository.prototype._updateTrie = function (key, isScan, config) {
+    TweekRepository.prototype._updateTrieKey = function (key, config) {
         var _this = this;
-        if (isScan) {
-            var prefix = getKeyPrefix(key);
-            var configResults_1 = new trie_1.default(exports.TweekKeySplitJoin);
-            Object.entries(config).forEach(function (_a) {
-                var k = _a[0], v = _a[1];
-                configResults_1.set(k, v);
+        var prefix = getKeyPrefix(key);
+        var configResults = new trie_1.default(exports.TweekKeySplitJoin);
+        Object.entries(config).forEach(function (_a) {
+            var k = _a[0], v = _a[1];
+            configResults.set(k, v);
+        });
+        var entries = Object.entries(this._cache.list(prefix));
+        entries.forEach(function (_a) {
+            var subKey = _a[0], valueNode = _a[1];
+            _this.updateNode(subKey, valueNode, config[subKey]);
+            if (valueNode.state === "missing" || !valueNode.isScan) {
+                return;
+            }
+            _this._cache.set(subKey, { state: "cached", isScan: true });
+            var fullPrefix = getKeyPrefix(subKey);
+            var nodes = fullPrefix === "" ? configResults.list() : configResults.listRelative(fullPrefix);
+            _this.setScanNodes(fullPrefix, Object.keys(nodes), "cached");
+            Object.entries(nodes).forEach(function (_a) {
+                var n = _a[0], value = _a[1];
+                var fullKey = (fullPrefix === "" ? [] : [fullPrefix]).concat([n]).join("/");
+                _this._cache.set(fullKey, { state: "cached", value: value, isScan: false });
             });
-            var entries = Object.entries(this._cache.list(prefix));
-            entries.forEach(function (_a) {
-                var subKey = _a[0], valueNode = _a[1];
-                _this.updateNode(subKey, valueNode, config[subKey]);
-                if (valueNode.state !== "missing" && valueNode.isScan) {
-                    _this._cache.set(subKey, { state: "cached", isScan: true });
-                    var fullPrefix_1 = getKeyPrefix(subKey);
-                    var nodes = fullPrefix_1 === "" ? configResults_1.list() : configResults_1.listRelative(fullPrefix_1);
-                    _this.setScanNodes(fullPrefix_1, Object.keys(nodes), "cached");
-                    Object.entries(nodes).forEach(function (_a) {
-                        var n = _a[0], value = _a[1];
-                        var fullKey = (fullPrefix_1 === "" ? [] : [fullPrefix_1]).concat([n]).join("/");
-                        _this._cache.set(fullKey, { state: "cached", value: value, isScan: false });
-                    });
-                }
-            });
-        }
-        else {
-            this.updateNode(key, this._cache.get(key), config);
-        }
+        });
+    };
+    TweekRepository.prototype._updateTrieKeys = function (keys, config) {
+        var _this = this;
+        keys.forEach(function (keyToUpdate) {
+            var isScan = keyToUpdate.slice(-1) === "_";
+            if (!isScan) {
+                _this.updateNode(keyToUpdate, _this._cache.get(keyToUpdate), config[keyToUpdate]);
+                return;
+            }
+            _this._updateTrieKey(keyToUpdate, config);
+        });
     };
     TweekRepository.prototype._extractScanResult = function (key) {
         var prefix = getKeyPrefix(key);

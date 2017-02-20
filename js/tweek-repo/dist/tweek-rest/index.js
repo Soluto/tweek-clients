@@ -1,4 +1,3 @@
-/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
 "use strict";
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -8,6 +7,8 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
+/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
+var queryString = require("query-string");
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -37,20 +38,28 @@ function convertTypingFromJSON(target) {
         }, {});
     }
 }
-function encodeContextUri(identityType, context) {
-    return (context.id ? [identityType + "=" + context.id] : []).concat(Object.keys(context).filter(function (x) { return x !== "id" && x !== "type"; })
-        .map(function (prop) { return identityType + "." + prop + "=" + context[prop]; })).join("&");
-}
 var TweekClient = (function () {
     function TweekClient(config) {
+        this._contextToQueryParams = function (context) {
+            return Object.keys(context).reduce(function (pre, cur) {
+                var identityContext = context[cur];
+                Object.keys(identityContext).forEach(function (x) { return pre[cur + "." + x] = identityContext[x]; });
+                return pre;
+            }, {});
+        };
         this.config = __assign({ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, config);
     }
-    TweekClient.prototype.fetch = function (path, _config) {
+    TweekClient.prototype.fetch = function (keys, _config) {
         var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping, context = _a.context;
-        var url = baseServiceUrl + "/" + path + "?" + Object.keys(context).map(function (identityType) { return encodeContextUri(identityType, context[identityType]); }).join("&");
+        var queryParamsObject = this._contextToQueryParams(context);
         if (flatten) {
-            url += "$flatten=true";
+            queryParamsObject['$flatten'] = true;
         }
+        queryParamsObject['include'] = keys;
+        var queryParams = queryString.stringify(queryParamsObject);
+        queryParams = queryParams.replace('$', TweekClient.ENCODE_$_CHARACTER);
+        queryParams = queryParams.replace('/', TweekClient.ENCODE_SLASH_CHARACTER);
+        var url = baseServiceUrl + (!!queryParams ? "?" + queryParams : '');
         var result = restGetter(url);
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);
@@ -62,11 +71,13 @@ var TweekClient = (function () {
     };
     return TweekClient;
 }());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = TweekClient;
+TweekClient.ENCODE_$_CHARACTER = encodeURIComponent('$');
+TweekClient.ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
+exports.TweekClient = TweekClient;
 function createTweekClient(baseServiceUrl, context, restGetter) {
     if (restGetter === void 0) { restGetter = function (url) { return fetch(url).then(function (r) { return r.json(); }); }; }
-    return new TweekClient({ baseServiceUrl: baseServiceUrl,
+    return new TweekClient({
+        baseServiceUrl: baseServiceUrl,
         casing: "camelCase",
         convertTyping: true,
         context: context,

@@ -3,7 +3,9 @@
   "version": "0.1.1",
   "description": "",
   "main": "./dist/index.js",
-  "dependencies": {},
+  "dependencies": {
+    "query-string": "^4.3.2"
+  },
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/isomorphic-fetch": "0.0.31",
@@ -19,7 +21,7 @@
   },
   "scripts": {
     "dev": "tsc -w",
-    "test": "mocha --compilers ts:ts-node/register",
+    "test": "tsc && mocha --compilers ts:ts-node/register",
     "build": "tsc"
   },
   "author": "",
