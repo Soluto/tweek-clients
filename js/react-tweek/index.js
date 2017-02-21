@@ -31,10 +31,7 @@ export const withTweekKeys = (path) => {
         }
 
         render() {
-            if (!this.state.tweekProps) {
-                return <View />
-            }
-            return <EnhancedComponent {...this.props} {...this.state.tweekProps} />;
+            return this.state.tweekProps ? <EnhancedComponent {...this.props} {...this.state.tweekProps} /> : null;
         }
     }
 };
