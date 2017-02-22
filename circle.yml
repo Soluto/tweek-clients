@@ -32,4 +32,7 @@ test:
   override:
     - cd js/tweek-repo && npm run test
     - cd js/tweek-rest && npm run test
-    - curl --retry-delay 5 --retry 20 -v http://localhost:1111/status 
+    #- curl --retry-delay 5 --retry 20 -v http://localhost:1111/status 
+    - wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/paping/paping_1.5.5_x86-64_linux.tar.gz
+    - tar xvzf paping_1.5.5_x86-64_linux.tar.gz
+    - ./paping localhost -p 1111 -c 35 -t 10000
