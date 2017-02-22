@@ -1,10 +1,9 @@
 import 'mocha';
 import chai = require('chai');
-import TweekRepository from '../';
-import { MemoryStore } from '../';
-import { TweekClient, ITweekClient } from '../../tweek-rest';
-import { createTweekClient } from '../../tweek-rest';
-import Optional from '../optional'
+import TweekRepository from '../../';
+import { MemoryStore } from '../../';
+import { TweekClient, ITweekClient } from '../../../tweek-rest';
+import { createTweekClient } from '../../../tweek-rest';
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import axios from 'axios';
 import sinon = require('sinon');
@@ -219,7 +218,7 @@ describe("tweek repo test", () => {
             let store = new MemoryStore();
 
             const fetchStub = sinon.stub();
-            fetchStub.onCall(0).returns(Promise.resolve(undefined));
+            fetchStub.onCall(0).returns(Promise.reject(''));
             const clientMock: ITweekClient = {
                 fetch: <any>fetchStub
             };

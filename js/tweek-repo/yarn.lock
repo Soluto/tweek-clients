@@ -257,6 +257,10 @@ function-bind@^1.0.2, function-bind@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.0.tgz#16176714c801798e4e8f2cf7f7529467bb4a5771"
 
+getenv@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/getenv/-/getenv-0.7.0.tgz#39b91838707e2086fd1cf6ef8777d1c93e14649e"
+
 glob@7.0.5:
   version "7.0.5"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.0.5.tgz#b4202a69099bbb4d292a7c1b95b6682b67ebdc95"

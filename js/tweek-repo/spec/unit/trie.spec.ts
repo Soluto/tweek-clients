@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
-import Trie from '../trie';
+import Trie from '../../trie';
 
 let splitJoin = {
   split(key) { return key.split("") },
