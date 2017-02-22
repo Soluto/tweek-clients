@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { View } from 'react-native';
 import { camelize } from 'humps';
 
 const prepareRequests = [];
@@ -30,7 +31,7 @@ export const withTweekKeys = (path) => {
         }
 
         render() {
-            return <EnhancedComponent {...this.props} {...this.state.tweekProps} />;
+            return this.state.tweekProps ? <EnhancedComponent {...this.props} {...this.state.tweekProps} /> : null;
         }
     }
 };
