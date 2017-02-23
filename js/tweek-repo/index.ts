@@ -121,13 +121,19 @@ export default class TweekRepository {
 
     refresh() {
         const keysToRefresh = Object.keys(this._cache.list());
-
+        
         return this._refreshKeys(keysToRefresh)
             .then(() => this._store.save(this._cache.list()));
     }
 
     private _refreshKeys(keys: string[]) {
-        return this._client.fetch<any>(keys, { flatten: true, casing: "snake", context: this.context })
+        return this._client
+            .fetch<any>('_', {
+                flatten: true,
+                casing: "snake",
+                context: this.context,
+                include: keys,
+            })
             .then(config => this._updateTrieKeys(keys, config))
             .catch(e => {
                 console.warn('failed refreshing keys', keys, e);

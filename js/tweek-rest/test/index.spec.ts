@@ -2,51 +2,61 @@ import 'mocha';
 import sinon = require('sinon');
 import chai = require('chai');
 import sinonChai = require('sinon-chai');
-import { TweekConfig } from '../index';
+import { FetchConfig } from '../index';
 chai.use(sinonChai);
 let {expect} = chai;
 
 import { TweekClient } from '../index';
 
-describe("tweek client", () => {
-    const baseUrl = 'test';
+describe("tweek rest", () => {
+    const baseUrl = 'http://test/';
     let prepare = () => {
-        let stub = sinon.stub();
+        const restGetterStub = sinon.stub();
+
+        const tweekClient = new TweekClient({
+            baseServiceUrl: baseUrl,
+            casing: "snake",
+            convertTyping: false,
+            restGetter: restGetterStub
+        });
+
         return {
-            client: new TweekClient({
-                baseServiceUrl: baseUrl,
-                casing: "snake",
-                convertTyping: false,
-                restGetter: stub
-            }),
-            stub
+            tweekClient,
+            restGetterStub
         };
     };
 
-    const encode$symbol = encodeURIComponent('$');
-    const encodeSlashsymbol = encodeURIComponent('/');
-
     const testsDefenitions: {
-        keysToQuery: string[],
+        pathToFetch: string,
         expectedUrl: string,
-        serverResults?: Object
-        config?: Partial<TweekConfig>,
+        expectedQueryParams?: string,
+        resultsToResolve?: Object
+        config?: FetchConfig,
         expectedResult?: Object,
     }[] = [];
 
     testsDefenitions.push({
-        keysToQuery: ['abc'],
-        expectedUrl: `${baseUrl}?include=abc`
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
+        expectedQueryParams: `?$include=abc`,
+        config: {
+            include: ['abc']
+        }
     });
 
     testsDefenitions.push({
-        keysToQuery: ['path1', 'path2/key', 'path3/_'],
-        expectedUrl: baseUrl + '?' + `include=path1&include=path2${encodeSlashsymbol}key&include=path3${encodeSlashsymbol}_`
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
+        expectedQueryParams: `?$include=path1&$include=path2/key&$include=path3/_`,
+        config: {
+            include: ['path1', 'path2/key', 'path3/_']
+        }
     });
 
     testsDefenitions.push({
-        keysToQuery: ['_'],
-        expectedUrl: `${baseUrl}?include=_&user.gender=male&user.id=userid`,
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
+        expectedQueryParams: `?user.gender=male&user.id=userid`,
         config: {
             context: {
                 user: {
@@ -58,50 +68,51 @@ describe("tweek client", () => {
     });
 
     testsDefenitions.push({
-        keysToQuery: ['_'],
-        expectedUrl: `${baseUrl}?include=_`,
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
         config: { casing: "camelCase" },
-        serverResults: { some_path: { some_key: "abc" } },
+        resultsToResolve: { some_path: { some_key: "abc" } },
         expectedResult: { somePath: { someKey: "abc" } }
     });
 
     testsDefenitions.push({
-        keysToQuery: ['_'],
-        expectedUrl: `${baseUrl}?include=_`,
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
         config: { casing: "snake" },
-        serverResults: { some_path: { some_key: "abc" } },
+        resultsToResolve: { some_path: { some_key: "abc" } },
         expectedResult: { some_path: { some_key: "abc" } }
     });
 
     testsDefenitions.push({
-        keysToQuery: ['_'],
-        expectedUrl: `${baseUrl}?include=_`,
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
         config: { convertTyping: true },
-        serverResults: { some_path: { some_key: "true" } },
+        resultsToResolve: { some_path: { some_key: "true" } },
         expectedResult: { some_path: { some_key: true } }
     });
 
     testsDefenitions.push({
-        keysToQuery: ['_'],
-        expectedUrl: baseUrl + '?' + `${encode$symbol}flatten=true&include=_`,
+        pathToFetch: '_',
+        expectedUrl: `${baseUrl}_`,
+        expectedQueryParams: `?$flatten=true`,
         config: { casing: "camelCase", convertTyping: true, flatten: true },
-        serverResults: { "some_path/some_key": "true" },
+        resultsToResolve: { "some_path/some_key": "true" },
         expectedResult: { "some_path/some_key": true }
     });
 
     testsDefenitions.forEach(test =>
         it('should execute fetch correctly', async () => {
             // Arrange
-            const {client, stub} = prepare();
-            if (!!test.serverResults) stub.returns(Promise.resolve(test.serverResults));
+            const { tweekClient, restGetterStub } = prepare();
+            if (!!test.resultsToResolve) restGetterStub.returns(Promise.resolve(test.resultsToResolve));
+            const expectedUrl = test.expectedUrl + tweekClient.queryParamsEncoder(test.expectedQueryParams || '');
 
             // Act
-            const result = await client.fetch(test.keysToQuery, test.config);
+            const result = await tweekClient.fetch(test.pathToFetch, test.config);
 
             // Assert
-            expect(stub).to.have.been.calledOnce;
-            if (!!test.expectedUrl)
-                expect(stub).to.have.been.calledWithExactly(test.expectedUrl);
+            expect(restGetterStub).to.have.been.calledOnce;
+            expect(restGetterStub).to.have.been.calledWithExactly(expectedUrl);
             if (!!test.expectedResult)
                 expect(result).to.eql(test.expectedResult, 'should return corerct keys result');
         }));

@@ -11,19 +11,18 @@ export type Context = {
 
 export type TweekCasing = "snake" | "camelCase";
 
-export type TweekConfig = {
-    casing: TweekCasing;
-    convertTyping: boolean;
-    flatten: boolean;
-    context: Context;
+export type FetchConfig = {
+    include?: string[],
+    casing?: TweekCasing;
+    convertTyping?: boolean;
+    flatten?: boolean;
+    context?: Context;
 }
 
-export type TweekInitConfig = Partial<TweekConfig> & {
+export type TweekInitConfig = FetchConfig & {
     baseServiceUrl: string;
     restGetter: <T>(url: string) => Promise<T>;
 }
-
-export type TweekFullConfig = TweekConfig & TweekInitConfig;
 
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -56,22 +55,23 @@ function convertTypingFromJSON(target) {
 }
 
 export interface ITweekClient {
-    fetch<T>(keys: string[], config?: Partial<TweekConfig>): Promise<T>;
+    fetch<T>(path: string, config?: FetchConfig): Promise<T>;
 }
 
 export class TweekClient implements ITweekClient {
-    config: TweekFullConfig;
+    config: TweekInitConfig;
 
     private static ENCODE_$_CHARACTER = encodeURIComponent('$');
     private static ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
 
     constructor(config: TweekInitConfig) {
-        this.config = <TweekFullConfig>{ ...{ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, ...config };
+        this.config = <TweekInitConfig & FetchConfig>
+            { ...{ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, ...config };
     }
 
-    fetch<T>(keys: string[], _config?: Partial<TweekConfig>): Promise<T> {
-        const { casing, flatten, baseServiceUrl, restGetter, convertTyping, context } =
-            <TweekFullConfig>{ ...this.config, ..._config };
+    fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
+        const { casing, flatten, baseServiceUrl, restGetter, convertTyping, context, include } =
+            <TweekInitConfig & FetchConfig>{ ...this.config, ..._config };
 
         let queryParamsObject = this._contextToQueryParams(context);
 
@@ -79,12 +79,11 @@ export class TweekClient implements ITweekClient {
             queryParamsObject['$flatten'] = true;
         }
 
-        queryParamsObject['include'] = keys;
+        queryParamsObject['$include'] = include;
         let queryParams = queryString.stringify(queryParamsObject);
-        queryParams = queryParams.replace('$', TweekClient.ENCODE_$_CHARACTER);
-        queryParams = queryParams.replace('/', TweekClient.ENCODE_SLASH_CHARACTER);
+        queryParams = this.queryParamsEncoder(queryParams);
 
-        const url = baseServiceUrl + (!!queryParams ? `?${queryParams}` : '');
+        const url = baseServiceUrl + path + (!!queryParams ? `?${queryParams}` : '');
         let result = restGetter<any>(url);
 
         if (!flatten && casing === "camelCase") {
@@ -97,6 +96,10 @@ export class TweekClient implements ITweekClient {
 
         return <Promise<T>>result;
     }
+
+    public queryParamsEncoder = (queryParams: string) => queryParams
+        .replace(/\$/g, TweekClient.ENCODE_$_CHARACTER)
+        .replace(/\//g, TweekClient.ENCODE_SLASH_CHARACTER);
 
     private _contextToQueryParams = context =>
         Object.keys(context).reduce((pre, cur) => {

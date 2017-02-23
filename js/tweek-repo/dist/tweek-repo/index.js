@@ -86,7 +86,13 @@ var TweekRepository = (function () {
     };
     TweekRepository.prototype._refreshKeys = function (keys) {
         var _this = this;
-        return this._client.fetch(keys, { flatten: true, casing: "snake", context: this.context })
+        return this._client
+            .fetch('_', {
+            flatten: true,
+            casing: "snake",
+            context: this.context,
+            include: keys,
+        })
             .then(function (config) { return _this._updateTrieKeys(keys, config); })
             .catch(function (e) {
             console.warn('failed refreshing keys', keys, e);

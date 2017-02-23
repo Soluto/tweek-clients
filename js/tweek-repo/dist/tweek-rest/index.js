@@ -40,6 +40,9 @@ function convertTypingFromJSON(target) {
 }
 var TweekClient = (function () {
     function TweekClient(config) {
+        this.queryParamsEncoder = function (queryParams) { return queryParams
+            .replace(/\$/g, TweekClient.ENCODE_$_CHARACTER)
+            .replace(/\//g, TweekClient.ENCODE_SLASH_CHARACTER); };
         this._contextToQueryParams = function (context) {
             return Object.keys(context).reduce(function (pre, cur) {
                 var identityContext = context[cur];
@@ -49,17 +52,16 @@ var TweekClient = (function () {
         };
         this.config = __assign({ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, config);
     }
-    TweekClient.prototype.fetch = function (keys, _config) {
-        var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping, context = _a.context;
+    TweekClient.prototype.fetch = function (path, _config) {
+        var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping, context = _a.context, include = _a.include;
         var queryParamsObject = this._contextToQueryParams(context);
         if (flatten) {
             queryParamsObject['$flatten'] = true;
         }
-        queryParamsObject['include'] = keys;
+        queryParamsObject['$include'] = include;
         var queryParams = queryString.stringify(queryParamsObject);
-        queryParams = queryParams.replace('$', TweekClient.ENCODE_$_CHARACTER);
-        queryParams = queryParams.replace('/', TweekClient.ENCODE_SLASH_CHARACTER);
-        var url = baseServiceUrl + (!!queryParams ? "?" + queryParams : '');
+        queryParams = this.queryParamsEncoder(queryParams);
+        var url = baseServiceUrl + path + (!!queryParams ? "?" + queryParams : '');
         var result = restGetter(url);
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);

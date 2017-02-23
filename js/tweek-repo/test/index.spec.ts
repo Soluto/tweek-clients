@@ -2,8 +2,8 @@ import 'mocha';
 import chai = require('chai');
 import TweekRepository from '../';
 import { MemoryStore } from '../';
-import { TweekClient, ITweekClient } from '../../tweek-rest';
-import { createTweekClient } from '../../tweek-rest';
+import { } from '../';
+import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from '../../tweek-rest';
 import Optional from '../optional'
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import axios from 'axios';
@@ -226,11 +226,20 @@ describe("tweek repo test", () => {
 
             _tweekRepo = new TweekRepository({ client: clientMock, store });
             await _tweekRepo.init();
+            const expectedContext = { 'prop': 'value' };
+            _tweekRepo.context = expectedContext;
 
             const expectedKeys = ["some_path1/_", "some_path2/key1", "some_path3/key2"];
             await _tweekRepo.prepare("some_path1/_");
             await _tweekRepo.prepare("some_path2/key1");
             await _tweekRepo.prepare("some_path3/key2");
+
+            const expectedFetchConfig: FetchConfig = {
+                flatten: true,
+                casing: "snake",
+                context: <any>expectedContext,
+                include: expectedKeys,
+            };
 
             // Act
             await _tweekRepo.refresh();
@@ -239,7 +248,9 @@ describe("tweek repo test", () => {
             expect(fetchStub).to.have.been.calledOnce;
 
             const fetchParameters = fetchStub.args[0];
-            expect(fetchParameters[0]).to.eql(expectedKeys);
+            const [fetchUrl, fetchConfig] = fetchParameters;
+            expect(fetchUrl).to.eql('_');
+            expect(fetchConfig).to.eql(expectedFetchConfig)
         });
     });
 })
