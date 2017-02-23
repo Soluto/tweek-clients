@@ -46,7 +46,9 @@ var TweekClient = (function () {
         this._contextToQueryParams = function (context) {
             return Object.keys(context).reduce(function (pre, cur) {
                 var identityContext = context[cur];
-                Object.keys(identityContext).forEach(function (x) { return pre[cur + "." + x] = identityContext[x]; });
+                Object.keys(identityContext).forEach(function (x) {
+                    return x === 'id' ? pre["" + cur] = identityContext[x] : pre[cur + "." + x] = identityContext[x];
+                });
                 return pre;
             }, {});
         };
