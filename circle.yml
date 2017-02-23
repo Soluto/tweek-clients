@@ -22,7 +22,7 @@ dependencies:
     - cd js/tweek-repo && yarn
     - cd js/tweek-rest && yarn
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
-    - docker pull tweekci/tweek-management
+    - docker pull tweekci/tweek-management:latest
     - docker pull soluto/tweek-api:latest
     # run tweek management
     - docker run -d --name tweek-management -e GIT_URL=${GIT_URL} -e GIT_USER=${GIT_USER} -e GIT_PASSWORD=${GIT_PASSWORD} -e VALIDATION_URL='localhost:1111/validation' tweekci/tweek-management
