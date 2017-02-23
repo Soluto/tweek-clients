@@ -1,7 +1,7 @@
 "use strict";
 require("mocha");
 var chai_1 = require("chai");
-var trie_1 = require("../trie");
+var trie_1 = require("../../trie");
 var splitJoin = {
     split: function (key) { return key.split(""); },
     join: function (fragment) { return fragment.join(""); }
@@ -57,4 +57,4 @@ describe("read data from trie", function () {
         chai_1.expect(trie.get("hello")).to.eql("world2");
     });
 });
-//# sourceMappingURL=C:/code/tweek-clients/js/tweek-repo/dist/tweek-repo/test/trie.spec.js.map
+//# sourceMappingURL=trie.spec.js.map

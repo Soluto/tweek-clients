@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
-import Trie from '../trie';
+import Trie from '../../trie';
 
 let splitJoin = {
   split(key) { return key.split("") },
@@ -59,7 +59,7 @@ describe("read data from trie", () => {
     let trie = new Trie(splitJoin);
     trie.set("hello", "world");
     expect(trie.get("hello")).to.eql("world");
-    
+
     trie.set("hello", "world2");
     expect(trie.get("hello")).to.eql("world2");
   });

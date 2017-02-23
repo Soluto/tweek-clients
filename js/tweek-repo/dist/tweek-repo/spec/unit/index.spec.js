@@ -37,9 +37,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 require("mocha");
 var chai = require("chai");
-var _1 = require("../");
-var _2 = require("../");
-var tweek_rest_1 = require("../../tweek-rest");
+var _1 = require("../../");
+var _2 = require("../../");
+var tweek_rest_1 = require("../../../tweek-rest");
 var simple_fake_server_1 = require("simple-fake-server");
 var axios_1 = require("axios");
 var sinon = require("sinon");
@@ -69,7 +69,7 @@ describe("tweek repo test", function () {
     ;
     beforeEach(function () {
         simple_fake_server_1.fakeServer.start(1234);
-        simple_fake_server_1.httpFakeCalls.get().to("/configurations/_\\?\\$flatten=true").willReturn({
+        simple_fake_server_1.httpFakeCalls.get().to("/configurations/_/*").willReturn({
             "my_path/string_value": "my-string",
             "my_path/inner_path_1/int_value": "55",
             "my_path/inner_path_1/bool_positive_value": "true",
@@ -79,9 +79,7 @@ describe("tweek repo test", function () {
             "deeply_nested/a/b/c/d/value": "value_5",
             "some_other_path/inner_path_2/third_value": "value_3"
         });
-        _client = tweek_rest_1.createTweekClient("http://localhost:1234/configurations/_", {}, function (url, keys) {
-            return axios_1.default.get(url).then(function (r) { return r.data; });
-        });
+        _client = tweek_rest_1.createTweekClient("http://localhost:1234/configurations/_", {}, function (url) { return axios_1.default.get(url).then(function (r) { return r.data; }); });
     });
     afterEach(function () {
         simple_fake_server_1.fakeServer.stop(1234);
@@ -365,33 +363,53 @@ describe("tweek repo test", function () {
     });
     describe("refresh", function () {
         it("should call client fetch with all current keys", function () { return __awaiter(_this, void 0, void 0, function () {
-            var store, fetchStub, clientMock;
+            var store, fetchStub, clientMock, expectedContext, expectedKeys, expectedFetchConfig, fetchParameters, fetchUrl, fetchConfig;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         store = new _2.MemoryStore();
                         fetchStub = sinon.stub();
-                        fetchStub.onCall(0).returns(Promise.resolve(undefined));
+                        fetchStub.onCall(0).returns(Promise.reject(''));
                         clientMock = {
-                            // fetch<T>(keys: string[], config?: Partial<TweekConfig>): Promise<T>;
                             fetch: fetchStub
                         };
                         _tweekRepo = new _1.default({ client: clientMock, store: store });
                         return [4 /*yield*/, _tweekRepo.init()];
                     case 1:
                         _a.sent();
+                        expectedContext = { 'prop': 'value' };
+                        _tweekRepo.context = expectedContext;
+                        expectedKeys = ["some_path1/_", "some_path2/key1", "some_path3/key2"];
+                        return [4 /*yield*/, _tweekRepo.prepare("some_path1/_")];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, _tweekRepo.prepare("some_path2/key1")];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, _tweekRepo.prepare("some_path3/key2")];
+                    case 4:
+                        _a.sent();
+                        expectedFetchConfig = {
+                            flatten: true,
+                            casing: "snake",
+                            context: expectedContext,
+                            include: expectedKeys,
+                        };
                         // Act
                         return [4 /*yield*/, _tweekRepo.refresh()];
-                    case 2:
+                    case 5:
                         // Act
                         _a.sent();
                         // Assert
                         expect(fetchStub).to.have.been.calledOnce;
-                        console.log(fetchStub.args);
+                        fetchParameters = fetchStub.args[0];
+                        fetchUrl = fetchParameters[0], fetchConfig = fetchParameters[1];
+                        expect(fetchUrl).to.eql('_');
+                        expect(fetchConfig).to.eql(expectedFetchConfig);
                         return [2 /*return*/];
                 }
             });
         }); });
     });
 });
-//# sourceMappingURL=C:/code/tweek-clients/js/tweek-repo/dist/tweek-repo/test/index.spec.js.map
+//# sourceMappingURL=index.spec.js.map

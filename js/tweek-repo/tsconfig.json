@@ -2,8 +2,7 @@
   "compileOnSave": true,
   "exclude": [
         "dist",
-        "node_modules",
-        "**/*.spec.ts"
+        "node_modules"
   ],
   "compilerOptions": {
     "lib": [

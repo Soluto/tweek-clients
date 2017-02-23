@@ -121,7 +121,7 @@ export default class TweekRepository {
 
     refresh() {
         const keysToRefresh = Object.keys(this._cache.list());
-        
+
         return this._refreshKeys(keysToRefresh)
             .then(() => this._store.save(this._cache.list()));
     }
