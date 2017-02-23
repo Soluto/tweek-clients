@@ -101,12 +101,14 @@ export class TweekClient implements ITweekClient {
         .replace(/\$/g, TweekClient.ENCODE_$_CHARACTER)
         .replace(/\//g, TweekClient.ENCODE_SLASH_CHARACTER);
 
-    private _contextToQueryParams = context =>
-        Object.keys(context).reduce((pre, cur) => {
+    private _contextToQueryParams = context => {
+        return Object.keys(context).reduce((pre, cur) => {
             let identityContext = context[cur];
-            Object.keys(identityContext).forEach(x => pre[`${cur}.${x}`] = identityContext[x]);
+            Object.keys(identityContext).forEach(x =>
+                x === 'id' ? pre[`${cur}`] = identityContext[x] : pre[`${cur}.${x}`] = identityContext[x]);
             return pre;
         }, {});
+    }
 }
 
 export function createTweekClient(baseServiceUrl: string,

@@ -56,7 +56,7 @@ describe("tweek rest", () => {
     testsDefenitions.push({
         pathToFetch: '_',
         expectedUrl: `${baseUrl}_`,
-        expectedQueryParams: `?user.gender=male&user.id=userid`,
+        expectedQueryParams: `?user=userid&user.gender=male`,
         config: {
             context: {
                 user: {
