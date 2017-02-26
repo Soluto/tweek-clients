@@ -44,8 +44,10 @@ var simple_fake_server_1 = require("simple-fake-server");
 var axios_1 = require("axios");
 var sinon = require("sinon");
 var sinonChai = require("sinon-chai");
+var chaiAsPromise = require("chai-as-promised");
 chai.use(sinonChai);
-var expect = chai.expect;
+chai.use(chaiAsPromise);
+var expect = chai.expect, assert = chai.assert;
 var scheduler = function (fn) { return fn(); };
 describe("tweek repo test", function () {
     var _client;
@@ -362,6 +364,31 @@ describe("tweek repo test", function () {
         }); });
     });
     describe("refresh", function () {
+        it('should not do fetch request if there are no requested keys', function () { return __awaiter(_this, void 0, void 0, function () {
+            var store, fetchStub, clientMock, refreshPromise;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        store = new _2.MemoryStore();
+                        fetchStub = sinon.stub();
+                        clientMock = {
+                            fetch: fetchStub
+                        };
+                        _tweekRepo = new _1.default({ client: clientMock, store: store });
+                        return [4 /*yield*/, _tweekRepo.init()];
+                    case 1:
+                        _a.sent();
+                        refreshPromise = _tweekRepo.refresh();
+                        return [4 /*yield*/, refreshPromise];
+                    case 2:
+                        _a.sent();
+                        // Assert
+                        expect(fetchStub).to.have.not.been.called;
+                        expect(refreshPromise).to.eventually.equal(null, 'should not return any keys');
+                        return [2 /*return*/];
+                }
+            });
+        }); });
         it("should call client fetch with all current keys", function () { return __awaiter(_this, void 0, void 0, function () {
             var store, fetchStub, clientMock, expectedContext, expectedKeys, expectedFetchConfig, fetchParameters, fetchUrl, fetchConfig;
             return __generator(this, function (_a) {

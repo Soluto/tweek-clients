@@ -1,5 +1,5 @@
 import Trie from './trie';
-import { TweekClient, ITweekClient, Context } from '../tweek-rest';
+import { TweekClient, ITweekClient, Context, FetchConfig } from '../tweek-rest';
 import { partitionByIndex, snakeToCamelCase, distinct } from './utils';
 import Optional from "./optional";
 
@@ -121,19 +121,22 @@ export default class TweekRepository {
 
     refresh() {
         const keysToRefresh = Object.keys(this._cache.list());
+        if (!keysToRefresh || keysToRefresh.length < 1) return Promise.resolve();
 
         return this._refreshKeys(keysToRefresh)
             .then(() => this._store.save(this._cache.list()));
     }
 
     private _refreshKeys(keys: string[]) {
+        const fetchConfig: FetchConfig = {
+            flatten: true,
+            casing: "snake",
+            context: this.context,
+            include: keys,
+        };
+
         return this._client
-            .fetch<any>('_', {
-                flatten: true,
-                casing: "snake",
-                context: this.context,
-                include: keys,
-            })
+            .fetch<any>('_', fetchConfig)
             .then(config => this._updateTrieKeys(keys, config))
             .catch(e => {
                 console.warn('failed refreshing keys', keys, e);

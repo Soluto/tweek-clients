@@ -9,8 +9,10 @@ import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-se
 import axios from 'axios';
 import sinon = require('sinon');
 import sinonChai = require('sinon-chai');
+import chaiAsPromise = require('chai-as-promised');
 chai.use(sinonChai);
-const expect = chai.expect;
+chai.use(chaiAsPromise);
+const { expect, assert } = chai;
 
 const scheduler = (fn: () => void) => fn();
 
@@ -214,6 +216,27 @@ describe("tweek repo test", () => {
     });
 
     describe("refresh", () => {
+        it('should not do fetch request if there are no requested keys', async () => {
+            // Arrange
+            let store = new MemoryStore();
+
+            const fetchStub = sinon.stub();
+            const clientMock: ITweekClient = {
+                fetch: <any>fetchStub
+            };
+
+            _tweekRepo = new TweekRepository({ client: clientMock, store });
+            await _tweekRepo.init();
+
+            // Act
+            const refreshPromise = _tweekRepo.refresh();
+            await refreshPromise;
+
+            // Assert
+            expect(fetchStub).to.have.not.been.called;
+            expect(refreshPromise).to.eventually.equal(null, 'should not return any keys');
+        });
+
         it("should call client fetch with all current keys", async () => {
             // Arrange
             let store = new MemoryStore();

@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@types/chai-as-promised@^0.0.29":
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/@types/chai-as-promised/-/chai-as-promised-0.0.29.tgz#43d52892aa998e185a3de3e2477edb8573be1d77"
+  dependencies:
+    "@types/chai" "*"
+    "@types/promises-a-plus" "*"
+
 "@types/chai@*", "@types/chai@^3.4.34":
   version "3.4.35"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-3.4.35.tgz#e8d65f83492d2944f816fc620741821c28a8c900"
@@ -13,6 +20,10 @@
 "@types/node@^6.0.58":
   version "6.0.63"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.63.tgz#e08acbbd5946e0e95990b1c76f3ce5b7882a48eb"
+
+"@types/promises-a-plus@*":
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/@types/promises-a-plus/-/promises-a-plus-0.0.27.tgz#c64651134614c84b8f5d7114ce8901d36a609780"
 
 "@types/sinon-chai@^2.7.27":
   version "2.7.27"
@@ -77,6 +88,12 @@ bytes@2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-2.4.0.tgz#7d97196f9d5baf7f6935e25985549edd2a6c2339"
 
+chai-as-promised@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/chai-as-promised/-/chai-as-promised-6.0.0.tgz#1a02a433a6f24dafac63b9c96fa1684db1aa8da6"
+  dependencies:
+    check-error "^1.0.2"
+
 chai@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/chai/-/chai-3.5.0.tgz#4d02637b067fe958bdbfdd3a40ec56fef7373247"
@@ -94,6 +111,10 @@ chalk@^1.1.1:
     has-ansi "^2.0.0"
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
+
+check-error@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/check-error/-/check-error-1.0.2.tgz#574d312edd88bb5dd8912e9286dd6c0aed4aac82"
 
 co-body@*:
   version "4.2.0"

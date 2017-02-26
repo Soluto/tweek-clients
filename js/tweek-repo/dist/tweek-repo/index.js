@@ -81,18 +81,21 @@ var TweekRepository = (function () {
     TweekRepository.prototype.refresh = function () {
         var _this = this;
         var keysToRefresh = Object.keys(this._cache.list());
+        if (!keysToRefresh || keysToRefresh.length < 1)
+            return Promise.resolve();
         return this._refreshKeys(keysToRefresh)
             .then(function () { return _this._store.save(_this._cache.list()); });
     };
     TweekRepository.prototype._refreshKeys = function (keys) {
         var _this = this;
-        return this._client
-            .fetch('_', {
+        var fetchConfig = {
             flatten: true,
             casing: "snake",
             context: this.context,
             include: keys,
-        })
+        };
+        return this._client
+            .fetch('_', fetchConfig)
             .then(function (config) { return _this._updateTrieKeys(keys, config); })
             .catch(function (e) {
             console.warn('failed refreshing keys', keys, e);

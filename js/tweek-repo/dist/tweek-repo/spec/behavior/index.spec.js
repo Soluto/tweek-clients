@@ -53,9 +53,10 @@ describe('tweek repo behavior test', function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _tweekClient = tweek_rest_1.createTweekClient(TWEEK_LOCAL_API + '/configurations/', context, function (url) { return fetch(url).then(function (r) { return r.json(); }); });
+                        _tweekClient = tweek_rest_1.createTweekClient(TWEEK_LOCAL_API + '/configurations/', {}, function (url) { return fetch(url).then(function (r) { return r.json(); }); });
                         store = new _2.MemoryStore();
                         _tweekRepo = new _1.default({ client: _tweekClient, store: store });
+                        _tweekRepo.context = context;
                         return [4 /*yield*/, _tweekRepo.init()];
                     case 1:
                         _a.sent();
@@ -68,22 +69,71 @@ describe('tweek repo behavior test', function () {
     var testDefenitions = [];
     testDefenitions.push({
         context: {},
-        keysToTest: [
-            { keyName: '@tweek_clients_tests/test_category/test_key1', expectedValue: 'def value' },
-            { keyName: '@tweek_clients_tests/test_category/test_key2', expectedValue: false },
-            { keyName: '@tweek_clients_tests/test_category2/user_fruit', expectedValue: 'apple' },
+        pathsToPrepare: [
+            '@tweek_clients_tests/test_category/test_key1'
+        ],
+        expectedKeys: [
+            { keyName: '@tweek_clients_tests/test_category/test_key1', value: 'def value' },
+        ]
+    });
+    testDefenitions.push({
+        context: {},
+        pathsToPrepare: [
+            '@tweek_clients_tests/test_category/test_key1',
+            '@tweek_clients_tests/test_category/test_key2',
+            '@tweek_clients_tests/test_category2/user_fruit'
+        ],
+        expectedKeys: [
+            { keyName: '@tweek_clients_tests/test_category/test_key1', value: 'def value' },
+            { keyName: '@tweek_clients_tests/test_category/test_key2', value: false },
+            { keyName: '@tweek_clients_tests/test_category2/user_fruit', value: 'apple' },
         ]
     });
     testDefenitions.push({
         context: {
-            'device.DeviceOsType': 'Ios',
-            'device.PartnerBrandId': 'testPartner',
-            'device.DeviceType': 'Desktop'
+            device: {
+                'DeviceOsType': 'Ios',
+                'PartnerBrandId': 'testPartner',
+                'DeviceType': 'Desktop'
+            }
         },
-        keysToTest: [
-            { keyName: '@tweek_clients_tests/test_category/test_key1', expectedValue: 'ios value' },
-            { keyName: '@tweek_clients_tests/test_category/test_key2', expectedValue: true },
-            { keyName: '@tweek_clients_tests/test_category2/user_fruit', expectedValue: 'orange' },
+        pathsToPrepare: [
+            '@tweek_clients_tests/test_category/test_key1',
+            '@tweek_clients_tests/test_category/test_key2',
+            '@tweek_clients_tests/test_category2/user_fruit'
+        ],
+        expectedKeys: [
+            { keyName: '@tweek_clients_tests/test_category/test_key1', value: 'ios value' },
+            { keyName: '@tweek_clients_tests/test_category/test_key2', value: true },
+            { keyName: '@tweek_clients_tests/test_category2/user_fruit', value: 'orange' },
+        ]
+    });
+    testDefenitions.push({
+        context: {
+            device: {
+                'DeviceOsType': 'Ios',
+                'PartnerBrandId': 'testPartner',
+                'DeviceType': 'Desktop'
+            }
+        },
+        pathsToPrepare: ['@tweek_clients_tests/test_category/_', '@tweek_clients_tests/test_category2/_'],
+        expectedKeys: [
+            { keyName: '@tweek_clients_tests/test_category/test_key1', value: 'ios value' },
+            { keyName: '@tweek_clients_tests/test_category/test_key2', value: true },
+            { keyName: '@tweek_clients_tests/test_category2/user_fruit', value: 'orange' },
+        ]
+    });
+    testDefenitions.push({
+        context: {
+            device: {
+                'DeviceType': 'Desktop'
+            }
+        },
+        pathsToPrepare: ['@tweek_clients_tests/_'],
+        expectedKeys: [
+            { keyName: '@tweek_clients_tests/test_category/test_key1', value: 'def value' },
+            { keyName: '@tweek_clients_tests/test_category/test_key2', value: false },
+            { keyName: '@tweek_clients_tests/test_category2/user_fruit', value: 'orange' }
         ]
     });
     testDefenitions.forEach(function (test) {
@@ -97,27 +147,26 @@ describe('tweek repo behavior test', function () {
                     case 1:
                         // Arrange
                         _a.sent();
-                        test.keysToTest.forEach(function (x) { return _tweekRepo.prepare(x.keyName); });
+                        test.pathsToPrepare.forEach(function (x) { return _tweekRepo.prepare(x); });
                         getKeysValuesPromises = [];
                         // Act
-                        console.log('refreshing repo');
                         return [4 /*yield*/, _tweekRepo.refresh()];
                     case 2:
+                        // Act
                         _a.sent();
-                        console.log('done refreshing repo');
                         // Assert
-                        test.keysToTest.forEach(function (x) {
+                        test.expectedKeys.forEach(function (x) {
                             getKeysValuesPromises.push(_tweekRepo.get(x.keyName));
                         });
-                        Promise.all(getKeysValuesPromises).then(function (values) {
-                            return values.reduce(function (pre, cur, index) { return pre.push({
-                                actual: cur,
-                                expected: test.keysToTest[index].expectedValue
-                            }); }, []);
-                        })
-                            .then(function (keysValues) {
-                            return keysValues.forEach(function (x) { return expect(x.actual).to.eql(x.expected, 'should got the currect key value'); });
-                        });
+                        return [4 /*yield*/, Promise.all(getKeysValuesPromises)
+                                .then(function (values) {
+                                values.forEach(function (x, index) {
+                                    return expect(x.value).to.eql(test.expectedKeys[index].value, 'should have correct value');
+                                });
+                            })
+                                .catch(function () { throw 'failed getting keys'; })];
+                    case 3:
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });

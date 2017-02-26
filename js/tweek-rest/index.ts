@@ -72,7 +72,6 @@ export class TweekClient implements ITweekClient {
     fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
         const { casing, flatten, baseServiceUrl, restGetter, convertTyping, context, include } =
             <TweekInitConfig & FetchConfig>{ ...this.config, ..._config };
-
         let queryParamsObject = this._contextToQueryParams(context);
 
         if (flatten) {
