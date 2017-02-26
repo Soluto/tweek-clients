@@ -24,9 +24,10 @@ dependencies:
       fi
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
+    - docker images
     - mkdir -p ~/docker
     - docker save soluto/tweek-api:latest > ~/docker/tweek-images.tar
-    - docker save soluto/tweek-management:latest > ~/docker/tweek-images.tar
+    - docker save tweekci/tweek-management:latest > ~/docker/tweek-images.tar
     # run tweek management
     - docker run -d --name tweek-management -e GIT_URL=${GIT_URL} -e GIT_USER=${GIT_USER} -e GIT_PASSWORD=${GIT_PASSWORD} -e VALIDATION_URL='localhost:1111/validation' tweekci/tweek-management
     # run tweek api    
