@@ -18,11 +18,11 @@ dependencies:
     - |
       if [[ -e ~/docker/tweek-images.tar ]]; then
         docker load -i ~/docker/tweek-images.tar
-        echo "found cached image"
+        echo "found cached images"
+        docker images
       else
         echo "cached image wasnt found"
       fi
-    - docker images
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
     - mkdir -p ~/docker
@@ -38,8 +38,6 @@ dependencies:
     - cd js/tweek-rest && yarn   
 test:
   override:
-    - docker ps
-    - cd js/tweek-rest && npm run test
     - wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused 'localhost:1111/status'
-    - curl --retry-delay 5 --retry 20 -v http://localhost:1111/status
-    - cd js/tweek-repo && npm run test
+    - cd js/tweek-rest && yarn test
+    - cd js/tweek-repo && yarn test
