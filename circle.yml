@@ -28,5 +28,5 @@ dependencies:
 test:
   override:
     - cd js/tweek-rest && npm run test
-    - curl http://localhost:1111/status
+    - curl --retry-delay 5 --retry 20 -v http://localhost:1111/status
     - cd js/tweek-repo && npm run test
