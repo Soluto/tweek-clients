@@ -11,23 +11,32 @@ dependencies:
   cache_directories:
     - ~/.yarn
     - ~/.yarn-cache
+    - ~/docker
   pre:
-    - yarn cache dir
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
+    - |
+      if [[ -e ~/docker/tweek-images.tar ]]; then
+        docker load -i ~/docker/tweek-images.tar
+        echo "found cached image"
+      else
+        echo "cached image wasnt found"
+      fi
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
+    - mkdir -p ~/docker
+    - docker save soluto/tweek-api:latest > ~/docker/tweek-images.tar
+    - docker save soluto/tweek-management:latest > ~/docker/tweek-images.tar
     # run tweek management
     - docker run -d --name tweek-management -e GIT_URL=${GIT_URL} -e GIT_USER=${GIT_USER} -e GIT_PASSWORD=${GIT_PASSWORD} -e VALIDATION_URL='localhost:1111/validation' tweekci/tweek-management
     # run tweek api    
     - docker run -d -p 1111:80 --link tweek-management --name tweek-api -e Couchbase.Url=${COUCHBASE_URL} -e Couchbase.BucketName=${COUCHBASE_BUCKET_NAME} -e Couchbase.Password=${COUCHBASE_PASSWORD} -e RulesBlob.Url='http://tweek-management:3000/ruleset/latest' soluto/tweek-api 
   override:
-    - yarn install
+    - yarn
     - cd js/tweek-repo && yarn
     - cd js/tweek-rest && yarn   
 test:
   override:
-    - docker images
     - docker ps
     - cd js/tweek-rest && npm run test
     - curl --retry-delay 5 --retry 20 -v http://localhost:1111/status
