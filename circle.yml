@@ -27,6 +27,8 @@ dependencies:
     - cd js/tweek-rest && yarn   
 test:
   override:
+    - docker images
+    - docker ps
     - cd js/tweek-rest && npm run test
     - curl --retry-delay 5 --retry 20 -v http://localhost:1111/status
     - cd js/tweek-repo && npm run test
