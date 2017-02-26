@@ -22,9 +22,9 @@ dependencies:
       else
         echo "cached image wasnt found"
       fi
+    - docker images
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
-    - docker images
     - mkdir -p ~/docker
     - docker save soluto/tweek-api:latest > ~/docker/tweek-images.tar
     - docker save tweekci/tweek-management:latest > ~/docker/tweek-images.tar
