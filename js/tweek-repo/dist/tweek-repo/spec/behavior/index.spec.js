@@ -42,7 +42,7 @@ var expect = chai.expect;
 var _1 = require("../../");
 var _2 = require("../../");
 var tweek_rest_1 = require("../../../tweek-rest");
-var TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://localhost:1111');
+var TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API');
 describe('tweek repo behavior test', function () {
     var _tweekRepo;
     var _tweekClient;

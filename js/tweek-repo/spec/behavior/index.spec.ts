@@ -6,7 +6,7 @@ import TweekRepository from '../../';
 import { MemoryStore } from '../../';
 import { createTweekClient, TweekClient, ITweekClient, Context } from '../../../tweek-rest';
 
-const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API');
+const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://127.0.0.1:1111');
 
 describe('tweek repo behavior test', () => {
   let _tweekRepo: TweekRepository;
