@@ -17,7 +17,7 @@ dependencies:
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
-     # run tweek management
+    # run tweek management
     - docker run -d --name tweek-management -e GIT_URL=${GIT_URL} -e GIT_USER=${GIT_USER} -e GIT_PASSWORD=${GIT_PASSWORD} -e VALIDATION_URL='localhost:1111/validation' tweekci/tweek-management
     # run tweek api    
     - docker run -d -p 1111:80 --link tweek-management --name tweek-api -e Couchbase.Url=${COUCHBASE_URL} -e Couchbase.BucketName=${COUCHBASE_BUCKET_NAME} -e Couchbase.Password=${COUCHBASE_PASSWORD} -e RulesBlob.Url='http://tweek-management:3000/ruleset/latest' soluto/tweek-api 
@@ -27,5 +27,6 @@ dependencies:
     - cd js/tweek-rest && yarn   
 test:
   override:
-    - cd js/tweek-repo && npm run test
     - cd js/tweek-rest && npm run test
+    - curl http://localhost:1111/status
+    - cd js/tweek-repo && npm run test
