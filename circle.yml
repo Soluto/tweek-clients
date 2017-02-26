@@ -40,6 +40,6 @@ test:
   override:
     - docker ps
     - cd js/tweek-rest && npm run test
-    - wget --tries 10 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused 'localhost:1111/status'
+    - wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused 'localhost:1111/status'
     - curl --retry-delay 5 --retry 20 -v http://localhost:1111/status
     - cd js/tweek-repo && npm run test
