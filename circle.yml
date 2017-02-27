@@ -13,6 +13,10 @@ dependencies:
     - ~/.yarn-cache
     - ~/docker
   pre:
+    - cd js/tweek-rest && $tweekrestversion=$(node -p -e "require('./package.json').version")
+    - echo $tweekrestversion
+    - cd js/tweek-repo && $tweekrepoversion=$(node -p -e "require('./package.json').version")
+    - echo $tweekrepoversion
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
@@ -47,8 +51,4 @@ deployment:
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - git config --global user.name "Circleci"
       - git config --global user.email it@soluto.com
-      - cd js/tweek-rest && $tweek-rest-version=$(node -p -e "require('./package.json').version")
-      - echo $tweek-rest-version
-      - cd js/tweek-repo && $tweek-repo-version=$(node -p -e "require('./package.json').version")
-      - echo $tweek-repo-version
       #- npm --version tweek-rest >> $rest-version
