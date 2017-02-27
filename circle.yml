@@ -18,6 +18,7 @@ dependencies:
   pre:
     - $tweekrepoversion
     - ${tweekrestversion}
+    - echo GIT_USER && echo $GIT_USER && echo ${GIT_USER}
     - |
       if( [[ $tweekrestversion !== $TWEEK_REST_CURRENT_VERSION ]]; then
         echo "pita"
