@@ -13,7 +13,7 @@ dependencies:
     - ~/.yarn-cache
     - ~/docker
   pre:
-    - cd js/tweek-rest && $tweekrestversion=$(node -p -e "require('./package.json').version")
+    - tweekrestversion=$(node -p -e "require('./js/tweek-rest/package.json').version")
     - echo $tweekrestversion
     - cd js/tweek-repo && $tweekrepoversion=$(node -p -e "require('./package.json').version")
     - echo $tweekrepoversion
