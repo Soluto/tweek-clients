@@ -18,6 +18,12 @@ dependencies:
   pre:
     - $tweekrepoversion
     - ${tweekrestversion}
+    - |
+      if( [[ $tweekrestversion !== $TWEEK_REST_CURRENT_VERSION ]]; then
+        echo "pita"
+      else
+        echo "2"
+      fi
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
