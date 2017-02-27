@@ -187,11 +187,11 @@ export default class TweekRepository {
             .filter(([key, valueNode]) => valueNode.state === "cached" && !valueNode.isScan)
             .reduce((acc, [key, valueNode]: [string, CachedKey<any>]) => {
                 let [fragments, [name]] = partitionByIndex(key.split("/").map(snakeToCamelCase), -1);
-                let node = fragments.reduce((node, fragment) => {
-                    if (!acc[fragment]) {
-                        acc[fragment] = {};
+                let node = fragments.reduce((x, fragment) => {
+                    if (!x[fragment]) {
+                        x[fragment] = {};
                     }
-                    return acc[fragment];
+                    return x[fragment];
                 }, acc);
                 node[name] = valueNode.value;
                 return acc;

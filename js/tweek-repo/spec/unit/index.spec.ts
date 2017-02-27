@@ -35,7 +35,6 @@ describe("tweek repo test", () => {
             "my_path/inner_path_1/int_value": "55",
             "my_path/inner_path_1/bool_positive_value": "true",
             "my_path/inner_path_2/bool_negative_value": "false",
-
             "some_path/inner_path_1/first_value": "value_1",
             "some_path/inner_path_1/second_value": "value_2",
             "deeply_nested/a/b/c/d/value": "value_5",
@@ -75,6 +74,27 @@ describe("tweek repo test", () => {
             expect(key4.value).to.eq(false);
         });
 
+        it("should get keys node", async () => {
+            // Arrange
+            await initRepository();
+
+            await _tweekRepo.prepare("some_path/_");
+            await _tweekRepo.refresh();
+
+            const expectedKeysNode = {
+                innerPath1: {
+                    firstValue: 'value_1',
+                    secondValue: 'value_2'
+                }
+            };
+
+            // Act
+            let keysNode = await _tweekRepo.get("some_path/_");
+
+            // Assert
+            expect(keysNode).to.deep.eq(expectedKeysNode);
+        });
+
         it("should get scan result", async () => {
             // Arrange
             await initRepository();
@@ -96,10 +116,10 @@ describe("tweek repo test", () => {
             await _tweekRepo.refresh();
 
             // Act
-            let config = await _tweekRepo.get("deeply_nested/a/b/c/_");
+            let config = await _tweekRepo.get("deeply_nested/a/b/_");
 
             // Assert
-            expect(config.d.value).to.eq("value_5");
+            expect(config.c.d.value).to.eq("value_5");
         });
 
         it("should get root scan", async () => {

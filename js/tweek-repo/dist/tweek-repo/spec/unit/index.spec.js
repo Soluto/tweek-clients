@@ -133,6 +133,37 @@ describe("tweek repo test", function () {
                 }
             });
         }); });
+        it("should get keys node", function () { return __awaiter(_this, void 0, void 0, function () {
+            var expectedKeysNode, keysNode;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    // Arrange
+                    return [4 /*yield*/, initRepository()];
+                    case 1:
+                        // Arrange
+                        _a.sent();
+                        return [4 /*yield*/, _tweekRepo.prepare("some_path/_")];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, _tweekRepo.refresh()];
+                    case 3:
+                        _a.sent();
+                        expectedKeysNode = {
+                            innerPath1: {
+                                firstValue: 'value_1',
+                                secondValue: 'value_2'
+                            }
+                        };
+                        return [4 /*yield*/, _tweekRepo.get("some_path/_")];
+                    case 4:
+                        keysNode = _a.sent();
+                        // Assert
+                        expect(keysNode).to.deep.eq(expectedKeysNode);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
         it("should get scan result", function () { return __awaiter(_this, void 0, void 0, function () {
             var config;
             return __generator(this, function (_a) {
@@ -175,11 +206,11 @@ describe("tweek repo test", function () {
                         return [4 /*yield*/, _tweekRepo.refresh()];
                     case 3:
                         _a.sent();
-                        return [4 /*yield*/, _tweekRepo.get("deeply_nested/a/b/c/_")];
+                        return [4 /*yield*/, _tweekRepo.get("deeply_nested/a/b/_")];
                     case 4:
                         config = _a.sent();
                         // Assert
-                        expect(config.d.value).to.eq("value_5");
+                        expect(config.c.d.value).to.eq("value_5");
                         return [2 /*return*/];
                 }
             });

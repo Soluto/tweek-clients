@@ -148,11 +148,11 @@ var TweekRepository = (function () {
             .reduce(function (acc, _a) {
             var key = _a[0], valueNode = _a[1];
             var _b = utils_1.partitionByIndex(key.split("/").map(utils_1.snakeToCamelCase), -1), fragments = _b[0], name = _b[1][0];
-            var node = fragments.reduce(function (node, fragment) {
-                if (!acc[fragment]) {
-                    acc[fragment] = {};
+            var node = fragments.reduce(function (x, fragment) {
+                if (!x[fragment]) {
+                    x[fragment] = {};
                 }
-                return acc[fragment];
+                return x[fragment];
             }, acc);
             node[name] = valueNode.value;
             return acc;
