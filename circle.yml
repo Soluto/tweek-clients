@@ -8,7 +8,7 @@ machine:
     x: 5
     tweekrestversion: $(node -p -e "require('./js/tweek-rest/package.json').version")
     tweekrepoversion: $(node -p -e "require('./js/tweek-repo/package.json').version")
-    TWEEK_REST_CURRENT_VERSION: $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
+    TWEEK_REST_CURRENT_VERSION: $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-rest version)
   node: 
     version: 6.9.1
 dependencies:
@@ -17,11 +17,11 @@ dependencies:
     #- ~/.yarn-cache
     #- ~/docker
   pre:
-    - echo $(node -p -e "require('./js/tweek-rest/package.json').version")
-    - echo $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
-    - echo $tweekrepoversion && echo $TWEEK_REST_CURRENT_VERSION
+    #- echo $(node -p -e "require('./js/tweek-rest/package.json').version")
+    #- echo $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
+    - echo "checking $(node -p -e 'require('./js/tweek-rest/package.json').version') $TWEEK_REST_CURRENT_VERSION"
     - |
-      if [[ $tweekrestversion != $TWEEK_REST_CURRENT_VERSION ]]; then
+      if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $TWEEK_REST_CURRENT_VERSION ]]; then
         echo "pita"
       else
         echo "2"
