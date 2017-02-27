@@ -20,7 +20,7 @@ dependencies:
     - ${tweekrestversion}
     - echo GIT_USER && echo $GIT_USER && echo ${GIT_USER}
     - |
-      if( [[ $tweekrestversion !== $TWEEK_REST_CURRENT_VERSION ]]; then
+      if( [[ $tweekrestversion != $TWEEK_REST_CURRENT_VERSION ]]; then
         echo "pita"
       else
         echo "2"
