@@ -7,6 +7,7 @@ machine:
     PATH: "${PATH}:${HOME}/.yarn/bin:/usr/sbin:/sbin"
     tweekrestversion: $(node -p -e "require('./js/tweek-rest/package.json').version")
     tweekrepoversion: $(node -p -e "require('./js/tweek-repo/package.json').version")
+    #TWEEK_REST_CURRENT_VERSION: $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
   node: 
     version: 6.9.1
 dependencies:
@@ -15,8 +16,8 @@ dependencies:
     #- ~/.yarn-cache
     #- ~/docker
   pre:
-    - echo $tweekrestversion
     - echo $tweekrepoversion
+    - echo ${tweekrestversion}
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
