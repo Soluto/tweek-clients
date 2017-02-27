@@ -17,9 +17,9 @@ dependencies:
     #- ~/.yarn-cache
     #- ~/docker
   pre:
-    - echo $tweekrepoversion && echo x
+    - echo $tweekrepoversion && echo $x
     - |
-      if( [[ $tweekrestversion != $TWEEK_REST_CURRENT_VERSION ]]; then
+      if [[ $tweekrestversion != $TWEEK_REST_CURRENT_VERSION ]]; then
         echo "pita"
       else
         echo "2"
