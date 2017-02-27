@@ -48,5 +48,8 @@ deployment:
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - git config --global user.name "Circleci"
       - git config --global user.email it@soluto.com
-      - cd js/tweek-rest && npm version patch && git add --all && git commit -m "bump version" && git push
-      - cd js/tweek-repo && npm version patch && git add --all && git commit -m "bump version" && git push
+      - cd js/tweek-rest && $tweek-rest-version=$(node -p -e "require('./package.json').version")
+      - echo $tweek-rest-version
+      - cd js/tweek-repo && $tweek-repo-version=$(node -p -e "require('./package.json').version")
+      - echo $tweek-repo-version
+      #- npm --version tweek-rest >> $rest-version
