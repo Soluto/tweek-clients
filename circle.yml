@@ -33,7 +33,6 @@ dependencies:
     - docker save soluto/tweek-api:latest > ~/docker/tweek-images.tar
     - docker save tweekci/tweek-management:latest > ~/docker/tweek-images.tar
   override:
-    - yarn
     - cd js/tweek-repo && yarn
     - cd js/tweek-rest && yarn   
 test:
