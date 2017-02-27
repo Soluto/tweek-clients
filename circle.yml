@@ -5,29 +5,17 @@ machine:
     NODE_ENV: development
     YARN_VERSION: 0.17.8
     PATH: "${PATH}:${HOME}/.yarn/bin:/usr/sbin:/sbin"
-    x: 5
-    tweekrestversion: $(node -p -e "require('./js/tweek-rest/package.json').version")
-    tweekrepoversion: $(node -p -e "require('./js/tweek-repo/package.json').version")
-    TWEEK_REST_CURRENT_VERSION: $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-rest version)
+    #tweekrestversion: $(node -p -e "require('./js/tweek-rest/package.json').version")
+    #tweekrepoversion: $(node -p -e "require('./js/tweek-repo/package.json').version")
+    #TWEEK_REST_CURRENT_VERSION: $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-rest version)
   node: 
     version: 6.9.1
 dependencies:
   cache_directories:
-    #- ~/.yarn
-    #- ~/.yarn-cache
-    #- ~/docker
+    - ~/.yarn
+    - ~/.yarn-cache
+    - ~/docker
   pre:
-    - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-    - echo $(node -p -e "require('./js/tweek-rest/package.json').version")
-    - echo $(npm show @npmsoluto/tweek-repo version)
-    - |
-      if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $(npm show @npmsoluto/tweek-repo version) ]]; then
-        echo "publish"
-      else
-        echo "same version"
-      fi
-    - $x = $(node -p -e "require('./js/tweek-rest/package.json').version")
-    - echo $x
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
@@ -60,6 +48,18 @@ deployment:
     branch: master
     commands:
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-      - git config --global user.name "Circleci"
-      - git config --global user.email it@soluto.com
-      #- npm --version tweek-rest >> $rest-version
+      - |
+        if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $(npm show @npmsoluto/tweek-rest version) ]]; then
+          echo "publish tweek-rest"
+          npm publish
+        fi
+      - |
+      if [[ $(node -p -e "require('./js/tweek-repo/package.json').version") != $(npm show @npmsoluto/tweek-repo version) ]]; then
+        echo "publish tweek-repo"
+        npm publish
+      fi
+    - |
+      if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show @npmsoluto/react-tweek version) ]]; then
+        echo "publish react-tweek"
+        npm publish
+      fi
