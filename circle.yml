@@ -17,8 +17,8 @@ dependencies:
     #- ~/.yarn-cache
     #- ~/docker
   pre:
-    - $(node -p -e "require('./js/tweek-rest/package.json').version")
-    - $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
+    - echo $(node -p -e "require('./js/tweek-rest/package.json').version")
+    - echo $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
     - echo $tweekrepoversion && echo $TWEEK_REST_CURRENT_VERSION
     - |
       if [[ $tweekrestversion != $TWEEK_REST_CURRENT_VERSION ]]; then
