@@ -17,14 +17,15 @@ dependencies:
     #- ~/.yarn-cache
     #- ~/docker
   pre:
-    #- echo $(node -p -e "require('./js/tweek-rest/package.json').version")
+    - echo $(node -p -e "require('./js/tweek-rest/package.json').version")
+    - echo $TWEEK_REST_CURRENT_VERSION
     #- echo $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
-    - echo "checking $(node -p -e 'require('./js/tweek-rest/package.json').version') $TWEEK_REST_CURRENT_VERSION"
+    #- echo "checking $(node -p -e 'require('./js/tweek-rest/package.json').version') $TWEEK_REST_CURRENT_VERSION"
     - |
       if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $TWEEK_REST_CURRENT_VERSION ]]; then
-        echo "pita"
+        echo "publish"
       else
-        echo "2"
+        echo "same version"
       fi
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
