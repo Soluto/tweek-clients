@@ -41,9 +41,12 @@ test:
     - wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused 'localhost:1111/status'
     - cd js/tweek-rest && yarn test
     - cd js/tweek-repo && yarn test
-#deployment:
-  #npm: 
-    #branch: master
-    #commands:
-      #- npm login npmsoluto ..
-      #- 
+deployment:
+  npm: 
+    branch: master
+    commands:
+      - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - npm version patch
+      - git add --all
+      - git commit -m "bump version"
+      - git push
