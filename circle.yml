@@ -25,13 +25,13 @@ dependencies:
       fi
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
-    - mkdir -p ~/docker
-    - docker save soluto/tweek-api:latest > ~/docker/tweek-images.tar
-    - docker save tweekci/tweek-management:latest > ~/docker/tweek-images.tar
     # run tweek management
     - docker run -d --name tweek-management -e GIT_URL=${GIT_URL} -e GIT_USER=${GIT_USER} -e GIT_PASSWORD=${GIT_PASSWORD} -e VALIDATION_URL='localhost:1111/validation' tweekci/tweek-management
     # run tweek api    
     - docker run -d -p 1111:80 --link tweek-management --name tweek-api -e Couchbase.Url=${COUCHBASE_URL} -e Couchbase.BucketName=${COUCHBASE_BUCKET_NAME} -e Couchbase.Password=${COUCHBASE_PASSWORD} -e RulesBlob.Url='http://tweek-management:3000/ruleset/latest' soluto/tweek-api 
+    - mkdir -p ~/docker
+    - docker save soluto/tweek-api:latest > ~/docker/tweek-images.tar
+    - docker save tweekci/tweek-management:latest > ~/docker/tweek-images.tar
   override:
     - yarn
     - cd js/tweek-repo && yarn
