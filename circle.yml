@@ -5,6 +5,7 @@ machine:
     NODE_ENV: development
     YARN_VERSION: 0.17.8
     PATH: "${PATH}:${HOME}/.yarn/bin:/usr/sbin:/sbin"
+    x: 5
     tweekrestversion: $(node -p -e "require('./js/tweek-rest/package.json').version")
     tweekrepoversion: $(node -p -e "require('./js/tweek-repo/package.json').version")
     TWEEK_REST_CURRENT_VERSION: $(echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc && npm show @npmsoluto/tweek-repo version)
@@ -16,9 +17,7 @@ dependencies:
     #- ~/.yarn-cache
     #- ~/docker
   pre:
-    - $tweekrepoversion
-    - ${tweekrestversion}
-    - echo GIT_USER && echo $GIT_USER && echo ${GIT_USER}
+    - echo $tweekrepoversion && echo x
     - |
       if( [[ $tweekrestversion != $TWEEK_REST_CURRENT_VERSION ]]; then
         echo "pita"
