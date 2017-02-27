@@ -14,9 +14,9 @@ dependencies:
     - ~/docker
   pre:
     - tweekrestversion=$(node -p -e "require('./js/tweek-rest/package.json').version")
-    - echo $tweekrestversion
-    - cd js/tweek-repo && $tweekrepoversion=$(node -p -e "require('./package.json').version")
-    - echo $tweekrepoversion
+    - echo tweekrestversion
+    - tweekrepoversion=$(node -p -e "require('./js/tweek-repo/package.json').version")
+    - echo ${tweekrepoversion}
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
