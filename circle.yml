@@ -46,7 +46,5 @@ deployment:
     branch: master
     commands:
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-      - npm version patch
-      - git add --all
-      - git commit -m "bump version"
-      - git push
+      - cd js/tweek-rest && npm version patch && git add --all && git commit -m "bump version" && git push
+      - cd js/tweek-repo && npm version patch && git add --all && git commit -m "bump version" && git push
