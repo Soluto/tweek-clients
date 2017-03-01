@@ -18,10 +18,9 @@ describe('tweek repo behavior test', () => {
       (url: string) => <any>fetch(url).then(r => r.json()));
 
     const store = new MemoryStore();
-    _tweekRepo = new TweekRepository({ client: _tweekClient, store });
+    _tweekRepo = new TweekRepository({ client: _tweekClient });
     _tweekRepo.context = context
-
-    await _tweekRepo.init();
+    await _tweekRepo.useStore(store);
   };
 
   const testDefenitions: {

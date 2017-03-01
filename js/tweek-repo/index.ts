@@ -6,8 +6,12 @@ import Optional from "./optional";
 require("object.entries").shim();
 require("object.values").shim();
 
-export type KeyCollection = {
-    [key: string]: any;
+export type TweekRepositoryKeys = {
+    [key: string]: RepositoryKey<any>;
+}
+
+export type FlatKeys = {
+    [key: string]: string | number | boolean;
 }
 
 export const TweekKeySplitJoin = {
@@ -15,36 +19,35 @@ export const TweekKeySplitJoin = {
     join: (fragments: string[]) => fragments.join("/")
 }
 
-export interface TweekStore {
-    save: (keys: KeyCollection) => Promise<void>;
-    load: () => Promise<KeyCollection>;
+export interface ITweekStore {
+    save: (keys: TweekRepositoryKeys) => Promise<void>;
+    load: () => Promise<TweekRepositoryKeys>;
 }
 
-type RequestedKey = {
+export type RequestedKey = {
     state: "requested"
     isScan: boolean;
 }
 
-type MissingKey = {
+export type MissingKey = {
     state: "missing"
 }
 
-type CachedKey<T> = {
+export type CachedKey<T> = {
     state: "cached";
     value: T;
     isScan: false;
 }
 
-type ScanNode = {
+export type ScanNode = {
     state: "cached" | "requested";
     isScan: true
 }
 
-type RepositoryKey<T> = CachedKey<T> | RequestedKey | ScanNode | MissingKey;
+export type RepositoryKey<T> = CachedKey<T> | RequestedKey | ScanNode | MissingKey;
 
 export type TweekRepositoryConfig = {
     client: ITweekClient;
-    store: TweekStore;
 }
 
 export type ConfigurationLocation = "local" | "remote";
@@ -58,7 +61,7 @@ let getKeyPrefix = (key) => key === "_" ? "" : partitionByIndex(key.split("/"), 
 
 let flatMap = (arr, fn) => Array.prototype.concat.apply([], arr.map(fn))
 
-export class MemoryStore implements TweekStore {
+export class MemoryStore implements ITweekStore {
     _keys;
 
     constructor(initialKeys = {}) {
@@ -77,29 +80,40 @@ export class MemoryStore implements TweekStore {
 
 export default class TweekRepository {
     private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
-    private _store: TweekStore;
+    private _store: ITweekStore;
     private _client: ITweekClient;
-    public context: Context = {};
+    private _context: Context = {};
 
-    constructor({client, store = new MemoryStore() }: TweekRepositoryConfig) {
+    constructor({client}: TweekRepositoryConfig) {
         this._client = client;
+        this._store = new MemoryStore();
+    }
+
+    set context(value: Context) {this._context = value}
+
+    public addKeys(keys: FlatKeys) {
+        Object.entries(keys).forEach(([key, value]) => this._cache.set(key, {
+            state: "cached", 
+            value: this._tryParse(value), 
+            isScan: false 
+        }));
+    }
+
+    public useStore(store) {
         this._store = store;
-    }
-
-    init() {
-        return this._store.load().then(nodes => {
-            nodes = nodes || {};
-            Object.entries(nodes).forEach(([key, value]) => this._cache.set(key, value));
+        return this._store.load().then(keys => {
+            keys = keys || {};
+            Object.entries(keys).forEach(([key, value]) => this._cache.set(key, value));
         });
-    }
+    }    
 
-    prepare(key: string) {
+    public prepare(key: string) {
         let node = this._cache.get(key);
         let isScan = key.slice(-1) === "_";
         if (!node) this._cache.set(key, { state: "requested", isScan });
     }
 
-    get(key: string): Promise<never | Optional<any> | any> {
+    public get(key: string): Promise<never | Optional<any> | any> {
         let isScan = key.slice(-1) === "_";
         let node = this._cache.get(key);
 
@@ -119,7 +133,7 @@ export default class TweekRepository {
         return Promise.resolve(Optional.some(node.value));
     }
 
-    refresh() {
+    public refresh() {
         const keysToRefresh = Object.keys(this._cache.list());
         if (!keysToRefresh || keysToRefresh.length < 1) return Promise.resolve();
 
@@ -131,7 +145,7 @@ export default class TweekRepository {
         const fetchConfig: FetchConfig = {
             flatten: true,
             casing: "snake",
-            context: this.context,
+            context: this._context,
             include: keys,
         };
 
@@ -219,5 +233,14 @@ export default class TweekRepository {
 
     private _persist(config) {
         return this._store.save(config).then(() => config);
+    }
+
+    private _tryParse(value) {
+        try {
+            return JSON.parse(value);
+        }
+        catch (e) {
+            return value;
+        }
     }
 }

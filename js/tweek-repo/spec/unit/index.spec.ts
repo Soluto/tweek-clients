@@ -1,7 +1,7 @@
 import 'mocha';
 import chai = require('chai');
 import TweekRepository from '../../';
-import { MemoryStore } from '../../';
+import { MemoryStore, ITweekStore } from '../../';
 import { } from '../';
 import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from '../../../tweek-rest';
 import Optional from '../../optional'
@@ -20,11 +20,11 @@ describe("tweek repo test", () => {
     let _client: ITweekClient;
     let _tweekRepo;
 
-    async function initRepository(initializeStoreKeys?: Object) {
-        let store = new MemoryStore(initializeStoreKeys);
-        _tweekRepo = new TweekRepository({ client: _client, store });
-        await _tweekRepo.init();
-        return store;
+    async function initRepository(store?: ITweekStore) {
+        _tweekRepo = new TweekRepository({ client: _client });
+        if (store) {
+            await _tweekRepo.useStore(store);            
+        }
     };
 
     beforeEach(() => {
@@ -151,29 +151,29 @@ describe("tweek repo test", () => {
     });
 
     describe("persistence", () => {
-
         it("should persist to store after refresh", async () => {
             // Arrange
-            const store = await initRepository();
+            const store = new MemoryStore();
+            await initRepository(store);
             await _tweekRepo.prepare("some_path/inner_path_1/_")
 
             // Act
             await _tweekRepo.refresh();
-            const persistedResult = await store.load();
 
             // Assert
+            const persistedResult = await store.load();            
             expect(persistedResult['some_path/inner_path_1/_'].isScan).to.eq(true)
             expect(persistedResult['some_path/inner_path_1/first_value'].value).to.eq("value_1")
             expect(persistedResult['some_path/inner_path_1/second_value'].value).to.eq("value_2")
         });
-
+       
         it("should load persisted key", async () => {
             // Arrange
             const persistedNodes = {
                 'some_path/inner_path_1/first_value': { state: 'cached', value: 'value_1', isScan: false }
             };
-
-            await initRepository(persistedNodes);
+            const store = new MemoryStore(persistedNodes);
+            await initRepository(store);
 
             // Act
             let key = await _tweekRepo.get("some_path/inner_path_1/first_value");
@@ -190,8 +190,8 @@ describe("tweek repo test", () => {
                 'some_path/inner_path_1/first_value': { state: 'cached', value: 'value_1', isScan: false },
                 'some_path/inner_path_1/second_value': { state: 'cached', value: 'value_2', isScan: false }
             };
-
-            await initRepository(persistedNodes);
+            const store = new MemoryStore(persistedNodes);
+            await initRepository(store);
 
             // Act & Assert
             const result1 = await _tweekRepo.get("some_path/inner_path_1/_")
@@ -207,7 +207,8 @@ describe("tweek repo test", () => {
                 'some_path/inner_path_1/first_value': { state: 'cached', value: 'old_value', isScan: false }
             };
 
-            await initRepository(persistedNodes);
+            const store = new MemoryStore(persistedNodes);
+            await initRepository(store);
 
             // Act & assert
             let old = await _tweekRepo.get("some_path/inner_path_1/first_value")
@@ -220,8 +221,25 @@ describe("tweek repo test", () => {
         });
     });
 
+    describe("add flat keys", () => {
+        it("should add flat key and update it after refresh", async () => {
+            const tweekRepo = new TweekRepository({ client: _client });
+            const keys = {
+                "some_path/inner_path_1/first_value": "default_value"
+            }
+            tweekRepo.addKeys(keys);
+
+            const result1 = await tweekRepo.get("some_path/inner_path_1/first_value");
+            expect(result1.value).to.eql("default_value");            
+
+            await tweekRepo.refresh();
+            const result2 = await tweekRepo.get("some_path/inner_path_1/first_value");  
+            expect(result2.value).to.eql("value_1");                              
+        });
+    })
+
     describe("error flows", () => {
-        it("should get key which was never requested or init", async () => {
+        it("should throw error when requesting key that was not prepared or cached", async () => {
             // Arrange
             await initRepository();
             await _tweekRepo.refresh();
@@ -245,8 +263,8 @@ describe("tweek repo test", () => {
                 fetch: <any>fetchStub
             };
 
-            _tweekRepo = new TweekRepository({ client: clientMock, store });
-            await _tweekRepo.init();
+            _tweekRepo = new TweekRepository({client: clientMock});
+            await _tweekRepo.useStore(store);
 
             // Act
             const refreshPromise = _tweekRepo.refresh();
@@ -267,8 +285,8 @@ describe("tweek repo test", () => {
                 fetch: <any>fetchStub
             };
 
-            _tweekRepo = new TweekRepository({ client: clientMock, store });
-            await _tweekRepo.init();
+            _tweekRepo = new TweekRepository({ client: clientMock });
+            await _tweekRepo.useStore(store);
             const expectedContext = { 'prop': 'value' };
             _tweekRepo.context = expectedContext;
 
