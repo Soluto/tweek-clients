@@ -46,17 +46,17 @@ deployment:
     commands:
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - |
-        if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") > $(npm show @npmsoluto/tweek-rest version) ]]; then
+        if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $(npm show @npmsoluto/tweek-rest version) ]]; then
           echo "publish tweek-rest"
           cd js/tweek-rest && npm publish
         fi
       - |
-        if [[ $(node -p -e "require('./js/tweek-repo/package.json').version") > $(npm show @npmsoluto/tweek-repo version) ]]; then
+        if [[ $(node -p -e "require('./js/tweek-repo/package.json').version") != $(npm show @npmsoluto/tweek-repo version) ]]; then
           echo "publish tweek-repo"
           cd js/tweek-repo && npm publish
         fi
       - |
-        if [[ $(node -p -e "require('./js/react-tweek/package.json').version") > $(npm show @npmsoluto/react-tweek version) ]]; then
+        if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show @npmsoluto/react-tweek version) ]]; then
           echo "publish react-tweek"
           cd js/react-tweek && npm publish
         fi
