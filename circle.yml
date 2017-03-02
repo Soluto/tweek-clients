@@ -13,8 +13,9 @@ dependencies:
     - ~/.yarn-cache
     - ~/docker
   pre:
-    - echo $(node -p -e "require('./js/react-tweek/package.json').version")
-    - echo $(npm show @npmsoluto/react-tweek version)
+    - echo $(node -p -e "require('./js/tweek-rest/package.json').version")
+    - npm show @npmsoluto/tweek-rest version
+    - echo $(npm show @npmsoluto/tweek-rest version)
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
