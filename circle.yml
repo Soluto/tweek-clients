@@ -13,9 +13,6 @@ dependencies:
     - ~/.yarn-cache
     - ~/docker
   pre:
-    - echo $(node -p -e "require('./js/tweek-rest/package.json').version")
-    - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-    - npm show @npmsoluto/tweek-rest version
     - mkdir -p ~/.yarn && cd ~/.yarn && wget https://yarnpkg.com/latest.tar.gz && tar -xf latest.tar.gz dist --strip-components=1
     - docker login -u $DOCKER_USER -p $DOCKER_PASS -e $DOCKER_EMAIL
     - |
