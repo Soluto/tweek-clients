@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import { View } from 'react-native';
 import { camelize } from 'humps';
 
 const prepareRequests = [];
 let globalTweekRepository = null;
 
-export const withTweekKeys = (path) => {
+export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
     if (globalTweekRepository) {
         globalTweekRepository.prepare(path);
     }
@@ -22,11 +21,23 @@ export const withTweekKeys = (path) => {
         componentWillMount() {
             const promise = globalTweekRepository.get(path);
             if (path.split('/').pop() === "_") {
-                promise.then(result => this.setState({ tweekProps: result }));
+                promise.then(result => {
+                    if (mergeProps) {
+                        this.setState({ tweekProps: result });
+                    } else {
+                        this.setState({ tweekProps: { [propName || "tweek"]: result } });
+                    }
+                });
             }
             else {
-                const propName = path.split('/').pop();
-                promise.then(result => this.setState({ tweekProps: { [camelize(propName)]: result.value } }));
+                const configName = path.split('/').pop();
+                promise.then(result => {
+                    if (mergeProps) {
+                        this.setState({ tweekProps: { [propName || camelize(configName)]: result.value } });
+                    } else {
+                        this.setState({ tweekProps: { [propName || "tweek"]: { [camelize(configName)]: result.value } } });
+                    }
+                });
             }
         }
 
