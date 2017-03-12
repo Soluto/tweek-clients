@@ -67,6 +67,13 @@ export class TweekClient implements ITweekClient {
     constructor(config: TweekInitConfig) {
         this.config = <TweekInitConfig & FetchConfig>
             { ...{ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, ...config };
+        
+        let {baseServiceUrl} = config;
+
+        if (baseServiceUrl.endsWith('/')) {
+            baseServiceUrl = baseServiceUrl.substr(0, baseServiceUrl.length -1);
+            this.config.baseServiceUrl = baseServiceUrl;
+        }
     }
 
     fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
@@ -82,7 +89,7 @@ export class TweekClient implements ITweekClient {
         let queryParams = queryString.stringify(queryParamsObject);
         queryParams = this.queryParamsEncoder(queryParams);
 
-        const url = baseServiceUrl + path + (!!queryParams ? `?${queryParams}` : '');
+        const url = baseServiceUrl + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? `?${queryParams}` : '');
         let result = restGetter<any>(url);
 
         if (!flatten && casing === "camelCase") {
