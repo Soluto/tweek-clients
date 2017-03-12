@@ -34,6 +34,7 @@ dependencies:
   override:
     - cd js/tweek-repo && yarn
     - cd js/tweek-rest && yarn   
+    - cd js/react-tweek && yarn   
 test:
   override:
     - wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused 'localhost:1111/status'
