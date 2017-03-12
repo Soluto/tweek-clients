@@ -26,6 +26,24 @@
       ],
       "outFiles": [],
       "sourceMaps": true
+    },
+    {
+      "name": "react-tweek tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/js/react-tweek/node_modules/jest/bin/jest.js",
+      "stopOnEntry": false,
+      "args": ["--runInBand"],
+      "cwd": "${workspaceRoot}/js/react-tweek",
+      "preLaunchTask": null,
+      "runtimeExecutable": null,
+      "runtimeArgs": ["--nolazy"],
+      "env": {
+        "NODE_ENV": "development"
+        },
+      "externalConsole": false,
+      "sourceMaps": false,
+      "outDir": null
     }
   ]
 }
