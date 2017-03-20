@@ -19,6 +19,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
         }
 
         componentWillMount() {
+			if (!globalTweekRepository) throw Error("Global Tweek Repository is not initialized. Did you remember to use the 'connect' method?");
             const promise = globalTweekRepository.get(path);
             if (path.split('/').pop() === "_") {
                 promise.then(result => {
@@ -49,6 +50,5 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
 
 export function connect(tweekRepository) {
     globalTweekRepository = tweekRepository;
-    prepareRequests.forEach(r => globalTweekRepository.prepare(r))
-    return globalTweekRepository.refresh();
+    prepareRequests.forEach(r => globalTweekRepository.prepare(r));
 }

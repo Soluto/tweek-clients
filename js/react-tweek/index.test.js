@@ -7,8 +7,7 @@ const generateTweekRepository = (result) => {
     getMock.mockReturnValue(Promise.resolve(result));
     return {
         prepare: jest.fn(),
-        get: getMock,
-        refresh: jest.fn()
+        get: getMock
     };
 };
 
