@@ -1,8 +1,8 @@
 {
   "name": "@npmsoluto/react-tweek",
-  "version": "0.3.0",
+  "version": "0.3.4",
   "description": "react bindings for tweek",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "author": "Soluto",
   "license": "MIT",
   "peerDependencies": {
@@ -22,13 +22,13 @@
     "react-test-renderer": "^15.4.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "npm run build && jest",
+	"build": "babel index.js --out-dir dist"
   },
   "babel": {
     "presets": [
       "es2015",
       "react"
-    ],
-    "plugins": ["transform-async-to-generator"]
+    ]
   }
 }

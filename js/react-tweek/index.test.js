@@ -1,4 +1,4 @@
-import {connect, withTweekKeys} from './index';
+import {connect, withTweekKeys} from './dist/index';
 import React from 'react';
 import renderer from 'react-test-renderer';
 
