@@ -25,7 +25,7 @@ dependencies:
       fi
     - docker pull soluto/tweek-api:latest
     - docker pull tweekci/tweek-management:latest
-    - docker-compose up
+    - docker-compose up -d
     - mkdir -p ~/docker
     - docker save soluto/tweek-api:latest tweekci/tweek-management:latest > ~/docker/tweek-images.tar
   override:
