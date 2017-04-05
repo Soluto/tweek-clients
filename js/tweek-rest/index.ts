@@ -1,5 +1,7 @@
-/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
+
 import * as queryString from 'query-string';
+
+declare function fetch(x:any):Promise<{json:<T>()=>Promise<T>}>
 
 export type IdentityContext = { id?: string; } & {
     [prop: string]: string;
