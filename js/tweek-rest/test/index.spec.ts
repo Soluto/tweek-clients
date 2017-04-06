@@ -12,12 +12,14 @@ describe("tweek rest", () => {
     const defaultUrl = 'http://test/';
     let prepare = (url) => {
         const restGetterStub = sinon.stub();
+        const restPosterStub = sinon.stub();
 
         const tweekClient = new TweekClient({
             baseServiceUrl: url || defaultUrl,
             casing: "snake",
             convertTyping: false,
-            restGetter: restGetterStub
+            restGetter: restGetterStub,
+            restPoster: restPosterStub
         });
 
         return {

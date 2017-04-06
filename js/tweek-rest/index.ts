@@ -1,5 +1,7 @@
-/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
+
 import * as queryString from 'query-string';
+
+declare function fetch(x: any): Promise<{ json: <T>() => Promise<T> }>
 
 export type IdentityContext = { id?: string; } & {
     [prop: string]: string;
@@ -22,6 +24,7 @@ export type FetchConfig = {
 export type TweekInitConfig = FetchConfig & {
     baseServiceUrl: string;
     restGetter: <T>(url: string) => Promise<T>;
+    restPoster: <T>(url: string) => Promise<T>;
 }
 
 function captialize(string) {
@@ -67,13 +70,24 @@ export class TweekClient implements ITweekClient {
     constructor(config: TweekInitConfig) {
         this.config = <TweekInitConfig & FetchConfig>
             { ...{ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, ...config };
-        
-        let {baseServiceUrl} = config;
+
+        let { baseServiceUrl } = config;
 
         if (baseServiceUrl.endsWith('/')) {
-            baseServiceUrl = baseServiceUrl.substr(0, baseServiceUrl.length -1);
+            baseServiceUrl = baseServiceUrl.substr(0, baseServiceUrl.length - 1);
             this.config.baseServiceUrl = baseServiceUrl;
         }
+    }
+
+    dispatch(path: string, event: string): Promise<any> {
+        if (!event) {
+            throw 'Argument "event" must be set';
+        }
+        const queryParamsObject = this._contextToQueryParams(this.config.context);
+        queryParamsObject['event'] = event;
+        const queryParams = queryString.stringify(queryParamsObject);
+        const url = [...this.config.baseServiceUrl.split("/"), 'funnel', path.split("/")].join("/") + (!!queryParams ? `?${queryParams}` : '');
+        return this.config.restPoster<void>(url);
     }
 
     fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
@@ -89,7 +103,7 @@ export class TweekClient implements ITweekClient {
         let queryParams = queryString.stringify(queryParamsObject);
         queryParams = this.queryParamsEncoder(queryParams);
 
-        const url = baseServiceUrl + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? `?${queryParams}` : '');
+        const url = [...this.config.baseServiceUrl.split("/"), 'keys', path.split("/")].join("/") + (!!queryParams ? `?${queryParams}` : '');
         let result = restGetter<any>(url);
 
         if (!flatten && casing === "camelCase") {
@@ -119,12 +133,14 @@ export class TweekClient implements ITweekClient {
 
 export function createTweekClient(baseServiceUrl: string,
     context: any,
-    restGetter: <T>(url: string) => Promise<T> = <T>(url: string) => fetch(url).then(r => r.json<T>())) {
+    restGetter: <T>(url: string) => Promise<T> = <T>(url: string) => fetch(url).then(r => r.json<T>()),
+    restPoster: <T>(url: string) => Promise<T> = <T>(url: string) => fetch({ url, params: { method: 'POST' } })) {
     return new TweekClient({
         baseServiceUrl,
         casing: "camelCase",
         convertTyping: true,
         context,
-        restGetter
+        restGetter,
+        restPoster
     });
 }
