@@ -17,3 +17,10 @@ services:
       - tweek-management
     environment:
       - RulesBlob.Url=http://tweek-management:3000/ruleset/latest
+
+  tests:
+    build: .
+    depends_on:
+      - tweek-api
+    environment:
+      - TWEEK_LOCAL_API=http://tweek-api

@@ -31,14 +31,8 @@ jobs:
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker-compose pull
-            docker-compose up -d
-     
-      - run:
-          name: yarn install
-          command: |
-            cd ~/tweek-clients/js/tweek-repo && yarn
-            cd ~/tweek-clients/js/tweek-rest && yarn
-            cd ~/tweek-clients/js/react-tweek && yarn
+            docker-compose build tests
+            docker-compose up -d tweek-api
             
       - run:
           name: Prepare for tests
@@ -47,18 +41,15 @@ jobs:
 
       - run: 
           name: Test tweek-rest
-          working_directory: ~/tweek-clients/js/tweek-rest
-          command: yarn test
+          command: docker-compose run tests /bin/bash -c "cd tweek-rest && yarn test"
 
       - run: 
           name: Test tweek-repo
-          working_directory: ~/tweek-clients/js/tweek-repo
-          command: yarn test
+          command: docker-compose run tests /bin/bash -c "cd tweek-repo && yarn test"
 
       - run: 
           name: Test react-tweek
-          working_directory: ~/tweek-clients/js/react-tweek
-          command: yarn test
+          command: docker-compose run tests /bin/bash -c "cd react-tweek && yarn test"
 
       - deploy: 
           name: npm
