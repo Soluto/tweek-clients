@@ -27,14 +27,11 @@ jobs:
             chmod +x /usr/bin/docker-compose
 
       - run: 
-          name: pull dependencies
+          name: run dependencies
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker-compose pull
- 
-      - run:
-          name: start dependencies
-          command: docker-compose up -d
+            docker-compose up -d
      
       - restore_cache:
           keys:
@@ -60,7 +57,7 @@ jobs:
       - run:
           name: Prepare for tests
           command: |
-            docker run --network=dev_default node:6.10.1-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/status
+            docker run --network=tweekclients_default node:6.10.1-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/status
 
       - run: 
           name: Test tweek-rest
