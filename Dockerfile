@@ -1,6 +1,6 @@
 FROM node:6.10.1-slim
 
-ADD js/react-tweek/package.json js/react-tweek/yarn.lock /tmp/react-tweek/
+ADD js/react-tweek/package.json /tmp/react-tweek/package.json
 RUN cd /tmp/react-tweek && yarn install
 RUN mkdir -p /opt/react-tweek && cd /opt/react-tweek && ln -s /tmp/react-tweek/node_modules 
 
