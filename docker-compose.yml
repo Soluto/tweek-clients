@@ -1,12 +1,28 @@
 version: '2'
 
 services:
+  keys:
+    build: "ssh"
+
+  tweek-git:
+    image: soluto/tweek-bare-repo
+    volumes_from: 
+      - keys
+    environment:
+      - PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
+      - TWEEK_MANAGEMENT_URL=http://tweek-management:3000
+
   tweek-management:
     image: soluto/tweek-management
+    depends_on:
+      - tweek-git
+    volumes_from: 
+      - keys
     environment:
-      - GIT_URL
-      - GIT_USER
-      - GIT_PASSWORD
+      - GIT_USER=git
+      - GIT_URL=ssh://git@tweek-git/tweek/tests
+      - GIT_PRIVATE_KEY_PATH=/gitkeys/tweekgit
+      - GIT_PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
       - VALIDATION_URL=http://tweek-api/validation
 
   tweek-api:
@@ -15,7 +31,10 @@ services:
       - "1111:80"
     depends_on:
       - tweek-management
+    volumes_from: 
+      - keys
     environment:
+      - PUBLIC_KEY_PATH=/gitkeys/tweekgit_public.pfx
       - RulesBlob.Url=http://tweek-management:3000/ruleset/latest
 
   tests:
