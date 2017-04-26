@@ -33,26 +33,12 @@ jobs:
             docker-compose pull
             docker-compose up -d
      
-      - restore_cache:
-          keys:
-            - yarn-cache-{{ .Branch }}-{{ checksum "services/editor/yarn.lock" }}
-            - yarn-cache-{{ .Branch }}
-            - yarn-cache-master
-            - yarn-cache-
-
       - run:
           name: yarn install
           command: |
-            cd ~/tweek-clients/js/tweek-repo && yarn --cache-folder "/.yarn-cache"
-            cd ~/tweek-clients/js/tweek-rest && yarn --cache-folder "/.yarn-cache"
-            cd ~/tweek-clients/js/react-tweek && yarn --cache-folder "/.yarn-cache"
-
-      - save_cache:
-          key: yarn-cache-{{ .Branch }}-{{ checksum "services/editor/yarn.lock" }}
-          paths:
-            - ~/tweek-clients/js/tweek-repo/.yarn-cache
-            - ~/tweek-clients/js/tweek-rest/.yarn-cache
-            - ~/tweek-clients/js/react-tweek/.yarn-cache
+            cd ~/tweek-clients/js/tweek-repo && yarn
+            cd ~/tweek-clients/js/tweek-rest && yarn
+            cd ~/tweek-clients/js/react-tweek && yarn
             
       - run:
           name: Prepare for tests
