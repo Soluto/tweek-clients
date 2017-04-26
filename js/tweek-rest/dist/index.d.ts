@@ -1,4 +1,3 @@
-/// <reference path="../node_modules/@types/isomorphic-fetch/index.d.ts" />
 export declare type IdentityContext = {
     id?: string;
 } & {

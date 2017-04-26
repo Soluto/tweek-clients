@@ -7,7 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
+Object.defineProperty(exports, "__esModule", { value: true });
 var queryString = require("query-string");
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -53,6 +53,11 @@ var TweekClient = (function () {
             }, {});
         };
         this.config = __assign({ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, config);
+        var baseServiceUrl = config.baseServiceUrl;
+        if (baseServiceUrl.endsWith('/')) {
+            baseServiceUrl = baseServiceUrl.substr(0, baseServiceUrl.length - 1);
+            this.config.baseServiceUrl = baseServiceUrl;
+        }
     }
     TweekClient.prototype.fetch = function (path, _config) {
         var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping, context = _a.context, include = _a.include;
@@ -63,7 +68,7 @@ var TweekClient = (function () {
         queryParamsObject['$include'] = include;
         var queryParams = queryString.stringify(queryParamsObject);
         queryParams = this.queryParamsEncoder(queryParams);
-        var url = baseServiceUrl + path + (!!queryParams ? "?" + queryParams : '');
+        var url = baseServiceUrl + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? "?" + queryParams : '');
         var result = restGetter(url);
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);

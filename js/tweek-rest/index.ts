@@ -1,4 +1,3 @@
-/// <reference path="./node_modules/@types/isomorphic-fetch/index.d.ts"/>
 import * as queryString from 'query-string';
 
 export type IdentityContext = { id?: string; } & {
@@ -119,7 +118,7 @@ export class TweekClient implements ITweekClient {
 
 export function createTweekClient(baseServiceUrl: string,
     context: any,
-    restGetter: <T>(url: string) => Promise<T> = <T>(url: string) => fetch(url).then(r => r.json<T>())) {
+    restGetter: <T>(url: string) => Promise<T> = <T>(url: string) => fetch(url).then(r => r.json())) {
     return new TweekClient({
         baseServiceUrl,
         casing: "camelCase",
