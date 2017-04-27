@@ -3,13 +3,22 @@ import { camelize } from 'humps';
 
 const prepareRequests = [];
 let globalTweekRepository = null;
-
+let onError = null;
+let shouldPrepare = true;
 export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
-    if (globalTweekRepository) {
-        globalTweekRepository.prepare(path);
+    
+    if (shouldPrepare) {
+        if (globalTweekRepository) {
+            globalTweekRepository.prepare(path);
+        }
+        else {
+            prepareRequests.push(path);
+        }
     }
-    else {
-        prepareRequests.push(path);
+    function handleError(e) {
+        if (onError) {
+            onError(e);
+        }
     }
 
     return (EnhancedComponent) => class extends Component {
@@ -28,7 +37,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
                     } else {
                         this.setState({ tweekProps: { [propName || "tweek"]: result } });
                     }
-                });
+                }).catch(handleError);
             }
             else {
                 const configName = path.split('/').pop();
@@ -38,7 +47,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
                     } else {
                         this.setState({ tweekProps: { [propName || "tweek"]: { [camelize(configName)]: result.value } } });
                     }
-                });
+                }).catch(handleError);
             }
         }
 
@@ -51,4 +60,11 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
 export function connect(tweekRepository) {
     globalTweekRepository = tweekRepository;
     prepareRequests.forEach(r => globalTweekRepository.prepare(r));
+}
+
+export function onWithTweekKeysError(handler) {
+    onError = handler;
+}
+export function shouldWithTweekKeysCallPrepare(shouldCallPrepare) {
+    shouldPrepare = shouldCallPrepare;
 }
