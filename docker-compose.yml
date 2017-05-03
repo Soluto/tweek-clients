@@ -1,18 +1,45 @@
-tweek-management:
-  image: soluto/tweek-management
-  container_name: tweek-management
-  environment:
-    - GIT_URL
-    - GIT_USER
-    - GIT_PASSWORD
-    - VALIDATION_URL=localhost:1111/validation
+version: '2'
 
-tweek-api:
-  image: soluto/tweek-api
-  container_name: tweek-api
-  ports:
-    - "1111:80"
-  links:
-    - tweek-management
-  environment:
-    - RulesBlob.Url=http://tweek-management:3000/ruleset/latest
+services:
+  keys:
+    build: "ssh"
+
+  tweek-git:
+    image: soluto/tweek-bare-repo
+    volumes_from: 
+      - keys
+    environment:
+      - PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
+      - TWEEK_MANAGEMENT_URL=http://tweek-management:3000
+
+  tweek-management:
+    image: soluto/tweek-management
+    depends_on:
+      - tweek-git
+    volumes_from: 
+      - keys
+    environment:
+      - GIT_USER=git
+      - GIT_URL=ssh://git@tweek-git/tweek/tests
+      - GIT_PRIVATE_KEY_PATH=/gitkeys/tweekgit
+      - GIT_PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
+      - VALIDATION_URL=http://tweek-api/validation
+
+  tweek-api:
+    image: soluto/tweek-api
+    ports:
+      - "1111:80"
+    depends_on:
+      - tweek-management
+    volumes_from: 
+      - keys
+    environment:
+      - PUBLIC_KEY_PATH=/gitkeys/tweekgit_public.pfx
+      - RulesBlob.Url=http://tweek-management:3000/ruleset/latest
+
+  tests:
+    build: .
+    depends_on:
+      - tweek-api
+    environment:
+      - TWEEK_LOCAL_API=http://tweek-api
