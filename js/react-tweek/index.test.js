@@ -1,4 +1,4 @@
-import {connect, withTweekKeys, shouldWithTweekKeysCallPrepare, onWithTweekKeysError} from './dist/index';
+import {connect, withTweekKeys, usePrepare, setErrorHandler} from './dist/index';
 import React from 'react';
 import renderer from 'react-test-renderer';
 
@@ -77,7 +77,7 @@ describe("withTweekKeys get single key", () => {
     });
 
     test('with shouldPrepare=false', async () => {
-        shouldWithTweekKeysCallPrepare(false);
+        usePrepare(false);
 
         const component = await renderComponent(path);
 
@@ -86,7 +86,7 @@ describe("withTweekKeys get single key", () => {
     test('with error handler', async ()=> {
         let error = null;
         let expectedError = "test error";
-        onWithTweekKeysError((e) => error = e);
+        setErrorHandler((e) => error = e);
         tweekRepositoryMock = generateTweekRepository(Promise.reject(expectedError));
         connect(tweekRepositoryMock);
 
@@ -155,7 +155,7 @@ describe("withTweekKeys scan category", () => {
     });
 
     test('with shouldPrepare=false', async () => {
-        shouldWithTweekKeysCallPrepare(false);
+        usePrepare(false);
 
         const component = await renderComponent(path);
 
@@ -164,7 +164,7 @@ describe("withTweekKeys scan category", () => {
     test('with error handler', async ()=> {
         let error = null;
         let expectedError = "test error";
-        onWithTweekKeysError((e) => error = e);
+        setErrorHandler((e) => error = e);
         tweekRepositoryMock = generateTweekRepository(Promise.reject(expectedError));
         connect(tweekRepositoryMock);
 

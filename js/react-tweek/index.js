@@ -62,9 +62,9 @@ export function connect(tweekRepository) {
     prepareRequests.forEach(r => globalTweekRepository.prepare(r));
 }
 
-export function onWithTweekKeysError(handler) {
+export function setErrorHandler(handler) {
     onError = handler;
 }
-export function shouldWithTweekKeysCallPrepare(shouldCallPrepare) {
+export function usePrepare(shouldCallPrepare) {
     shouldPrepare = shouldCallPrepare;
 }
