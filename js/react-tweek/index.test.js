@@ -1,10 +1,10 @@
-import {connect, withTweekKeys} from './dist/index';
+import {connect, withTweekKeys, usePrepare, setErrorHandler} from './dist/index';
 import React from 'react';
 import renderer from 'react-test-renderer';
 
 const generateTweekRepository = (result) => {
     const getMock = jest.fn();
-    getMock.mockReturnValue(Promise.resolve(result));
+    getMock.mockReturnValue(result);
     return {
         prepare: jest.fn(),
         get: getMock
@@ -22,9 +22,10 @@ const renderComponent = async (path, config) => {
 describe("withTweekKeys get single key", () => {
     const path = "path/someKey";
     const value = "someValue";
-    const tweekRepositoryMock = generateTweekRepository({value});
+    let tweekRepositoryMock;
 
-    beforeAll(() => {
+    beforeEach(() => {
+        tweekRepositoryMock = generateTweekRepository(Promise.resolve({value}));
         connect(tweekRepositoryMock);
     });
 
@@ -74,14 +75,34 @@ describe("withTweekKeys get single key", () => {
         expect(tree.props.someName).toBeDefined();
         expect(tree.props.someName.someKey).toBe(value);
     });
+
+    test('with shouldPrepare=false', async () => {
+        usePrepare(false);
+
+        const component = await renderComponent(path);
+
+        expect(tweekRepositoryMock.prepare).toHaveBeenCalledTimes(0);
+    });
+    test('with error handler', async ()=> {
+        let error = null;
+        let expectedError = "test error";
+        setErrorHandler((e) => error = e);
+        tweekRepositoryMock = generateTweekRepository(Promise.reject(expectedError));
+        connect(tweekRepositoryMock);
+
+        const component = await renderComponent(path);
+
+        expect(error).toEqual(expectedError);
+    });
 })
 
 describe("withTweekKeys scan category", () => {
     const path = "path/_";
     const value = "someValue";
-    const tweekRepositoryMock = generateTweekRepository({someKey: value});
+    let tweekRepositoryMock;
 
-    beforeAll(() => {
+    beforeEach(() => {
+        tweekRepositoryMock = generateTweekRepository(Promise.resolve({someKey: value}));
         connect(tweekRepositoryMock);
     });
 
@@ -131,5 +152,24 @@ describe("withTweekKeys scan category", () => {
         let tree = component.toJSON();
         expect(tree.props.someName).toBeDefined();
         expect(tree.props.someName.someKey).toBe(value);
+    });
+
+    test('with shouldPrepare=false', async () => {
+        usePrepare(false);
+
+        const component = await renderComponent(path);
+
+        expect(tweekRepositoryMock.prepare).toHaveBeenCalledTimes(0);
+    });
+    test('with error handler', async ()=> {
+        let error = null;
+        let expectedError = "test error";
+        setErrorHandler((e) => error = e);
+        tweekRepositoryMock = generateTweekRepository(Promise.reject(expectedError));
+        connect(tweekRepositoryMock);
+
+        const component = await renderComponent(path);
+
+        expect(error).toEqual(expectedError);
     });
 })
