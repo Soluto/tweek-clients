@@ -1,6 +1,6 @@
 {
   "name": "@npmsoluto/react-tweek",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "react bindings for tweek",
   "main": "./dist/index.js",
   "author": "Soluto",
