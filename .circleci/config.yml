@@ -58,15 +58,15 @@ jobs:
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $(npm show @npmsoluto/tweek-rest version) ]]; then
                 echo "publish tweek-rest"
-                cd js/tweek-rest && yarn && yarn build && npm publish
+                cd js/tweek-rest && yarn && npm run build && npm publish
               fi
               if [[ $(node -p -e "require('./js/tweek-repo/package.json').version") != $(npm show @npmsoluto/tweek-repo version) ]]; then
                 echo "publish tweek-repo"
-                cd js/tweek-repo && yarn && yarn build && npm publish
+                cd js/tweek-repo && yarn && npm run build && npm publish
               fi
               if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show @npmsoluto/react-tweek version) ]]; then
                 echo "publish react-tweek"
-                cd js/react-tweek && yarn && yarn build && npm publish
+                cd js/react-tweek && yarn && npm run build && npm publish
               fi
             else 
               echo "not deploying on non master branches"
