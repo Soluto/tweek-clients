@@ -29,7 +29,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
 
         componentWillMount() {
 			if (!globalTweekRepository) throw Error("Global Tweek Repository is not initialized. Did you remember to use the 'connect' method?");
-            const promise = globalTweekRepository.get(path);
+            const promise = globalTweekRepository.get(path).catch(handleError);
             if (path.split('/').pop() === "_") {
                 promise.then(result => {
                     if (mergeProps) {
@@ -37,7 +37,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
                     } else {
                         this.setState({ tweekProps: { [propName || "tweek"]: result } });
                     }
-                }).catch(handleError);
+                });
             }
             else {
                 const configName = path.split('/').pop();
@@ -47,7 +47,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
                     } else {
                         this.setState({ tweekProps: { [propName || "tweek"]: { [camelize(configName)]: result.value } } });
                     }
-                }).catch(handleError);
+                });
             }
         }
 
