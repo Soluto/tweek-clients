@@ -35,7 +35,7 @@ services:
       - keys
     environment:
       - PUBLIC_KEY_PATH=/gitkeys/tweekgit_public.pfx
-      - RulesBlob.Url=http://tweek-management:3000/ruleset/latest
+      - Rules__Management__Url=http://tweek-management:3000
 
   tests:
     build: .
