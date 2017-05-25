@@ -38,7 +38,9 @@ namespace Tweek.Client
         public async Task<JToken> GetKey(string keyPath, IDictionary<string, string> context)
         {
             var queryString = (context == null) ? "" : string.Join("&", context.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
-            var stream = await mClient.GetStreamAsync($"/configurations/{keyPath}?{queryString}");
+            var escapedKeyPath = Uri.EscapeUriString(keyPath);
+
+            var stream = await mClient.GetStreamAsync($"/configurations/{escapedKeyPath}?{queryString}");
             return JToken.Load(new JsonTextReader(new StreamReader(stream)));
         }
     }
