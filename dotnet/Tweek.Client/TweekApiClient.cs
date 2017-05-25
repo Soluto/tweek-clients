@@ -32,13 +32,12 @@ namespace Tweek.Client
         public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
         {
             var content = new StringContent(JsonConvert.SerializeObject(context), Encoding.UTF8, JSON_MEDIATYPE);
-            
             await mClient.PostAsync(Uri.EscapeUriString($"/context/{identityType}/{identityId}"), content);
         }
 
         public async Task<JToken> GetKey(string keyPath, IDictionary<string, string> context)
         {
-            var queryString = context.Select(pair=>$"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}");
+            var queryString = (context == null) ? "" : string.Join("&", context.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
             var stream = await mClient.GetStreamAsync($"/configurations/{keyPath}?{queryString}");
             return JToken.Load(new JsonTextReader(new StreamReader(stream)));
         }
