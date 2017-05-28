@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace Tweek.Client.Tests
 {
@@ -49,5 +50,14 @@ namespace Tweek.Client.Tests
                 "false"
             };
         }
+
+        public static IEnumerable<object[]> SCAN_TEST_CASES()
+        {
+            yield return new object[] {
+                "@tweek_clients_tests/test_category2/user_fruit",
+                JToken.FromObject( new { user_fruit = "apple" })
+            };
+        }
+
     }
 }

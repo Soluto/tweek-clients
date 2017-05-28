@@ -5,6 +5,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using Tweek.Client.Extensions;
 
 namespace Tweek.Client.Tests
 {
@@ -43,6 +44,20 @@ namespace Tweek.Client.Tests
 
             // Act
             var result = await mTweek.GetKey(key, context);
+
+            // Assert
+            Assert.Equal(expectedToken, result);
+        }
+
+        [Theory(DisplayName = "Scan produces correct results when called for a path which has children")]
+        [MemberData(nameof(ContextTestCasesProvider.SCAN_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task ScanProducesCorrectResultsForPathWithChildren(string key, JToken expected)
+        {
+            // Arrange
+            var expectedToken = JToken.FromObject(expected);
+
+            // Act
+            var result = await mTweek.Scan(key, null);
 
             // Assert
             Assert.Equal(expectedToken, result);

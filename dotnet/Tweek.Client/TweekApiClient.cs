@@ -10,7 +10,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Tweek.Client
 {
-
     public class TweekApiClient : ITweekApiClient
     {
         private HttpClient mClient;
