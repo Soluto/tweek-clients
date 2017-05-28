@@ -31,7 +31,7 @@ namespace Tweek.Client
         public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
         {
             var content = new StringContent(JsonConvert.SerializeObject(context), Encoding.UTF8, JSON_MEDIATYPE);
-            await mClient.PostAsync(Uri.EscapeUriString($"/context/{identityType}/{identityId}"), content);
+            await mClient.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
         }
 
         public async Task<JToken> Get(string keyPath, IDictionary<string, string> context)
@@ -39,8 +39,8 @@ namespace Tweek.Client
             var queryString = (context == null) ? "" : string.Join("&", context.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
             var escapedKeyPath = Uri.EscapeUriString(keyPath);
 
-            var stream = await mClient.GetStreamAsync($"/configurations/{escapedKeyPath}?{queryString}");
-            return JToken.Load(new JsonTextReader(new StreamReader(stream)));
+            var stream = await mClient.GetStreamAsync($"/api/v1/keys/{escapedKeyPath}?{queryString}");
+            return await JToken.LoadAsync(new JsonTextReader(new StreamReader(stream)));
         }
     }
 }
