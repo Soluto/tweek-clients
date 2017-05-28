@@ -51,6 +51,10 @@ jobs:
           name: Test react-tweek
           command: docker-compose run tests /bin/bash -c "cd react-tweek && yarn test"
 
+      - run:
+          name: Test dotnet client
+          command: docker-compose run dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+
       - deploy: 
           name: npm
           command: |
