@@ -7,9 +7,10 @@ namespace Tweek.Client.Extensions
 {
     public static class TweekApiClientExtensions
     {
-        public static async Task<JToken> Scan(this ITweekApiClient client, string keyPath, IDictionary<string,string> context)
+        public static async Task<T> Get<T>(this ITweekApiClient client, string keyPath, IDictionary<string,string> context)
         {
-            return await client.Get($"{keyPath}/_", context);
+            var token = await client.Get(keyPath, context);
+            return token.ToObject<T>();
         }
     }
 }

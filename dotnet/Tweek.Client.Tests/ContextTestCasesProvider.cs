@@ -8,7 +8,7 @@ namespace Tweek.Client.Tests
         public static IEnumerable<object[]> NO_CONTEXT_TEST_CASES()
         {
             yield return new object[] { "@tweek_clients_tests/test_category/test_key1", null, "def value" };
-            yield return new object[] { "@tweek_clients_tests/test_category/test_key2", null, "false" };
+            yield return new object[] { "@tweek_clients_tests/test_category/test_key2", null, "False" };
             yield return new object[] { "@tweek_clients_tests/test_category2/user_fruit", null, "apple" };
         }
 
@@ -41,13 +41,13 @@ namespace Tweek.Client.Tests
             yield return new object [] {
                 "@tweek_clients_tests/test_category/test_key2",
                 new Dictionary<string,string> {{"device.PartnerBrandId", "testPartner"}},
-                "true"
+                "True"
             };
 
             yield return new object [] {
                 "@tweek_clients_tests/test_category/test_key2",
                 new Dictionary<string,string> {{"device.PartnerBrandId", "anotherTestPartner"}},
-                "false"
+                "False"
             };
         }
 
