@@ -34,7 +34,7 @@ namespace Tweek.Client
             await mClient.PostAsync(Uri.EscapeUriString($"/context/{identityType}/{identityId}"), content);
         }
 
-        public async Task<JToken> GetKey(string keyPath, IDictionary<string, string> context)
+        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context)
         {
             var queryString = (context == null) ? "" : string.Join("&", context.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
             var escapedKeyPath = Uri.EscapeUriString(keyPath);

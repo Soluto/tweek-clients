@@ -54,7 +54,7 @@ namespace Tweek.Client.Tests
         public static IEnumerable<object[]> SCAN_TEST_CASES()
         {
             yield return new object[] {
-                "@tweek_clients_tests/test_category2/user_fruit",
+                "@tweek_clients_tests/test_category2/_",
                 JToken.FromObject( new { user_fruit = "apple" })
             };
         }

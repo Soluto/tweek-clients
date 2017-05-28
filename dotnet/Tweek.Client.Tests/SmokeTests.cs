@@ -29,7 +29,7 @@ namespace Tweek.Client.Tests
             var expectedToken = JToken.FromObject(expected);
 
             // Act
-            var result = await mTweek.GetKey(key, context);
+            var result = await mTweek.Get(key, context);
 
             // Assert
             Assert.Equal(expectedToken, result);
@@ -43,7 +43,7 @@ namespace Tweek.Client.Tests
             var expectedToken = JToken.FromObject(expected);
 
             // Act
-            var result = await mTweek.GetKey(key, context);
+            var result = await mTweek.Get(key, context);
 
             // Assert
             Assert.Equal(expectedToken, result);
@@ -57,7 +57,7 @@ namespace Tweek.Client.Tests
             var expectedToken = JToken.FromObject(expected);
 
             // Act
-            var result = await mTweek.Scan(key, null);
+            var result = await mTweek.Get(key, null);
 
             // Assert
             Assert.Equal(expectedToken, result);

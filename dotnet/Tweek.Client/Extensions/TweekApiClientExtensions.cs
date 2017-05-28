@@ -9,7 +9,7 @@ namespace Tweek.Client.Extensions
     {
         public static async Task<JToken> Scan(this ITweekApiClient client, string keyPath, IDictionary<string,string> context)
         {
-            return await client.GetKey($"{keyPath}/_", context);
+            return await client.Get($"{keyPath}/_", context);
         }
     }
 }
