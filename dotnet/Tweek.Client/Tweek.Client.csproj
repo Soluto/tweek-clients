@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
+    <Version Condition="$(VersionSuffix)!=''">$(VersionSuffix)</Version>
+    <Version Condition="$(VersionSuffix)==''">0.0.1-development</Version>
+    <Company>Soluto</Company>
+    <Description>API client for Tweek</Description>
+    <RepositoryUrl>https://github.com/Soluto/tweek-clients.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IncludeSymbosl>True</IncludeSymbosl>
+    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <PackageLicenseUrl>https://github.com/Soluto/tweek/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Soluto/tweek-clients</PackageProjectUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />

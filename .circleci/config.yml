@@ -32,6 +32,7 @@ jobs:
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker-compose pull
             docker-compose build tests
+            docker-compose build dotnet_tests
             docker-compose up -d tweek-api
             
       - run:
@@ -53,7 +54,11 @@ jobs:
 
       - run:
           name: Test dotnet client
-          command: docker-compose run dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+          command: |
+            docker-compose up -d dotnet_tests && \
+            docker exec -e "VersionSuffix=$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
+            docker exec -e "VersionSuffix=$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test" && \
+            docker cp $(docker-compose ps|grep dotnet_tests|cut -d" " -f1):/test-environment/Tweek.Client/bin/Release/Tweek.Client*.nupkg $CIRCLE_ARTIFACTS
 
       - deploy: 
           name: npm

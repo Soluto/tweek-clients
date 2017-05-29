@@ -4,7 +4,7 @@ COPY . /test-environment
 
 WORKDIR /test-environment
 
-RUN dotnet restore && dotnet build
+RUN dotnet restore
 
 CMD tail -f /dev/null
 
