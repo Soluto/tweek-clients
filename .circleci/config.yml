@@ -83,4 +83,4 @@ jobs:
       - deploy: 
           name: nuget
           command: |
-            docker exec -e "VersionSuffix=0.0.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/release/Tweek.Client*.nupkg -s nuget.org -k $NUGET_APIKEY"
+            docker exec -e "VersionSuffix=0.0.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
