@@ -59,5 +59,52 @@ namespace Tweek.Client.Tests
             };
         }
 
+        public static IEnumerable<object[]> SPECIAL_CHARACTERS_CASES()
+        {
+            yield return new object[] {
+                "userId", "abcd1234", "plainString", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+            };
+
+            yield return new object[] {
+                "userId", "abcd1234", "☻icons☕", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+            };
+
+            yield return new object[] {
+                "userId", "abcd1234", "עברית", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+            };
+
+            yield return new object[] {
+                "userId", "abcd1234", "\nnewline\r", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+            };
+
+            yield return new object[] {
+                "userId", "abcd1234", "a/b/c", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+            };
+
+            yield return new object[] {
+                "userId", "abcd1234", "@something", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+            };
+
+            yield return new object[] {
+                "userEmail", "abc@example.com", "email", JToken.FromObject("abc@example.com"), JToken.FromObject("abc@example.com")
+            };
+
+        }
+
+        public static IEnumerable<object[]> SNAKE_CASE_CASES()
+        {
+            // (string identityType, string identityId, string keyPath, JToken context, TestClass expected)
+            var expected1 = new TestClass { SomeInteger = 1, SomeString = "string", SomeBoolean = true};
+            var context1 = JToken.FromObject(new {
+                some_integer = 1,
+                some_string = "string",
+                some_boolean = true,
+            });
+
+            yield return new object[] {
+                "userId", "abcd1234", "test_key_path", context1, expected1
+            };
+        }
+
     }
 }

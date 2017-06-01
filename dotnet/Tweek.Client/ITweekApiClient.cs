@@ -9,5 +9,7 @@ namespace Tweek.Client
         Task<JToken> Get(string keyPath, IDictionary<string,string> context);
 
         Task AppendContext(string identityType, string identityId, IDictionary<string,JToken> context);
+
+        Task DeleteContextProperty(string identityType, string identityId, string property);
     }
 }

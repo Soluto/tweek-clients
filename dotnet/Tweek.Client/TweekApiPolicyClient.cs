@@ -21,7 +21,15 @@ namespace Tweek.Client
         {
             await mPolicy.ExecuteAsync(
                 async () => await mClient.AppendContext(identityType, identityId, context)
-                    .ContinueWith((a) => (JToken)null)
+                    .ContinueWith(_ => (JToken)null)
+            );
+        }
+
+        public async Task DeleteContextProperty(string identityType, string identityId, string property)
+        {
+            await mPolicy.ExecuteAsync(
+                async () => await mClient.DeleteContextProperty(identityType, identityId, property)
+                    .ContinueWith(_ => (JToken)null)
             );
         }
 

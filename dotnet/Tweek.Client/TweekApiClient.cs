@@ -37,10 +37,14 @@ namespace Tweek.Client
         public async Task<JToken> Get(string keyPath, IDictionary<string, string> context)
         {
             var queryString = (context == null) ? "" : string.Join("&", context.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
-            var escapedKeyPath = Uri.EscapeUriString(keyPath);
 
-            var stream = await mClient.GetStreamAsync($"/api/v1/keys/{escapedKeyPath}?{queryString}");
+            var stream = await mClient.GetStreamAsync($"/api/v1/keys/{keyPath}?{queryString}");
             return await JToken.LoadAsync(new JsonTextReader(new StreamReader(stream)));
+        }
+
+        public async Task DeleteContextProperty(string identityType, string identityId, string property)
+        {
+            await mClient.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
         }
     }
 }
