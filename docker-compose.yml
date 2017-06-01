@@ -43,3 +43,10 @@ services:
       - tweek-api
     environment:
       - TWEEK_LOCAL_API=http://tweek-api
+
+  dotnet_tests:
+    build: ./dotnet
+    depends_on:
+      - tweek-api
+    environment:
+      - TWEEK_TEST_URI=http://tweek-api
