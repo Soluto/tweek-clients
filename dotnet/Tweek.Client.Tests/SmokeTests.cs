@@ -22,9 +22,9 @@ namespace Tweek.Client.Tests
             mOutput = output;
         }
 
-        [Theory(DisplayName = "GetKey produces correct results when called for a single key")]
+        [Theory(DisplayName = "Get produces correct results when called for a single key")]
         [MemberData(nameof(ContextTestCasesProvider.NO_CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetKeyProducesCorrectResultsWithoutInjectedContext(string key, IDictionary<string, string> context, string expected)
+        public async Task GetProducesCorrectResultsWithoutInjectedContext(string key, IDictionary<string, string> context, string expected)
         {
             // Arrange
             var expectedToken = JToken.FromObject(expected);
@@ -36,9 +36,9 @@ namespace Tweek.Client.Tests
             Assert.Equal(expectedToken, result);
         }
 
-        [Theory(DisplayName = "GetKey produces correct results when called for a single key with context")]
+        [Theory(DisplayName = "Get produces correct results when called for a single key with context")]
         [MemberData(nameof(ContextTestCasesProvider.CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetKeyProducesCorrectResultsWithInjectedContext(string key, IDictionary<string, string> context, string expected)
+        public async Task GetProducesCorrectResultsWithInjectedContext(string key, IDictionary<string, string> context, string expected)
         {
             // Arrange
             var expectedToken = JToken.FromObject(expected);
@@ -103,6 +103,45 @@ namespace Tweek.Client.Tests
 
             // Cleanup
             await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when include is specified")]
+        [MemberData(nameof(ContextTestCasesProvider.INCLUDE_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsForInclude(string key, IEnumerable<string> includes, JToken expected)
+        {
+            // Arrange
+
+            // Act
+            var result = await mTweek.Get(key, null, false, false, includes);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when 'flatten' is specified")]
+        [MemberData(nameof(ContextTestCasesProvider.FLATTEN_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsForFlatten(string key, JToken expected)
+        {
+            // Arrange
+
+            // Act
+            var result = await mTweek.Get(key, null, true, false, null);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when 'ignoreKeyTypes' is specified")]
+        [MemberData(nameof(ContextTestCasesProvider.IGNORE_KEY_TYPES_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsForIgnoreKeyTypes(string key, JToken expected)
+        {
+            // Arrange
+
+            // Act
+            var result = await mTweek.Get(key, null, false, true, null);
+
+            // Assert
+            Assert.Equal(expected.ToString(), result.ToString());
         }
 
     }

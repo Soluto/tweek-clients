@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
@@ -93,7 +94,6 @@ namespace Tweek.Client.Tests
 
         public static IEnumerable<object[]> SNAKE_CASE_CASES()
         {
-            // (string identityType, string identityId, string keyPath, JToken context, TestClass expected)
             var expected1 = new TestClass { SomeInteger = 1, SomeString = "string", SomeBoolean = true};
             var context1 = JToken.FromObject(new {
                 some_integer = 1,
@@ -106,5 +106,39 @@ namespace Tweek.Client.Tests
             };
         }
 
+        internal static IEnumerable<object[]> INCLUDE_TEST_CASES()
+        {
+            yield return new object[] {
+                "@tweek_clients_tests/test_category/_",
+                new [] {"test_key1"},
+                JToken.FromObject(new {test_key1 = "def value"})
+            };
+
+            yield return new object[] {
+                "@tweek_clients_tests/test_category/_",
+                new [] {"test_key1", "test_key2"},
+                JToken.FromObject(new {test_key1 = "def value", test_key2 = false})
+            };
+        }
+
+        internal static IEnumerable<object[]> FLATTEN_TEST_CASES()
+        {
+            yield return new object[] {
+                "@tweek_clients_tests/_",
+                JToken.FromObject(new Dictionary<string,object> {
+                    {"test_category/test_key1", "def value"},
+                    {"test_category/test_key2", false},
+                    {"test_category2/user_fruit","apple"}
+                })
+            };
+        }
+
+        internal static IEnumerable<object[]> IGNORE_KEY_TYPES_TEST_CASES()
+        {
+            yield return new object[] {
+                "@tweek_clients_tests/test_category/test_key2",
+                JToken.FromObject("false")
+            };
+        }
     }
 }
