@@ -33,7 +33,7 @@ namespace Tweek.Client
             );
         }
 
-        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, bool flatten, bool ignoreKeyTypes, IEnumerable<string> include)
+        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, bool flatten, bool ignoreKeyTypes, ICollection<string> include)
         {
             return await mPolicy.ExecuteAsync(async () => await mClient.Get(keyPath, context, flatten, ignoreKeyTypes, include));
         }

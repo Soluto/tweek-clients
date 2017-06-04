@@ -31,10 +31,9 @@ namespace Tweek.Client
             await mClient.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
         }
 
-        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, bool flatten, bool ignoreKeyTypes, IEnumerable<string> include)
+        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, bool flatten, bool ignoreKeyTypes, ICollection<string> include)
         {
-            var parameters = context?.ToList();
-            if(parameters == null) parameters = new List<KeyValuePair<string,string>>();
+            var parameters = context?.ToList() ?? new List<KeyValuePair<string,string>>();
             if(flatten) parameters.Add(new KeyValuePair<string, string>("$flatten", "true"));
             if(ignoreKeyTypes) parameters.Add(new KeyValuePair<string, string>("$ignoreKeyTypes", "true"));
 

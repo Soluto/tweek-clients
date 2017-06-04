@@ -107,7 +107,7 @@ namespace Tweek.Client.Tests
 
         [Theory(DisplayName = "Get produces correct results when include is specified")]
         [MemberData(nameof(ContextTestCasesProvider.INCLUDE_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetProducesCorrectResultsForInclude(string key, IEnumerable<string> includes, JToken expected)
+        public async Task GetProducesCorrectResultsForInclude(string key, ICollection<string> includes, JToken expected)
         {
             // Arrange
 
