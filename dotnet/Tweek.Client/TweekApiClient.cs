@@ -13,19 +13,16 @@ namespace Tweek.Client
     public class TweekApiClient : ITweekApiClient
     {
         private HttpClient mClient;
-        private Uri mBaseUri;
         private const string JSON_MEDIATYPE = "application/json";
 
         public TweekApiClient(Uri baseUri)
         {
-            mBaseUri = baseUri;
             mClient = new HttpClient { BaseAddress = baseUri };
         }
 
         public TweekApiClient(HttpClient client)
         {
             mClient = client;
-            mBaseUri = mClient.BaseAddress;
         }
 
         public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
