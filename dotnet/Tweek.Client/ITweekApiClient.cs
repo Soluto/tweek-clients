@@ -6,7 +6,7 @@ namespace Tweek.Client
 {
     public interface ITweekApiClient
     {
-        Task<JToken> Get(string keyPath, IDictionary<string, string> context, bool flatten = false, bool ignoreKeyTypes = false, ICollection<string> include = null);
+        Task<JToken> Get(string keyPath, IDictionary<string, string> context, GetRequestOptions options = null);
 
         Task AppendContext(string identityType, string identityId, IDictionary<string,JToken> context);
 

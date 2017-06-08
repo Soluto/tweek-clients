@@ -110,9 +110,11 @@ namespace Tweek.Client.Tests
         public async Task GetProducesCorrectResultsForInclude(string key, ICollection<string> includes, JToken expected)
         {
             // Arrange
+            var options = new GetRequestOptions { Include = includes };
+            IDictionary<string, string> context = null;
 
             // Act
-            var result = await mTweek.Get(key, null, false, false, includes);
+            var result = await mTweek.Get(key, context, options);
 
             // Assert
             Assert.Equal(expected, result);
@@ -123,9 +125,11 @@ namespace Tweek.Client.Tests
         public async Task GetProducesCorrectResultsForFlatten(string key, JToken expected)
         {
             // Arrange
+            var options = new GetRequestOptions { Flatten = true };
+            IDictionary<string, string> context = null;
 
             // Act
-            var result = await mTweek.Get(key, null, true, false, null);
+            var result = await mTweek.Get(key, context, options);
 
             // Assert
             Assert.Equal(expected, result);
@@ -136,9 +140,11 @@ namespace Tweek.Client.Tests
         public async Task GetProducesCorrectResultsForIgnoreKeyTypes(string key, JToken expected)
         {
             // Arrange
+            var options = new GetRequestOptions { IgnoreKeyTypes = true };
+            IDictionary<string, string> context = null;
 
             // Act
-            var result = await mTweek.Get(key, null, false, true, null);
+            var result = await mTweek.Get(key, context, options);
 
             // Assert
             Assert.Equal(expected.ToString(), result.ToString());
