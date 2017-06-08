@@ -34,10 +34,10 @@ namespace Tweek.Client
         public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, GetRequestOptions options)
         {
             var parameters = context?.ToList() ?? new List<KeyValuePair<string,string>>();
-            if(options.Flatten) parameters.Add(new KeyValuePair<string, string>("$flatten", "true"));
-            if(options.IgnoreKeyTypes) parameters.Add(new KeyValuePair<string, string>("$ignoreKeyTypes", "true"));
+            if(options?.Flatten ?? false) parameters.Add(new KeyValuePair<string, string>("$flatten", "true"));
+            if(options?.IgnoreKeyTypes ?? false) parameters.Add(new KeyValuePair<string, string>("$ignoreKeyTypes", "true"));
 
-            if(options.Include != null)
+            if(options?.Include != null)
             {
                 foreach (var item in options.Include)
                 {
