@@ -14,6 +14,7 @@ namespace Tweek.Client.Tests
     {
         private ITweekApiClient mTweek;
         private ITestOutputHelper mOutput;
+        private static readonly IEqualityComparer<JToken> JTOKEN_COMPARER = new JTokenEqualityComparer();
 
         public SmokeTests(ITestOutputHelper output)
         {
@@ -22,32 +23,35 @@ namespace Tweek.Client.Tests
             mOutput = output;
         }
 
-        [Theory(DisplayName = "GetKey produces correct results when called for a single key")]
-        [MemberData(nameof(ContextTestCasesProvider.NO_CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetKeyProducesCorrectResultsWithoutInjectedContext(string key, IDictionary<string, string> context, string expected)
+        private static void AssertJTokenEqual(JToken expected, JToken actual)
         {
-            // Arrange
-            var expectedToken = JToken.FromObject(expected);
-
-            // Act
-            var result = await mTweek.Get(key, context);
-
-            // Assert
-            Assert.Equal(expectedToken, result);
+            Assert.Equal(expected, actual, JTOKEN_COMPARER);
         }
 
-        [Theory(DisplayName = "GetKey produces correct results when called for a single key with context")]
-        [MemberData(nameof(ContextTestCasesProvider.CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetKeyProducesCorrectResultsWithInjectedContext(string key, IDictionary<string, string> context, string expected)
+        [Theory(DisplayName = "Get produces correct results when called for a single key")]
+        [MemberData(nameof(ContextTestCasesProvider.NO_CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsWithoutInjectedContext(string key, IDictionary<string, string> context, JToken expected)
         {
             // Arrange
-            var expectedToken = JToken.FromObject(expected);
 
             // Act
             var result = await mTweek.Get(key, context);
 
             // Assert
-            Assert.Equal(expectedToken, result);
+            AssertJTokenEqual(expected, result);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when called for a single key with context")]
+        [MemberData(nameof(ContextTestCasesProvider.CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsWithInjectedContext(string key, IDictionary<string, string> context, JToken expected)
+        {
+            // Arrange
+
+            // Act
+            var result = await mTweek.Get(key, context);
+
+            // Assert
+            AssertJTokenEqual(expected, result);
         }
 
         [Theory(DisplayName = "Scan produces correct results when called for a path which has children")]
@@ -61,7 +65,7 @@ namespace Tweek.Client.Tests
             var result = await mTweek.Get(key, null);
 
             // Assert
-            Assert.Equal(expectedToken, result);
+            AssertJTokenEqual(expectedToken, result);
         }
 
         [Theory(DisplayName = "Keys with special characters are handled correctly for Append/Get/Delete operations")]
@@ -76,14 +80,14 @@ namespace Tweek.Client.Tests
             var contextForGet = new Dictionary<string, string> { { identityType, identityId } };
             JToken actual = await mTweek.Get(keyPath, contextForGet);
 
-            Assert.Equal(expected, actual );
+            AssertJTokenEqual(expected, actual);
 
             // Delete
             await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
 
             // Make sure it doesn't appear after delete
             actual = await mTweek.Get(keyPath, contextForGet);
-            Assert.Equal(JValue.CreateNull(), actual);
+            AssertJTokenEqual(JValue.CreateNull(), actual);
         }
 
         [Theory(DisplayName = "Type-safe desirialization should account for snake case names in Tweek")]
@@ -99,10 +103,55 @@ namespace Tweek.Client.Tests
             var actual = await mTweek.Get<TestClass>(keyPath, contextForGet);
 
             // Assert
-            Assert.Equal(JsonConvert.SerializeObject(expected), JsonConvert.SerializeObject(actual));
+            AssertJTokenEqual(JsonConvert.SerializeObject(expected), JsonConvert.SerializeObject(actual));
 
             // Cleanup
             await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when include is specified")]
+        [MemberData(nameof(ContextTestCasesProvider.INCLUDE_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsForInclude(string key, ICollection<string> includes, JToken expected)
+        {
+            // Arrange
+            var options = new GetRequestOptions { Include = includes };
+            IDictionary<string, string> context = null;
+
+            // Act
+            var result = await mTweek.Get(key, context, options);
+
+            // Assert
+            AssertJTokenEqual(expected, result);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when 'flatten' is specified")]
+        [MemberData(nameof(ContextTestCasesProvider.FLATTEN_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsForFlatten(string key, JToken expected)
+        {
+            // Arrange
+            var options = new GetRequestOptions { Flatten = true };
+            IDictionary<string, string> context = null;
+
+            // Act
+            var result = await mTweek.Get(key, context, options);
+
+            // Assert
+            AssertJTokenEqual(expected, result);
+        }
+
+        [Theory(DisplayName = "Get produces correct results when 'ignoreKeyTypes' is specified")]
+        [MemberData(nameof(ContextTestCasesProvider.IGNORE_KEY_TYPES_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
+        public async Task GetProducesCorrectResultsForIgnoreKeyTypes(string key, JToken expected)
+        {
+            // Arrange
+            var options = new GetRequestOptions { IgnoreKeyTypes = true };
+            IDictionary<string, string> context = null;
+
+            // Act
+            var result = await mTweek.Get(key, context, options);
+
+            // Assert
+            AssertJTokenEqual(expected, result);
         }
 
     }

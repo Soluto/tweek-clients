@@ -56,8 +56,8 @@ jobs:
           name: Test dotnet client
           command: |
             docker-compose up -d dotnet_tests && \
-            docker exec -e "VersionSuffix=0.0.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
-            docker exec -e "VersionSuffix=0.0.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+            docker exec -e "VersionSuffix=0.1.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
+            docker exec -e "VersionSuffix=0.1.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
 
       - deploy: 
           name: npm
@@ -83,4 +83,4 @@ jobs:
       - deploy: 
           name: nuget
           command: |
-            docker exec -e "VersionSuffix=0.0.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
+            docker exec -e "VersionSuffix=0.1.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
