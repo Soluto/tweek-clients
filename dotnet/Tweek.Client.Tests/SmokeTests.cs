@@ -14,6 +14,7 @@ namespace Tweek.Client.Tests
     {
         private ITweekApiClient mTweek;
         private ITestOutputHelper mOutput;
+        private static readonly IEqualityComparer<JToken> JTOKEN_COMPARER = new JTokenEqualityComparer();
 
         public SmokeTests(ITestOutputHelper output)
         {
@@ -22,32 +23,35 @@ namespace Tweek.Client.Tests
             mOutput = output;
         }
 
+        private static void AssertJTokenEqual(JToken expected, JToken actual)
+        {
+            Assert.Equal(expected, actual, JTOKEN_COMPARER);
+        }
+
         [Theory(DisplayName = "Get produces correct results when called for a single key")]
         [MemberData(nameof(ContextTestCasesProvider.NO_CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetProducesCorrectResultsWithoutInjectedContext(string key, IDictionary<string, string> context, string expected)
+        public async Task GetProducesCorrectResultsWithoutInjectedContext(string key, IDictionary<string, string> context, JToken expected)
         {
             // Arrange
-            var expectedToken = JToken.FromObject(expected);
 
             // Act
             var result = await mTweek.Get(key, context);
 
             // Assert
-            Assert.Equal(expectedToken, result);
+            AssertJTokenEqual(expected, result);
         }
 
         [Theory(DisplayName = "Get produces correct results when called for a single key with context")]
         [MemberData(nameof(ContextTestCasesProvider.CONTEXT_TEST_CASES), MemberType = typeof(ContextTestCasesProvider))]
-        public async Task GetProducesCorrectResultsWithInjectedContext(string key, IDictionary<string, string> context, string expected)
+        public async Task GetProducesCorrectResultsWithInjectedContext(string key, IDictionary<string, string> context, JToken expected)
         {
             // Arrange
-            var expectedToken = JToken.FromObject(expected);
 
             // Act
             var result = await mTweek.Get(key, context);
 
             // Assert
-            Assert.Equal(expectedToken, result);
+            AssertJTokenEqual(expected, result);
         }
 
         [Theory(DisplayName = "Scan produces correct results when called for a path which has children")]
@@ -61,7 +65,7 @@ namespace Tweek.Client.Tests
             var result = await mTweek.Get(key, null);
 
             // Assert
-            Assert.Equal(expectedToken, result);
+            AssertJTokenEqual(expectedToken, result);
         }
 
         [Theory(DisplayName = "Keys with special characters are handled correctly for Append/Get/Delete operations")]
@@ -76,14 +80,14 @@ namespace Tweek.Client.Tests
             var contextForGet = new Dictionary<string, string> { { identityType, identityId } };
             JToken actual = await mTweek.Get(keyPath, contextForGet);
 
-            Assert.Equal(expected, actual );
+            AssertJTokenEqual(expected, actual);
 
             // Delete
             await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
 
             // Make sure it doesn't appear after delete
             actual = await mTweek.Get(keyPath, contextForGet);
-            Assert.Equal(JValue.CreateNull(), actual);
+            AssertJTokenEqual(JValue.CreateNull(), actual);
         }
 
         [Theory(DisplayName = "Type-safe desirialization should account for snake case names in Tweek")]
@@ -99,7 +103,7 @@ namespace Tweek.Client.Tests
             var actual = await mTweek.Get<TestClass>(keyPath, contextForGet);
 
             // Assert
-            Assert.Equal(JsonConvert.SerializeObject(expected), JsonConvert.SerializeObject(actual));
+            AssertJTokenEqual(JsonConvert.SerializeObject(expected), JsonConvert.SerializeObject(actual));
 
             // Cleanup
             await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
@@ -117,7 +121,7 @@ namespace Tweek.Client.Tests
             var result = await mTweek.Get(key, context, options);
 
             // Assert
-            Assert.Equal(expected, result);
+            AssertJTokenEqual(expected, result);
         }
 
         [Theory(DisplayName = "Get produces correct results when 'flatten' is specified")]
@@ -132,7 +136,7 @@ namespace Tweek.Client.Tests
             var result = await mTweek.Get(key, context, options);
 
             // Assert
-            Assert.Equal(expected, result);
+            AssertJTokenEqual(expected, result);
         }
 
         [Theory(DisplayName = "Get produces correct results when 'ignoreKeyTypes' is specified")]
@@ -147,7 +151,7 @@ namespace Tweek.Client.Tests
             var result = await mTweek.Get(key, context, options);
 
             // Assert
-            Assert.Equal(expected.ToString(), result.ToString());
+            AssertJTokenEqual(expected, result);
         }
 
     }

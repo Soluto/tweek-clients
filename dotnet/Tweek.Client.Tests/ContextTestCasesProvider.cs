@@ -8,9 +8,9 @@ namespace Tweek.Client.Tests
     {
         public static IEnumerable<object[]> NO_CONTEXT_TEST_CASES()
         {
-            yield return new object[] { "@tweek_clients_tests/test_category/test_key1", null, "def value" };
-            yield return new object[] { "@tweek_clients_tests/test_category/test_key2", null, "False" };
-            yield return new object[] { "@tweek_clients_tests/test_category2/user_fruit", null, "apple" };
+            yield return new object[] { "@tweek_clients_tests/test_category/test_key1", null, JToken.FromObject("def value") };
+            yield return new object[] { "@tweek_clients_tests/test_category/test_key2", null, JToken.FromObject(false) };
+            yield return new object[] { "@tweek_clients_tests/test_category2/user_fruit", null, JToken.FromObject("apple") };
         }
 
         public static IEnumerable<object[]> CONTEXT_TEST_CASES()
@@ -18,37 +18,37 @@ namespace Tweek.Client.Tests
             yield return new object [] {
                 "@tweek_clients_tests/test_category2/user_fruit",
                 new Dictionary<string,string> {{"device.DeviceType", "Desktop"}},
-                "orange"
+                JToken.FromObject("orange")
             };
 
             yield return new object [] {
                 "@tweek_clients_tests/test_category2/user_fruit",
                 new Dictionary<string,string> {{"device.DeviceType", "Mobile"}},
-                "apple"
+                JToken.FromObject("apple")
             };
 
             yield return new object [] {
                 "@tweek_clients_tests/test_category/test_key1",
                 new Dictionary<string,string> {{"device.DeviceOsType", "Ios"}},
-                "ios value"
+                JToken.FromObject("ios value")
             };
 
             yield return new object [] {
                 "@tweek_clients_tests/test_category/test_key1",
                 new Dictionary<string,string> {{"device.DeviceOsType", "Android"}},
-                "def value"
+                JToken.FromObject("def value")
             };
 
             yield return new object [] {
                 "@tweek_clients_tests/test_category/test_key2",
                 new Dictionary<string,string> {{"device.PartnerBrandId", "testPartner"}},
-                "True"
+                JToken.FromObject(true)
             };
 
             yield return new object [] {
                 "@tweek_clients_tests/test_category/test_key2",
                 new Dictionary<string,string> {{"device.PartnerBrandId", "anotherTestPartner"}},
-                "False"
+                JToken.FromObject(false)
             };
         }
 
@@ -67,15 +67,15 @@ namespace Tweek.Client.Tests
             };
 
             yield return new object[] {
-                "userId", "abcd1234", "☻icons☕", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+                "userId", "abcd1234", "someKey", JToken.FromObject("☻icons☕"), JToken.FromObject("☻icons☕")
             };
 
             yield return new object[] {
-                "userId", "abcd1234", "עברית", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+                "userId", "abcd1234", "someKey", JToken.FromObject("עברית"), JToken.FromObject("עברית")
             };
 
             yield return new object[] {
-                "userId", "abcd1234", "\nnewline\r", JToken.FromObject("someValue"), JToken.FromObject("someValue")
+                "userId", "abcd1234", "someKey", JToken.FromObject("\nnewline\r"), JToken.FromObject("\nnewline\r")
             };
 
             yield return new object[] {
