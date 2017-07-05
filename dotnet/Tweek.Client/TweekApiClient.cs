@@ -28,7 +28,8 @@ namespace Tweek.Client
         public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
         {
             var content = new StringContent(JsonConvert.SerializeObject(context), Encoding.UTF8, JSON_MEDIATYPE);
-            await mClient.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
+            var result = await mClient.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
+            result.EnsureSuccessStatusCode();
         }
 
         public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, GetRequestOptions options)
@@ -52,7 +53,8 @@ namespace Tweek.Client
 
         public async Task DeleteContextProperty(string identityType, string identityId, string property)
         {
-            await mClient.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
+            var result = await mClient.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
+            result.EnsureSuccessStatusCode();
         }
     }
 }
