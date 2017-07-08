@@ -152,9 +152,7 @@ export default class TweekRepository {
         return this._client
             .fetch<any>('_', fetchConfig)
             .then(config => this._updateTrieKeys(keys, config))
-            .catch(e => {
-                console.warn('failed refreshing keys', keys, e);
-            });
+
     }
 
     private _updateTrieKey(key, config) {

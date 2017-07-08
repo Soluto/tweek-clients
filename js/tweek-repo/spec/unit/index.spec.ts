@@ -18,10 +18,11 @@ const scheduler = (fn: () => void) => fn();
 
 describe("tweek repo test", () => {
     let _client: ITweekClient;
+    let _createClientThatFails: () => ITweekClient;    
     let _tweekRepo;
 
-    async function initRepository(store?: ITweekStore) {
-        _tweekRepo = new TweekRepository({ client: _client });
+    async function initRepository(store?: ITweekStore, customClient?: ITweekClient) {
+        _tweekRepo = new TweekRepository({ client: customClient || _client });
         if (store) {
             await _tweekRepo.useStore(store);            
         }
@@ -40,6 +41,12 @@ describe("tweek repo test", () => {
             "deeply_nested/a/b/c/d/value": "value_5",
             "some_other_path/inner_path_2/third_value": "value_3"
         });
+
+        _createClientThatFails = () => {
+            http.get().to("/configurations/_/*").willFail(500);
+            return createTweekClient("http://localhost:1234/configurations/_", {},
+                (url: string) => <any>axios.get(url).then(r => r.data));        
+        }
 
         _client = createTweekClient("http://localhost:1234/configurations/_", {},
             (url: string) => <any>axios.get(url).then(r => r.data));
@@ -275,6 +282,7 @@ describe("tweek repo test", () => {
             expect(refreshPromise).to.eventually.equal(null, 'should not return any keys');
         });
 
+        //TODO: make this test more clear, it should not throw error from fetch in order the execute the scenario
         it("should call client fetch with all current keys", async () => {
             // Arrange
             let store = new MemoryStore();
@@ -303,7 +311,7 @@ describe("tweek repo test", () => {
             };
 
             // Act
-            await _tweekRepo.refresh();
+            await _tweekRepo.refresh().catch(_ => {});
 
             // Assert
             expect(fetchStub).to.have.been.calledOnce;
@@ -312,6 +320,23 @@ describe("tweek repo test", () => {
             const [fetchUrl, fetchConfig] = fetchParameters;
             expect(fetchUrl).to.eql('_');
             expect(fetchConfig).to.eql(expectedFetchConfig)
+        });
+
+        it("should throw error when fetch fails", async () => {
+            // Arrange
+            _tweekRepo = new TweekRepository({ client: _createClientThatFails() });
+            await _tweekRepo.prepare("some_path/key");
+
+            // Act
+            try {
+                await _tweekRepo.refresh();
+            }
+            catch (e) {
+                // Assert                
+                expect(e.message).to.equal("Request failed with status code 500")
+                return;
+            }
+            expect.fail();
         });
     });
 })
