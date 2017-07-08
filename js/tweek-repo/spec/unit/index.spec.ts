@@ -17,14 +17,14 @@ const { expect, assert } = chai;
 const scheduler = (fn: () => void) => fn();
 
 describe("tweek repo test", () => {
-    let _client: ITweekClient;
+    let _defaultClient: ITweekClient;
     let _createClientThatFails: () => ITweekClient;    
     let _tweekRepo;
 
-    async function initRepository(store?: ITweekStore, customClient?: ITweekClient) {
-        _tweekRepo = new TweekRepository({ client: customClient || _client });
-        if (store) {
-            await _tweekRepo.useStore(store);            
+    async function initRepository(customStore?: ITweekStore, customClient?: ITweekClient) {
+        _tweekRepo = new TweekRepository({ client: customClient || _defaultClient });
+        if (customStore) {
+            await _tweekRepo.useStore(customStore);            
         }
     };
 
@@ -48,7 +48,7 @@ describe("tweek repo test", () => {
                 (url: string) => <any>axios.get(url).then(r => r.data));        
         }
 
-        _client = createTweekClient("http://localhost:1234/configurations/_", {},
+        _defaultClient = createTweekClient("http://localhost:1234/configurations/_", {},
             (url: string) => <any>axios.get(url).then(r => r.data));
     });
 
@@ -230,7 +230,7 @@ describe("tweek repo test", () => {
 
     describe("add flat keys", () => {
         it("should add flat key and update it after refresh", async () => {
-            const tweekRepo = new TweekRepository({ client: _client });
+            const tweekRepo = new TweekRepository({ client: _defaultClient });
             const keys = {
                 "some_path/inner_path_1/first_value": "default_value"
             }
