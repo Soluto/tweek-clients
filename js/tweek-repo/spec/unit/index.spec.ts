@@ -17,13 +17,14 @@ const { expect, assert } = chai;
 const scheduler = (fn: () => void) => fn();
 
 describe("tweek repo test", () => {
-    let _client: ITweekClient;
+    let _defaultClient: ITweekClient;
+    let _createClientThatFails: () => ITweekClient;    
     let _tweekRepo;
 
-    async function initRepository(store?: ITweekStore) {
-        _tweekRepo = new TweekRepository({ client: _client });
-        if (store) {
-            await _tweekRepo.useStore(store);            
+    async function initRepository(customStore?: ITweekStore, customClient?: ITweekClient) {
+        _tweekRepo = new TweekRepository({ client: customClient || _defaultClient });
+        if (customStore) {
+            await _tweekRepo.useStore(customStore);            
         }
     };
 
@@ -41,7 +42,13 @@ describe("tweek repo test", () => {
             "some_other_path/inner_path_2/third_value": "value_3"
         });
 
-        _client = createTweekClient("http://localhost:1234/configurations/_", {},
+        _createClientThatFails = () => {
+            http.get().to("/configurations/_/*").willFail(500);
+            return createTweekClient("http://localhost:1234/configurations/_", {},
+                (url: string) => <any>axios.get(url).then(r => r.data));        
+        }
+
+        _defaultClient = createTweekClient("http://localhost:1234/configurations/_", {},
             (url: string) => <any>axios.get(url).then(r => r.data));
     });
 
@@ -223,7 +230,7 @@ describe("tweek repo test", () => {
 
     describe("add flat keys", () => {
         it("should add flat key and update it after refresh", async () => {
-            const tweekRepo = new TweekRepository({ client: _client });
+            const tweekRepo = new TweekRepository({ client: _defaultClient });
             const keys = {
                 "some_path/inner_path_1/first_value": "default_value"
             }
@@ -275,6 +282,7 @@ describe("tweek repo test", () => {
             expect(refreshPromise).to.eventually.equal(null, 'should not return any keys');
         });
 
+        //TODO: make this test more clear, it should not throw error from fetch in order the execute the scenario
         it("should call client fetch with all current keys", async () => {
             // Arrange
             let store = new MemoryStore();
@@ -303,7 +311,7 @@ describe("tweek repo test", () => {
             };
 
             // Act
-            await _tweekRepo.refresh();
+            await _tweekRepo.refresh().catch(_ => {});
 
             // Assert
             expect(fetchStub).to.have.been.calledOnce;
@@ -312,6 +320,23 @@ describe("tweek repo test", () => {
             const [fetchUrl, fetchConfig] = fetchParameters;
             expect(fetchUrl).to.eql('_');
             expect(fetchConfig).to.eql(expectedFetchConfig)
+        });
+
+        it("should throw error when fetch fails", async () => {
+            // Arrange
+            _tweekRepo = new TweekRepository({ client: _createClientThatFails() });
+            await _tweekRepo.prepare("some_path/key");
+
+            // Act
+            try {
+                await _tweekRepo.refresh();
+            }
+            catch (e) {
+                // Assert                
+                expect(e.message).to.equal("Request failed with status code 500")
+                return;
+            }
+            expect.fail();
         });
     });
 })
