@@ -124,6 +124,6 @@ describe('tweek repo behavior test', () => {
           values.forEach((x, index) =>
             expect(x.value).to.eql(test.expectedKeys[index].value, 'should have correct value'));
         })
-        .catch(() => { throw 'failed getting keys' });
+        .catch((ex) => { console.log('failed getting keys'); throw ex });
     }));
 });
