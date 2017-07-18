@@ -31,12 +31,14 @@ function convertTypingFromJSON(target) {
             return target;
         }
     }
-    if (typeof (target) === "object") {
+    else if (typeof (target) === "object") {
         return Object.keys(target).reduce(function (o, key) {
             o[key] = convertTypingFromJSON(target[key]);
             return o;
         }, {});
     }
+    else
+        return target;
 }
 var TweekClient = (function () {
     function TweekClient(config) {
@@ -78,17 +80,17 @@ var TweekClient = (function () {
         }
         return result;
     };
+    TweekClient.ENCODE_$_CHARACTER = encodeURIComponent('$');
+    TweekClient.ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
     return TweekClient;
 }());
-TweekClient.ENCODE_$_CHARACTER = encodeURIComponent('$');
-TweekClient.ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
 exports.TweekClient = TweekClient;
 function createTweekClient(baseServiceUrl, context, restGetter) {
     if (restGetter === void 0) { restGetter = function (url) { return fetch(url).then(function (r) { return r.json(); }); }; }
     return new TweekClient({
         baseServiceUrl: baseServiceUrl,
         casing: "camelCase",
-        convertTyping: true,
+        convertTyping: false,
         context: context,
         restGetter: restGetter
     });

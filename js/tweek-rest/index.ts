@@ -45,12 +45,13 @@ function convertTypingFromJSON(target) {
             return target;
         }
     }
-    if (typeof (target) === "object") {
+    else if (typeof (target) === "object") {
         return Object.keys(target).reduce((o, key) => {
             o[key] = convertTypingFromJSON(target[key]);
             return o;
         }, {});
     }
+    else return target;
 }
 
 export interface ITweekClient {
@@ -122,7 +123,7 @@ export function createTweekClient(baseServiceUrl: string,
     return new TweekClient({
         baseServiceUrl,
         casing: "camelCase",
-        convertTyping: true,
+        convertTyping: false,
         context,
         restGetter
     });

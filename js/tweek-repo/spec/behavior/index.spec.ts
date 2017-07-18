@@ -13,7 +13,7 @@ describe('tweek repo behavior test', () => {
   let _tweekClient: ITweekClient;
 
   async function initTweekRepository(context: Context = {}) {
-    _tweekClient = createTweekClient(TWEEK_LOCAL_API + '/configurations/',
+    _tweekClient = createTweekClient(TWEEK_LOCAL_API + '/api/v1/keys/',
       {},
       (url: string) => <any>fetch(url).then(r => r.json()));
 
@@ -109,21 +109,23 @@ describe('tweek repo behavior test', () => {
       await initTweekRepository(test.context);
 
       test.pathsToPrepare.forEach(x => _tweekRepo.prepare(x));
-      const getKeysValuesPromises: Promise<any>[] = [];
 
       // Act
       await _tweekRepo.refresh();
 
       // Assert
-      test.expectedKeys.forEach(x => {
-        getKeysValuesPromises.push(_tweekRepo.get(x.keyName));
-      });
+      const getKeysValuesPromises:Promise<any>[] = test.expectedKeys.map(x => 
+          _tweekRepo.get(x.keyName)
+      );
 
-      await Promise.all(getKeysValuesPromises)
-        .then(values => {
-          values.forEach((x, index) =>
+      try{
+        const values = await Promise.all(getKeysValuesPromises);
+        values.forEach((x, index) =>
             expect(x.value).to.eql(test.expectedKeys[index].value, 'should have correct value'));
-        })
-        .catch(() => { throw 'failed getting keys' });
+      }
+      catch(ex){
+         console.log('failed getting keys');
+         throw ex;
+      }
     }));
 });

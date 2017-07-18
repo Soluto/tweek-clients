@@ -31,11 +31,11 @@ describe("tweek repo test", () => {
     beforeEach(() => {
         TweekServer.start(1234);
 
-        http.get().to("/configurations/_/*").willReturn({
+        http.get().to("/api/v1/keys/_/*").willReturn({
             "my_path/string_value": "my-string",
-            "my_path/inner_path_1/int_value": "55",
-            "my_path/inner_path_1/bool_positive_value": "true",
-            "my_path/inner_path_2/bool_negative_value": "false",
+            "my_path/inner_path_1/int_value": 55,
+            "my_path/inner_path_1/bool_positive_value": true,
+            "my_path/inner_path_2/bool_negative_value": false,
             "some_path/inner_path_1/first_value": "value_1",
             "some_path/inner_path_1/second_value": "value_2",
             "deeply_nested/a/b/c/d/value": "value_5",
@@ -43,12 +43,12 @@ describe("tweek repo test", () => {
         });
 
         _createClientThatFails = () => {
-            http.get().to("/configurations/_/*").willFail(500);
-            return createTweekClient("http://localhost:1234/configurations/_", {},
+            http.get().to("/api/v1/keys/_/*").willFail(500);
+            return createTweekClient("http://localhost:1234/api/v1/keys", {},
                 (url: string) => <any>axios.get(url).then(r => r.data));        
         }
 
-        _defaultClient = createTweekClient("http://localhost:1234/configurations/_", {},
+        _defaultClient = createTweekClient("http://localhost:1234/api/v1/keys", {},
             (url: string) => <any>axios.get(url).then(r => r.data));
     });
 
