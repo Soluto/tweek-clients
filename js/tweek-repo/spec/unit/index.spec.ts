@@ -44,11 +44,11 @@ describe("tweek repo test", () => {
 
         _createClientThatFails = () => {
             http.get().to("/api/v1/keys/_/*").willFail(500);
-            return createTweekClient("http://localhost:1234/api/v1/keys/_", {},
+            return createTweekClient("http://localhost:1234/api/v1/keys", {},
                 (url: string) => <any>axios.get(url).then(r => r.data));        
         }
 
-        _defaultClient = createTweekClient("http://localhost:1234/api/v1/keys/_", {},
+        _defaultClient = createTweekClient("http://localhost:1234/api/v1/keys", {},
             (url: string) => <any>axios.get(url).then(r => r.data));
     });
 
