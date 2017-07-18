@@ -98,8 +98,6 @@ export class TweekClient implements ITweekClient {
 
         if (convertTyping) {
             result = result.then(convertTypingFromJSON);
-        } else{
-            console.log("not converting")
         }
 
         return <Promise<T>>result;
@@ -125,7 +123,7 @@ export function createTweekClient(baseServiceUrl: string,
     return new TweekClient({
         baseServiceUrl,
         casing: "camelCase",
-        convertTyping: true,
+        convertTyping: false,
         context,
         restGetter
     });
