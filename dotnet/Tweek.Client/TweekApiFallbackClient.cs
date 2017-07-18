@@ -16,7 +16,7 @@ namespace Tweek.Client
             public Exception Exception { get; set; }
         }
 
-        public event EventHandler<ApiCallErrorArgs> ApiCallErrorHandler = (sender, args) => { };
+        public event EventHandler<ApiCallErrorArgs> ApiCallErrorHandler;
 
         IEnumerable<ITweekApiClient> mClients;
 
@@ -37,8 +37,7 @@ namespace Tweek.Client
 
         public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, GetRequestOptions options = null)
         {
-            return await ExecuteWithFallback(async client =>
-             await client.Get(keyPath, context, options));
+            return await ExecuteWithFallback(async client => await client.Get(keyPath, context, options));
         }
 
         private async Task<T> ExecuteWithFallback<T>(Func<ITweekApiClient, Task<T>> action)
@@ -61,7 +60,7 @@ namespace Tweek.Client
                         Exception = exception,
                         TimeElapsed = stopwatch.Elapsed,
                     };
-                    ApiCallErrorHandler(this, errorArgs);
+                    ApiCallErrorHandler?.Invoke(this, errorArgs);
                 }
             }
             throw new AggregateException("All fallbacks are exhausted", exceptions);
