@@ -70,6 +70,7 @@ jobs:
               fi
               if [[ $(node -p -e "require('./js/tweek-repo/package.json').version") != $(npm show @npmsoluto/tweek-repo version) ]]; then
                 echo "publish tweek-repo"
+                cd js/tweek-rest && yarn && npm run build && cd ../..
                 cd js/tweek-repo && yarn && npm run build && npm publish && cd ../..
               fi
               if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show @npmsoluto/react-tweek version) ]]; then

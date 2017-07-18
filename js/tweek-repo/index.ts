@@ -1,5 +1,5 @@
 import Trie from './trie';
-import { ITweekClient, Context, FetchConfig } from '../tweek-rest/dist/index.d';
+import { ITweekClient, Context, FetchConfig } from '../tweek-rest';
 import { partitionByIndex, snakeToCamelCase, distinct } from './utils';
 import Optional from "./optional";
 
