@@ -23,7 +23,8 @@ namespace Tweek.Client
             set
             {
                 mApiClientName = value;
-                mClient.DefaultRequestHeaders.Add("X-ApiClient", mApiClientName);
+                mClient.DefaultRequestHeaders.Remove("X-Api-Client");
+                mClient.DefaultRequestHeaders.Add("X-Api-Client", mApiClientName);
             }
         }
 
