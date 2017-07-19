@@ -8,8 +8,10 @@ namespace Tweek.Client
 {
     public class TweekApiPolicyClient: ITweekApiClient
     {
-       private ITweekApiClient mClient;
-       private Policy<JToken> mPolicy;
+        private ITweekApiClient mClient;
+        private Policy<JToken> mPolicy;
+
+        public string ApiClientName { get => mClient?.ApiClientName; set { mClient.ApiClientName = value; } }
 
         public TweekApiPolicyClient(ITweekApiClient client, Policy<JToken> policy)
         {
