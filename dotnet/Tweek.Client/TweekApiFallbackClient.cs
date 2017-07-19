@@ -20,25 +20,6 @@ namespace Tweek.Client
 
         IEnumerable<ITweekApiClient> mClients;
 
-        private string mApiClientName;
-        public string ApiClientName
-        {
-            get => mApiClientName;
-            set
-            {
-                mApiClientName = value;
-                SetApiClientNameForAllClients(mApiClientName);
-            }
-        }
-
-        private void SetApiClientNameForAllClients(string apiClientName)
-        {
-            foreach (var client in mClients)
-            {
-                client.ApiClientName = apiClientName;
-            }
-        }
-
         public TweekApiFallbackClient(IEnumerable<ITweekApiClient> clients)
         {
             mClients = clients;

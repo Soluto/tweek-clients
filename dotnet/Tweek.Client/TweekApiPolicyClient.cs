@@ -11,8 +11,6 @@ namespace Tweek.Client
         private ITweekApiClient mClient;
         private Policy<JToken> mPolicy;
 
-        public string ApiClientName { get => mClient?.ApiClientName; set { mClient.ApiClientName = value; } }
-
         public TweekApiPolicyClient(ITweekApiClient client, Policy<JToken> policy)
         {
             mClient = client;
