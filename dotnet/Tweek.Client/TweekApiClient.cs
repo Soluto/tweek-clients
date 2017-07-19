@@ -15,6 +15,19 @@ namespace Tweek.Client
         private HttpClient mClient;
         private const string JSON_MEDIATYPE = "application/json";
 
+        private string mApiClientName;
+
+        public string ApiClientName
+        {
+            get => mApiClientName;
+            set
+            {
+                mApiClientName = value;
+                mClient.DefaultRequestHeaders.Remove("X-Api-Client");
+                mClient.DefaultRequestHeaders.Add("X-Api-Client", mApiClientName);
+            }
+        }
+
         public TweekApiClient(Uri baseUri)
         {
             mClient = new HttpClient { BaseAddress = baseUri };
