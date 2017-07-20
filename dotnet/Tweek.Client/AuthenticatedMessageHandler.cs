@@ -10,16 +10,16 @@ namespace Tweek.Client
     public class AuthenticatedMessageHandler : DelegatingHandler
     {
 
-        public delegate Task<string> BearerTokenProviderDelegate();
+        public delegate Task<string> BearerTokenProvider();
 
-        private BearerTokenProviderDelegate mGetBearerToken;
-        public AuthenticatedMessageHandler(HttpMessageHandler innerHandler, BearerTokenProviderDelegate getBearerToken)
+        private BearerTokenProvider mGetBearerToken;
+        public AuthenticatedMessageHandler(HttpMessageHandler innerHandler, BearerTokenProvider getBearerToken)
         {
             InnerHandler = innerHandler;
             mGetBearerToken = getBearerToken;
         }
 
-        public AuthenticatedMessageHandler(BearerTokenProviderDelegate getBearerToken) : this(new HttpClientHandler(), getBearerToken)
+        public AuthenticatedMessageHandler(BearerTokenProvider getBearerToken) : this(new HttpClientHandler(), getBearerToken)
         {
         }
 
