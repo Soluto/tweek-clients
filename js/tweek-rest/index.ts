@@ -1,4 +1,5 @@
 import * as queryString from 'query-string';
+import 'isomorphic-fetch';
 
 export type IdentityContext = { id?: string; } & {
     [prop: string]: string;
@@ -20,7 +21,7 @@ export type FetchConfig = {
 
 export type TweekInitConfig = FetchConfig & {
     baseServiceUrl: string;
-    restGetter: <T>(url: string) => Promise<T>;
+    fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 }
 
 function captialize(string) {
@@ -56,6 +57,8 @@ function convertTypingFromJSON(target) {
 
 export interface ITweekClient {
     fetch<T>(path: string, config?: FetchConfig): Promise<T>;
+    appendContext(identityType: string, identityId: string, context: object): Promise<void>;
+    deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
 }
 
 export class TweekClient implements ITweekClient {
@@ -77,7 +80,7 @@ export class TweekClient implements ITweekClient {
     }
 
     fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
-        const { casing, flatten, baseServiceUrl, restGetter, convertTyping, context, include } =
+        const { casing, flatten, baseServiceUrl, convertTyping, context, include } =
             <TweekInitConfig & FetchConfig>{ ...this.config, ..._config };
         let queryParamsObject = this._contextToQueryParams(context);
 
@@ -89,8 +92,8 @@ export class TweekClient implements ITweekClient {
         let queryParams = queryString.stringify(queryParamsObject);
         queryParams = this.queryParamsEncoder(queryParams);
 
-        const url = baseServiceUrl + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? `?${queryParams}` : '');
-        let result = restGetter<any>(url);
+        const url = baseServiceUrl + '/api/v1/keys' + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? `?${queryParams}` : '');
+        let result = this.config.fetch(url).then(response => response.json());
 
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);
@@ -101,6 +104,28 @@ export class TweekClient implements ITweekClient {
         }
 
         return <Promise<T>>result;
+    }
+
+    appendContext(identityType: string, identityId: string, context: object): Promise<void> {
+        const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
+        let result = this.config.fetch(url, { method: 'POST', body: context })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error appending context, code ${response.status}, message: '${response.statusText}'`);
+                }
+            });
+        return <Promise<void>>result;
+    }
+
+    deleteContext(identityType: string, identityId: string, property: string): Promise<void> {
+        const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}/${property}`;
+        let result = this.config.fetch(url, { method: 'DELETE' })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error deleting context property, code ${response.status}, message: '${response.statusText}'`);
+                }
+            });
+        return <Promise<void>>result;
     }
 
     public queryParamsEncoder = (queryParams: string) => queryParams
@@ -117,14 +142,12 @@ export class TweekClient implements ITweekClient {
     }
 }
 
-export function createTweekClient(baseServiceUrl: string,
-    context: any,
-    restGetter: <T>(url: string) => Promise<T> = <T>(url: string) => fetch(url).then(r => r.json())) {
+export function createTweekClient(baseServiceUrl: string, context: any) {
     return new TweekClient({
         baseServiceUrl,
         casing: "camelCase",
         convertTyping: false,
         context,
-        restGetter
+        fetch,
     });
 }

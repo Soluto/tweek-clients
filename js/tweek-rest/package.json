@@ -4,6 +4,7 @@
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "query-string": "^4.3.2"
   },
   "devDependencies": {
@@ -12,9 +13,11 @@
     "@types/mocha": "^2.2.36",
     "@types/sinon": "^1.16.34",
     "@types/sinon-chai": "^2.7.27",
+    "@types/sinon-as-promised": "^4.0.3",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
     "sinon": "^1.17.7",
+    "sinon-as-promised": "^4.0.3",
     "sinon-chai": "^2.8.0",
     "ts-node": "^3.2.0",
     "typescript": "^2.4.1"
