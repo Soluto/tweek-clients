@@ -1,9 +1,10 @@
 {
   "name": "@npmsoluto/tweek-rest",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "query-string": "^4.3.2"
   },
   "devDependencies": {
@@ -11,10 +12,14 @@
     "@types/isomorphic-fetch": "^0.0.34",
     "@types/mocha": "^2.2.36",
     "@types/sinon": "^1.16.34",
+    "@types/sinon-as-promised": "^4.0.3",
     "@types/sinon-chai": "^2.7.27",
+    "@types/chai-as-promised": "0.0.31",
     "chai": "^3.5.0",
+    "chai-as-promised": "^7.1.1",
     "mocha": "^3.2.0",
     "sinon": "^1.17.7",
+    "sinon-as-promised": "^4.0.3",
     "sinon-chai": "^2.8.0",
     "ts-node": "^3.2.0",
     "typescript": "^2.4.1"
@@ -25,5 +30,5 @@
     "build": "tsc"
   },
   "author": "",
-  "license": "APL"
+  "license": "MIT"
 }

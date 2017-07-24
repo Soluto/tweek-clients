@@ -1,6 +1,6 @@
 {
   "name": "@npmsoluto/tweek-repo",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "",
   "main": "./dist/tweek-repo/index.js",
   "dependencies": {
@@ -35,5 +35,5 @@
     "build": "tsc"
   },
   "author": "",
-  "license": "APL"
+  "license": "MIT"
 }

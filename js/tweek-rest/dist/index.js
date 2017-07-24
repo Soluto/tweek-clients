@@ -9,6 +9,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var queryString = require("query-string");
+require("isomorphic-fetch");
 function captialize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -62,7 +63,7 @@ var TweekClient = (function () {
         }
     }
     TweekClient.prototype.fetch = function (path, _config) {
-        var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, restGetter = _a.restGetter, convertTyping = _a.convertTyping, context = _a.context, include = _a.include;
+        var _a = __assign({}, this.config, _config), casing = _a.casing, flatten = _a.flatten, baseServiceUrl = _a.baseServiceUrl, convertTyping = _a.convertTyping, context = _a.context, include = _a.include;
         var queryParamsObject = this._contextToQueryParams(context);
         if (flatten) {
             queryParamsObject['$flatten'] = true;
@@ -70,8 +71,16 @@ var TweekClient = (function () {
         queryParamsObject['$include'] = include;
         var queryParams = queryString.stringify(queryParamsObject);
         queryParams = this.queryParamsEncoder(queryParams);
-        var url = baseServiceUrl + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? "?" + queryParams : '');
-        var result = restGetter(url);
+        var url = baseServiceUrl + '/api/v1/keys' + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? "?" + queryParams : '');
+        var result = this.config.fetch(url)
+            .then(function (response) {
+            if (response.ok) {
+                return response.json();
+            }
+            else {
+                return Promise.reject(new Error(response.statusText));
+            }
+        });
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);
         }
@@ -80,19 +89,38 @@ var TweekClient = (function () {
         }
         return result;
     };
+    TweekClient.prototype.appendContext = function (identityType, identityId, context) {
+        var url = this.config.baseServiceUrl + "/api/v1/context/" + identityType + "/" + identityId;
+        var result = this.config.fetch(url, { method: 'POST', body: context })
+            .then(function (response) {
+            if (!response.ok) {
+                throw new Error("Error appending context, code " + response.status + ", message: '" + response.statusText + "'");
+            }
+        });
+        return result;
+    };
+    TweekClient.prototype.deleteContext = function (identityType, identityId, property) {
+        var url = this.config.baseServiceUrl + "/api/v1/context/" + identityType + "/" + identityId + "/" + property;
+        var result = this.config.fetch(url, { method: 'DELETE' })
+            .then(function (response) {
+            if (!response.ok) {
+                throw new Error("Error deleting context property, code " + response.status + ", message: '" + response.statusText + "'");
+            }
+        });
+        return result;
+    };
     TweekClient.ENCODE_$_CHARACTER = encodeURIComponent('$');
     TweekClient.ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
     return TweekClient;
 }());
 exports.TweekClient = TweekClient;
-function createTweekClient(baseServiceUrl, context, restGetter) {
-    if (restGetter === void 0) { restGetter = function (url) { return fetch(url).then(function (r) { return r.json(); }); }; }
+function createTweekClient(baseServiceUrl, context) {
     return new TweekClient({
         baseServiceUrl: baseServiceUrl,
         casing: "camelCase",
         convertTyping: false,
         context: context,
-        restGetter: restGetter
+        fetch: fetch,
     });
 }
 exports.createTweekClient = createTweekClient;
