@@ -2,8 +2,10 @@ import 'mocha';
 import sinon = require('sinon');
 import chai = require('chai');
 import sinonChai = require('sinon-chai');
+import chaiAsProised = require('chai-as-promised');
 import { FetchConfig } from '../index';
 chai.use(sinonChai);
+chai.use(chaiAsProised);
 let {expect} = chai;
 
 import { TweekClient } from '../index';
@@ -73,17 +75,18 @@ describe("tweek rest appendContext", () => {
                 fetchStub.rejects("Error!")
             }
             const expectedCallArgs = [test.expectedUrl, { method: 'POST', body: test.context }];
-            sinon.spy(tweekClient, 'appendContext');
-            let exception;
 
             // Act
-            await tweekClient.appendContext(test.identityType, test.identityId, test.context).catch(error => exception = error);
+            let testPromise = tweekClient.appendContext(test.identityType, test.identityId, test.context);
 
             // Assert
             expect(fetchStub).to.have.been.calledOnce;
             expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
             if(!test.expectedSuccess) {
-                exception.message == "Error!";
+                expect(testPromise).to.be.rejectedWith(Error, "Error");
+            }
+            else {
+                expect(testPromise).to.be.fulfilled;
             }
         });
     });
