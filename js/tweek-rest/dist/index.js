@@ -72,7 +72,15 @@ var TweekClient = (function () {
         var queryParams = queryString.stringify(queryParamsObject);
         queryParams = this.queryParamsEncoder(queryParams);
         var url = baseServiceUrl + '/api/v1/keys' + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? "?" + queryParams : '');
-        var result = this.config.fetch(url).then(function (response) { return response.json(); });
+        var result = this.config.fetch(url)
+            .then(function (response) {
+            if (response.ok) {
+                return response.json();
+            }
+            else {
+                return Promise.reject(new Error(response.statusText));
+            }
+        });
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);
         }

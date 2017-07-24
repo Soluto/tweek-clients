@@ -44,12 +44,10 @@ describe("tweek repo test", () => {
 
         _createClientThatFails = () => {
             http.get().to("/api/v1/keys/_/*").willFail(500);
-            return createTweekClient("http://localhost:1234/api/v1/keys", {},
-                (url: string) => <any>axios.get(url).then(r => r.data));        
+            return createTweekClient("http://localhost:1234/", {});
         }
 
-        _defaultClient = createTweekClient("http://localhost:1234/api/v1/keys", {},
-            (url: string) => <any>axios.get(url).then(r => r.data));
+        _defaultClient = createTweekClient("http://localhost:1234/", {});
     });
 
     afterEach(() => {
@@ -266,8 +264,12 @@ describe("tweek repo test", () => {
             let store = new MemoryStore();
 
             const fetchStub = sinon.stub();
+            const appendContextStub = sinon.stub();
+            const deleteContextStub = sinon.stub();
             const clientMock: ITweekClient = {
-                fetch: <any>fetchStub
+                fetch: <any>fetchStub,
+                appendContext: appendContextStub,
+                deleteContext: deleteContextStub,
             };
 
             _tweekRepo = new TweekRepository({client: clientMock});
@@ -288,9 +290,13 @@ describe("tweek repo test", () => {
             let store = new MemoryStore();
 
             const fetchStub = sinon.stub();
+            const appendContextStub = sinon.stub();
+            const deleteContextStub = sinon.stub();
             fetchStub.onCall(0).returns(Promise.reject(''));
             const clientMock: ITweekClient = {
-                fetch: <any>fetchStub
+                fetch: <any>fetchStub,
+                appendContext: appendContextStub,
+                deleteContext: deleteContextStub,
             };
 
             _tweekRepo = new TweekRepository({ client: clientMock });
@@ -333,7 +339,7 @@ describe("tweek repo test", () => {
             }
             catch (e) {
                 // Assert                
-                expect(e.message).to.equal("Request failed with status code 500")
+                expect(e.message).to.equal("Internal Server Error")
                 return;
             }
             expect.fail();

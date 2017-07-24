@@ -93,7 +93,15 @@ export class TweekClient implements ITweekClient {
         queryParams = this.queryParamsEncoder(queryParams);
 
         const url = baseServiceUrl + '/api/v1/keys' + (path.startsWith('/') ? '' : '/') + path + (!!queryParams ? `?${queryParams}` : '');
-        let result = this.config.fetch(url).then(response => response.json());
+        let result: Promise<any> = this.config.fetch(url)
+            .then(response => {
+                if (response.ok) {
+                    return response.json()
+                }
+                else {
+                    return Promise.reject(new Error(response.statusText));
+                }
+            });
 
         if (!flatten && casing === "camelCase") {
             result = result.then(snakeToCamelCase);
