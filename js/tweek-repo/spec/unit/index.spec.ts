@@ -344,5 +344,18 @@ describe("tweek repo test", () => {
             }
             expect.fail();
         });
+
+        it("should remove key if missing after refresh", async () => {
+            //Arrange
+            let store = new MemoryStore({ 'some_key/should_be_removed': 'some_value' });
+            await initRepository(store);
+
+            //Act
+            await _tweekRepo.refresh();
+            const key = await _tweekRepo.get("some_key/should_be_removed");
+
+            //Assert
+            expect(key).to.deep.include({ value: undefined, hasValue: false});
+        });
     });
-})
+});
