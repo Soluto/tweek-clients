@@ -183,7 +183,8 @@ export default class TweekRepository {
 
     private _updateTrieKeys(keys, config) {
         keys.forEach(keyToUpdate => {
-            if (!isScan(keyToUpdate)) {
+            const isScan = keyToUpdate.slice(-1) === "_";
+            if (!isScan) {
                 this.updateNode(keyToUpdate, this._cache.get(keyToUpdate), config[keyToUpdate]);
                 return;
             }
