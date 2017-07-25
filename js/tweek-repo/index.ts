@@ -53,11 +53,11 @@ export type TweekRepositoryConfig = {
 export type ConfigurationLocation = "local" | "remote";
 
 let getAllPrefixes = (key) => {
-    return partitionByIndex(key.split("/"), -1)[0].reduce((acc, next) =>
+    return key.split("/").slice(0, -1).reduce((acc, next) =>
         ([...acc, [...acc.slice(-1), next].join("/")]), []);
 }
 
-let getKeyPrefix = (key) => key === "_" ? "" : partitionByIndex(key.split("/"), -1)[0].join("/");
+let getKeyPrefix = (key) => key.split("/").slice(0, -1).join("/");
 
 let flatMap = (arr, fn) => Array.prototype.concat.apply([], arr.map(fn))
 
@@ -183,8 +183,7 @@ export default class TweekRepository {
 
     private _updateTrieKeys(keys, config) {
         keys.forEach(keyToUpdate => {
-            const isScan = keyToUpdate.slice(-1) === "_";
-            if (!isScan) {
+            if (!isScan(keyToUpdate)) {
                 this.updateNode(keyToUpdate, this._cache.get(keyToUpdate), config[keyToUpdate]);
                 return;
             }
@@ -217,10 +216,9 @@ export default class TweekRepository {
     }
 
     private updateNode(key, node, value) {
-        if (node.state !== "cached" && value === undefined) {
+        if (value === undefined) {
             this._cache.set(key, { state: "missing" });
-        }
-        else if (value !== undefined) {
+        } else {
             this._cache.set(key, {
                 state: "cached",
                 isScan: false,
