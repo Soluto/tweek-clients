@@ -2,15 +2,12 @@ declare const global: any;
 
 import 'mocha';
 import 'isomorphic-fetch';
-import sinon = require('sinon');
 import chai = require('chai');
-import sinonChai = require('sinon-chai');
 import chaiAsProised = require('chai-as-promised');
 import fetchMock = require('fetch-mock');
 
 import { createTweekClient } from '../index';
 
-chai.use(sinonChai);
 chai.use(chaiAsProised);
 let {expect} = chai;
 
@@ -33,7 +30,7 @@ describe('tweek-rest authentication', () => {
 
     it('authentication token should be passed to fetch request', async () => {
         // Arrange
-        const getAuthenticationToken = sinon.stub().returns(token);
+        const getAuthenticationToken = () => token;
         const tweekClient = createTweekClient({
             baseServiceUrl,
             getAuthenticationToken
@@ -43,13 +40,12 @@ describe('tweek-rest authentication', () => {
         await tweekClient.fetch(url);
 
         // Assert
-        expect(getAuthenticationToken).to.have.been.called;
         expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
     });
 
     it('authentication token promise should be passed to fetch request', async () => {
         // Arrange
-        const getAuthenticationToken = sinon.stub().resolves(token);
+        const getAuthenticationToken = () => Promise.resolve(token);
         const tweekClient = createTweekClient({
             baseServiceUrl,
             getAuthenticationToken
@@ -59,7 +55,6 @@ describe('tweek-rest authentication', () => {
         await tweekClient.fetch(url);
 
         // Assert
-        expect(getAuthenticationToken).to.have.been.called;
         expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
     });
 
