@@ -155,9 +155,9 @@ export function createTweekClient(config: { baseServiceUrl: string, context?: an
 
     let fetchClient = fetch;
     if (getAuthenticationToken) {
-        fetchClient = async (input, init = { }) => {
+        fetchClient = async function (input, init = {}) {
             const token = await Promise.resolve(getAuthenticationToken());
-            return fetch(input, {
+            return fetch.call(this, input, {
                 ...init,
                 headers: {
                     ...init.headers,
