@@ -1,7 +1,7 @@
 {
   "name": "tweek-local-cache",
   "version": "0.1.0",
-  "description": "",
+  "description": "Local cache to be used with tweek-client",
   "main": "./dist/tweek-local-cache/index.js",
   "dependencies": {
     "object.entries": "^1.0.4",
@@ -34,6 +34,6 @@
     "test:unit": "tsc && mocha --compilers ts:ts-node/register spec/unit/*.spec.ts",
     "build": "tsc"
   },
-  "author": "",
+  "author": "Soluto",
   "license": "MIT"
 }
