@@ -150,12 +150,28 @@ export class TweekClient implements ITweekClient {
     }
 }
 
-export function createTweekClient(baseServiceUrl: string, context: any) {
+export function createTweekClient(config: { baseServiceUrl: string, context?: any, getAuthenticationToken?: () => Promise<string> | string }) {
+    const { baseServiceUrl, context = {}, getAuthenticationToken } = config;
+
+    let fetchClient = fetch;
+    if (getAuthenticationToken) {
+        fetchClient = async function (input, init = {}) {
+            const token = await Promise.resolve(getAuthenticationToken());
+            return fetch.call(this, input, {
+                ...init,
+                headers: {
+                    ...init.headers,
+                    Authorization: `Bearer ${token}`
+                }
+            });
+        }
+    }
+
     return new TweekClient({
         baseServiceUrl,
         casing: "camelCase",
         convertTyping: false,
         context,
-        fetch,
+        fetch: fetchClient,
     });
 }

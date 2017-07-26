@@ -11,7 +11,7 @@
       "port": 5858,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/js/tweek-repo/dist/**/*.js"
+        "${workspaceRoot}/js/tweek-local-cache/dist/**/*.js"
       ]
     },
     {

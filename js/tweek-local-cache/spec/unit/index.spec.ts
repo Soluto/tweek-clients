@@ -3,7 +3,7 @@ import chai = require('chai');
 import TweekRepository from '../../';
 import { MemoryStore, ITweekStore } from '../../';
 import { } from '../';
-import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from '../../../tweek-rest';
+import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from '../../../tweek-client';
 import Optional from '../../optional'
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import axios from 'axios';
@@ -44,10 +44,10 @@ describe("tweek repo test", () => {
 
         _createClientThatFails = () => {
             http.get().to("/api/v1/keys/_/*").willFail(500);
-            return createTweekClient("http://localhost:1234/", {});
+            return createTweekClient({ baseServiceUrl: "http://localhost:1234/" });
         }
 
-        _defaultClient = createTweekClient("http://localhost:1234/", {});
+        _defaultClient = createTweekClient({ baseServiceUrl: "http://localhost:1234/" });
     });
 
     afterEach(() => {

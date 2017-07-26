@@ -41,12 +41,12 @@ jobs:
             docker run --network=tweekclients_default node:6.10.1-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/status
 
       - run: 
-          name: Test tweek-rest
-          command: docker-compose run tests /bin/bash -c "cd tweek-rest && yarn test"
+          name: Test tweek-client
+          command: docker-compose run tests /bin/bash -c "cd tweek-client && yarn test"
 
       - run: 
-          name: Test tweek-repo
-          command: docker-compose run tests /bin/bash -c "cd tweek-repo && yarn test"
+          name: Test tweek-local-cache
+          command: docker-compose run tests /bin/bash -c "cd tweek-local-cache && yarn test"
 
       - run: 
           name: Test react-tweek
@@ -64,16 +64,16 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              if [[ $(node -p -e "require('./js/tweek-rest/package.json').version") != $(npm show @npmsoluto/tweek-rest version) ]]; then
-                echo "publish tweek-rest"
-                cd js/tweek-rest && yarn && npm run build && npm publish && cd ../..
+              if [[ $(node -p -e "require('./js/tweek-client/package.json').version") != $(npm show tweek-client version) ]]; then
+                echo "publish tweek-client"
+                cd js/tweek-client && yarn && npm run build && npm publish && cd ../..
               fi
-              if [[ $(node -p -e "require('./js/tweek-repo/package.json').version") != $(npm show @npmsoluto/tweek-repo version) ]]; then
-                echo "publish tweek-repo"
-                cd js/tweek-rest && yarn && npm run build && cd ../..
-                cd js/tweek-repo && yarn && npm run build && npm publish && cd ../..
+              if [[ $(node -p -e "require('./js/tweek-local-cache/package.json').version") != $(npm show tweek-local-cache version) ]]; then
+                echo "publish tweek-local-cache"
+                cd js/tweek-client && yarn && npm run build && cd ../..
+                cd js/tweek-local-cache && yarn && npm run build && npm publish && cd ../..
               fi
-              if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show @npmsoluto/react-tweek version) ]]; then
+              if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show react-tweek version) ]]; then
                 echo "publish react-tweek"
                 cd js/react-tweek && yarn && npm run build && npm publish && cd ../..
               fi

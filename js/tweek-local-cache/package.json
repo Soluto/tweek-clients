@@ -1,8 +1,8 @@
 {
-  "name": "@npmsoluto/tweek-repo",
-  "version": "2.0.0",
-  "description": "",
-  "main": "./dist/tweek-repo/index.js",
+  "name": "tweek-local-cache",
+  "version": "0.1.0",
+  "description": "Local cache to be used with tweek-client",
+  "main": "./dist/tweek-local-cache/index.js",
   "dependencies": {
     "object.entries": "^1.0.4",
     "object.values": "^1.0.4"
@@ -34,6 +34,6 @@
     "test:unit": "tsc && mocha --compilers ts:ts-node/register spec/unit/*.spec.ts",
     "build": "tsc"
   },
-  "author": "",
+  "author": "Soluto",
   "license": "MIT"
 }
