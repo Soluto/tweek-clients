@@ -8,9 +8,8 @@ npm install --save tweek-rest
 
 ### Create a client:
 ```javascript
-const tweekClient = new TweekClient({
+const tweekClient = createTweekClient({
   baseServiceUrl: "https://mydomain",
-  fetch,
 });
 ```
 
@@ -26,4 +25,34 @@ const myContext = {
 };
 
 await tweekClient.appendContext("user", "123456", myContext);
+```
+
+## Using Authentication
+
+Example:
+
+```javascript
+function getAuthenticationToken() {
+  return 'jwt token';
+}
+
+const tweekClient = createTweekClient({
+  baseServiceUrl: "https://mydomain",
+  getAuthenticationToken,
+});
+
+```
+
+`getAuthenticationToken` can also return a promise
+
+```javascript
+function getAuthenticationToken() {
+  return Promise.resolve('jwt token');
+}
+
+const tweekClient = createTweekClient({
+  baseServiceUrl: "https://mydomain",
+  getAuthenticationToken,
+});
+
 ```
