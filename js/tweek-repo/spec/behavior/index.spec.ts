@@ -13,7 +13,7 @@ describe('tweek repo behavior test', () => {
   let _tweekClient: ITweekClient;
 
   async function initTweekRepository(context: Context = {}) {
-    _tweekClient = createTweekClient(TWEEK_LOCAL_API, {});
+    _tweekClient = createTweekClient({ baseServiceUrl: TWEEK_LOCAL_API });
 
     const store = new MemoryStore();
     _tweekRepo = new TweekRepository({ client: _tweekClient });
