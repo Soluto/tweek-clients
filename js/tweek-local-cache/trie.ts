@@ -13,7 +13,7 @@ export default class Trie<TValue>{
     private _valueMap = new WeakMap<Node, TValue>();
 
     set(key: string, value: TValue) {
-        const fragments = this._splitJoin.split(key);
+        const fragments = this._splitJoin.split(key.toLowerCase());
         let node = fragments.reduce((acc, next) => {
             if (!acc[next]) { acc[next] = {} }
             return acc[next];
@@ -22,7 +22,7 @@ export default class Trie<TValue>{
     }
 
     get(key: string): TValue | undefined {
-        const fragments = this._splitJoin.split(key);
+        const fragments = this._splitJoin.split(key.toLowerCase());
         let node = fragments.reduce((acc, next) => {
             if (!acc) return null;
             return acc[next];
@@ -36,7 +36,7 @@ export default class Trie<TValue>{
     }
 
     list(key?: string, index = 0): { [key: string]: TValue } {
-        const fragments = key && this._splitJoin.split(key) || [];
+        const fragments = key && this._splitJoin.split(key.toLowerCase()) || [];
         let node = fragments.reduce((acc, next) => {
             if (!acc) return null;
             return acc[next];
