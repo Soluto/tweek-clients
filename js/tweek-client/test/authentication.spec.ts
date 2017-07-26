@@ -11,7 +11,7 @@ import { createTweekClient } from '../index';
 chai.use(chaiAsProised);
 let {expect} = chai;
 
-describe('tweek-rest authentication', () => {
+describe('tweek-client authentication', () => {
     const baseServiceUrl = 'http://test/';
     const matcherName = 'authentication';
     const token = 'expected_token';

@@ -3,7 +3,7 @@ import chai = require('chai');
 import TweekRepository from '../../';
 import { MemoryStore, ITweekStore } from '../../';
 import { } from '../';
-import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from '../../../tweek-rest';
+import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from '../../../tweek-client';
 import Optional from '../../optional'
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import axios from 'axios';

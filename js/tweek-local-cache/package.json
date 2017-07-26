@@ -1,8 +1,8 @@
 {
-  "name": "@npmsoluto/tweek-repo",
-  "version": "2.0.0",
+  "name": "tweek-local-cache",
+  "version": "0.1.0",
   "description": "",
-  "main": "./dist/tweek-repo/index.js",
+  "main": "./dist/tweek-local-cache/index.js",
   "dependencies": {
     "object.entries": "^1.0.4",
     "object.values": "^1.0.4"

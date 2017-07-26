@@ -3,7 +3,7 @@
 ## Basic usage
 ### Install the package
 ```
-npm install --save tweek-rest
+npm install --save tweek-client
 ```
 
 ### Create a client:

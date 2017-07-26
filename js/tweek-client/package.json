@@ -1,6 +1,6 @@
 {
-  "name": "@npmsoluto/tweek-rest",
-  "version": "2.0.0",
+  "name": "tweek-client",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
