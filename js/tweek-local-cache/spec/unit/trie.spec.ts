@@ -41,6 +41,11 @@ describe("read data from trie", () => {
     });
   });
 
+  it("list non existing", () => {
+      let trie = new Trie(splitJoin);
+      expect(trie.list("d")).to.eql({});
+  });
+
   it("list relative", () => {
     let trie = new Trie(splitJoin);
     trie.set("hello", "world");

@@ -69,8 +69,8 @@ export class TweekClient implements ITweekClient {
 
     constructor(config: TweekInitConfig) {
         this.config = <TweekInitConfig & FetchConfig>
-            { ...{ camelCase: "snake", flatten: false, convertTyping: false, context: {} }, ...config };
-        
+            { ...{ casing: "snake", flatten: false, convertTyping: false, context: {} }, ...config };
+
         let {baseServiceUrl} = config;
 
         if (baseServiceUrl.endsWith('/')) {
