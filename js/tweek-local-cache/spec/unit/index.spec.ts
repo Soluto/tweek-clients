@@ -153,6 +153,31 @@ describe("tweek repo test", () => {
             // Assert
             expect(key.value).to.eql("value_1");
         });
+
+        it("should be case insensitive", async () => {
+            // Arrange
+            await initRepository();
+
+            await _tweekRepo.prepare("my_Path/string_value");
+            await _tweekRepo.prepare("my_path/inneR_path_1/int_value");
+            await _tweekRepo.prepare("my_path/inner_path_1/bool_Positive_value");
+            await _tweekRepo.prepare("my_path/inner_path_2/bool_negative_Value");
+
+            await _tweekRepo.refresh();
+
+            // Act
+            let key1 = await _tweekRepo.get("My_path/string_value");
+            let key2 = await _tweekRepo.get("my_Path/inner_path_1/int_value");
+            let key3 = await _tweekRepo.get("my_path/Inner_path_1/bool_positive_value");
+            let key4 = await _tweekRepo.get("my_path/inner_path_2/Bool_negative_value");
+
+            // Assert
+            expect(key1.value).to.eq("my-string");
+            expect(key2.value).to.eq(55);
+            expect(key3.value).to.eq(true);
+            expect(key4.value).to.eq(false);
+        });
+
     });
 
     describe("persistence", () => {
@@ -281,7 +306,7 @@ describe("tweek repo test", () => {
 
             // Assert
             expect(fetchStub).to.have.not.been.called;
-            expect(refreshPromise).to.eventually.equal(null, 'should not return any keys');
+            return expect(refreshPromise).to.eventually.equal(undefined, 'should not return any keys');
         });
 
         //TODO: make this test more clear, it should not throw error from fetch in order the execute the scenario
