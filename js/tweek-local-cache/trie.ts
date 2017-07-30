@@ -41,15 +41,15 @@ export default class Trie<TValue>{
             if (!acc) return null;
             return acc[next];
         }, this._root);
-        let results = [
-            ...[
-                ...Object.keys(node)
-                    .map(name => this.list(this._splitJoin.join([...fragments, name]), index))
-            ]
-        ].reduce((acc, next) => ({ ...acc, ...next }), this._valueMap.has(node) ? {
-            [this._splitJoin.join(fragments.slice(index))]: <TValue>this._valueMap.get(node)
-        } : {});
-        return results;
-    }
 
+        if (node === null || node === undefined) return {};
+
+        const initialValue = this._valueMap.has(node) ? {
+            [this._splitJoin.join(fragments.slice(index))]: <TValue>this._valueMap.get(node),
+        } : {};
+
+        return Object.keys(node)
+            .map(name => this.list(this._splitJoin.join([...fragments, name]), index))
+            .reduce((acc, next) => ({...acc, ...next}), initialValue);
+    }
 }
