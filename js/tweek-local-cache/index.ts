@@ -15,7 +15,7 @@ export type FlatKeys = {
 }
 
 export const TweekKeySplitJoin = {
-    split: (key: string) => { return key.split("/"); },
+    split: (key: string) => { return key.toLowerCase().split("/"); },
     join: (fragments: string[]) => fragments.join("/")
 }
 
