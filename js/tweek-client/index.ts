@@ -116,7 +116,12 @@ export class TweekClient implements ITweekClient {
 
     appendContext(identityType: string, identityId: string, context: object): Promise<void> {
         const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
-        let result = this.config.fetch(url, { method: 'POST', body: context })
+        let result = this.config.fetch(url, { method: 'POST', 
+                                             headers: {
+                                                'Accept': 'application/json',
+                                                'Content-Type': 'application/json'
+                                             },
+                                             body: JSON.stringify(context) })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Error appending context, code ${response.status}, message: '${response.statusText}'`);
