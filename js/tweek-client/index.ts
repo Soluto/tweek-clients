@@ -118,7 +118,6 @@ export class TweekClient implements ITweekClient {
         const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
         let result = this.config.fetch(url, { method: 'POST', 
                                              headers: {
-                                                'Accept': 'application/json',
                                                 'Content-Type': 'application/json'
                                              },
                                              body: JSON.stringify(context) })
