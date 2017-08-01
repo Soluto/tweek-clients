@@ -74,7 +74,7 @@ describe("tweek rest appendContext", () => {
             else {
                 fetchStub.rejects("Error!")
             }
-            const expectedCallArgs = [test.expectedUrl, { method: 'POST', body: test.context }];
+            const expectedCallArgs = [test.expectedUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(test.context) }];
 
             // Act
             let testPromise = tweekClient.appendContext(test.identityType, test.identityId, test.context);
