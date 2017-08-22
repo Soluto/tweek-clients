@@ -5,7 +5,7 @@ const prepareRequests = [];
 let globalTweekRepository = null;
 let onError = null;
 let shouldPrepare = true;
-export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
+export const withTweekKeys = (path, {mergeProps = true, blockingRender = false, propName} = {}) => {
     
     if (shouldPrepare) {
         if (globalTweekRepository) {
@@ -52,7 +52,7 @@ export const withTweekKeys = (path, {mergeProps = true, propName} = {}) => {
         }
 
         render() {
-            return this.state.tweekProps ? <EnhancedComponent {...this.props} {...this.state.tweekProps} /> : null;
+            return !this.state.tweekProps && blockingRender ? null : <EnhancedComponent {...this.props} {...this.state.tweekProps} />;
         }
     }
 };
