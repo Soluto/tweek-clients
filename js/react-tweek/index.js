@@ -5,7 +5,7 @@ const prepareRequests = [];
 let globalTweekRepository = null;
 let onError = null;
 let shouldPrepare = true;
-export const withTweekKeys = (path, {mergeProps = true, propName = null, validate = () => true, defaultValue} = {}) => {
+export const withTweekKeys = (path, {mergeProps = true, propName = null, validator = {validateFunction = () => true, defaultValue = null}} = {}) => {
     
     if (shouldPrepare) {
         if (globalTweekRepository) {
