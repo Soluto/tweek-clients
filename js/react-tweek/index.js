@@ -5,7 +5,7 @@ const prepareRequests = [];
 let globalTweekRepository = null;
 let onError = null;
 let shouldPrepare = true;
-export const withTweekKeys = (path, {mergeProps = true, propName = null, validator = {validateFunction = () => true, defaultValue = null}} = {}) => {
+export const withTweekKeys = (path, {mergeProps = true, propName = null, validator = {validateFunction = (value) => true, defaultValue = null}} = {}) => {
     
     if (shouldPrepare) {
         if (globalTweekRepository) {
@@ -42,8 +42,8 @@ export const withTweekKeys = (path, {mergeProps = true, propName = null, validat
             else {
                 const configName = path.split('/').pop();
                 promise.then(result => {
-                    if (!validate(result.value)) {
-                        this.setState({ tweekProps: { [propName || camelize(configName)]: defaultValue } });
+                    if (validator && !validator.validateFunction(result.value)) {
+                        this.setState({ tweekProps: { [propName || camelize(configName)]: validator.defaultValue } });
                     }
                     else if (mergeProps) {
                         this.setState({ tweekProps: { [propName || camelize(configName)]: result.value } });
