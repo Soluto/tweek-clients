@@ -6,9 +6,10 @@
   "author": "Soluto",
   "license": "MIT",
   "peerDependencies": {
+    "prop-types": "^15.5.10",
     "react": "^15.4.1",
-    "tweek-client": "0.1.x",
-    "tweek-local-cache": "0.1.x"
+    "tweek-client": "^0.1.2",
+    "tweek-local-cache": "^0.1.2"
   },
   "dependencies": {
     "humps": "^2.0.0"
@@ -16,15 +17,17 @@
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-jest": "^21.0.2",
-    "babel-plugin-transform-async-to-generator": "^6.22.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-react": "^6.23.0",
+    "babel-preset-stage-0": "^6.24.1",
     "jest": "^21.1.0",
     "react": "^15.4.2",
-    "react-test-renderer": "^15.4.2"
+    "react-test-renderer": "^15.4.2",
+    "tweek-client": "^0.1.2",
+    "tweek-local-cache": "^0.1.2"
   },
   "scripts": {
-    "test": "yarn build && jest",
-    "build": "babel index.js --out-dir dist"
+    "test": "jest",
+    "build": "rm -rf ./dist && babel src --out-dir dist --ignore **/*.test.js"
   }
 }
