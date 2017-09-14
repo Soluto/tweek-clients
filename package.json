@@ -1,0 +1,26 @@
+{
+  "devDependencies": {
+    "husky": "^0.14.3",
+    "lerna": "^2.1.2",
+    "lint-staged": "^4.1.3",
+    "prettier": "^1.6.1"
+  },
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
+    "test": "lerna run test",
+    "test:full-env": "docker-compose up -d tweek-api && lerna run test",
+    "test:docker":
+      "docker-compose up -d tweek-api && docker-compose build js_tests && docker-compose run --rm js_tests",
+    "precommit": "lint-staged"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "lint-staged": {
+    "*.{ts,js,json,css}": ["prettier --write", "git add"]
+  }
+}

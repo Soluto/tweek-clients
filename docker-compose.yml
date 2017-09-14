@@ -13,7 +13,7 @@ services:
       - TWEEK_MANAGEMENT_URL=http://tweek-management:3000
 
   tweek-management:
-    image: soluto/tweek-management
+    image: soluto/tweek-management:0.1.11
     depends_on:
       - tweek-git
     volumes_from: 
@@ -26,7 +26,7 @@ services:
       - VALIDATION_URL=http://tweek-api/validation
 
   tweek-api:
-    image: soluto/tweek-api
+    image: soluto/tweek-api:0.2.1
     ports:
       - "1111:80"
     depends_on:
@@ -35,6 +35,7 @@ services:
     volumes_from: 
       - keys
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - PUBLIC_KEY_PATH=/gitkeys/tweekgit_public.pfx
       - Rules__Management__Url=http://tweek-management:3000
       - ContextProvider=redis
@@ -46,8 +47,8 @@ services:
     image: redis:alpine
     expose:
       - "6379"
-      
-  tests:
+
+  js_tests:
     build: .
     depends_on:
       - tweek-api
