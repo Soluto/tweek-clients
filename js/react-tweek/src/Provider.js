@@ -1,6 +1,4 @@
 import { Component, Children } from 'react';
-import { createTweekClient } from 'tweek-client';
-import TweekLocalCache from 'tweek-local-cache';
 import repoPropType from './repoPropType';
 
 export function createProvider({ repoKey = 'repo' } = {}) {
@@ -21,7 +19,11 @@ export function createProvider({ repoKey = 'repo' } = {}) {
       if (repo) {
         this.repo = repo;
       } else {
-        client = client || createTweekClient({ baseServiceUrl });
+        if (!client) {
+          const { createTweekClient } = require('tweek-client');
+          client = createTweekClient({ baseServiceUrl });
+        }
+        const TweekLocalCache = require('tweek-local-cache').default;
         this.repo = new TweekLocalCache({ client });
       }
     }

@@ -22,9 +22,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "jest": "^21.1.0",
     "react": "^15.4.2",
-    "react-test-renderer": "^15.4.2",
-    "tweek-client": "^0.1.2",
-    "tweek-local-cache": "^0.1.2"
+    "react-test-renderer": "^15.4.2"
   },
   "scripts": {
     "test": "jest",
