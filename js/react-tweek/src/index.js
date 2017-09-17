@@ -1,4 +1,4 @@
-import Provider from './Provider';
+import Provider, { createProvider } from './Provider';
 import withTweekKeys from './withTweekKeys';
 
-export { Provider, withTweekKeys };
+export { Provider, createProvider, withTweekKeys };
