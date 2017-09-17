@@ -7,7 +7,7 @@ jobs:
       NODE_ENV: development
 
     docker:
-      - image: node:6.10.1
+      - image: node:8.5.0
     
     steps:
       - checkout
@@ -28,29 +28,18 @@ jobs:
 
       - run: 
           name: run dependencies
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker-compose pull
-            docker-compose build tests
-            docker-compose build dotnet_tests
-            docker-compose up -d tweek-api
-            
+          command: docker-compose up tweek-management tweek-api
+          background: true
+
       - run:
           name: Prepare for tests
           command: |
-            docker run --network=tweekclients_default node:6.10.1-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/status
+            docker-compose build js_tests dotnet_tests
+            docker run --network=tweekclients_default node:8.5.0-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/health
 
       - run: 
-          name: Test tweek-client
-          command: docker-compose run tests /bin/bash -c "cd tweek-client && yarn test"
-
-      - run: 
-          name: Test tweek-local-cache
-          command: docker-compose run tests /bin/bash -c "cd tweek-local-cache && yarn test"
-
-      - run: 
-          name: Test react-tweek
-          command: docker-compose run tests /bin/bash -c "cd react-tweek && yarn test"
+          name: Test js clients
+          command: docker-compose run js_tests
 
       - run:
           name: Test dotnet client
