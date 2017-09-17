@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { camelize } from 'humps';
 import repoPropType from './repoPropType';
 
-export default function(path, { mergeProps = true, propName, onError, repoKey = 'repo' } = {}) {
+export default function(path, { mergeProps = true, propName, onError, repoKey = 'repo', getPolicy } = {}) {
   return function(EnhancedComponent) {
     return class extends Component {
       static displayName = `withTweekKeys(${EnhancedComponent.displayName || EnhancedComponent.name || 'Component'})`;
@@ -12,14 +12,9 @@ export default function(path, { mergeProps = true, propName, onError, repoKey = 
 
       state = {};
 
-      constructor(props, context) {
-        super(props, context);
-        context[repoKey].prepare(path);
-      }
-
       componentWillMount() {
         return this.context[repoKey]
-          .get(path)
+          .get(path, getPolicy)
           .catch(error => {
             if (onError) return onError(error);
             console.error(error);
