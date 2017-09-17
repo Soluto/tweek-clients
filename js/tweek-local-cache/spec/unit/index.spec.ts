@@ -2,19 +2,15 @@ import 'mocha';
 import chai = require('chai');
 import TweekRepository from '../../';
 import { MemoryStore, ITweekStore } from '../../';
-import {} from '../';
-import { FetchConfig, createTweekClient, TweekClient, ITweekClient } from 'tweek-client';
-import Optional from '../../optional';
+import { FetchConfig, createTweekClient, ITweekClient } from 'tweek-client';
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
-import axios from 'axios';
 import sinon = require('sinon');
 import sinonChai = require('sinon-chai');
 import chaiAsPromise = require('chai-as-promised');
+
 chai.use(sinonChai);
 chai.use(chaiAsPromise);
-const { expect, assert } = chai;
-
-const scheduler = (fn: () => void) => fn();
+const { expect } = chai;
 
 describe('tweek repo test', () => {
   let _defaultClient: ITweekClient;
@@ -185,6 +181,77 @@ describe('tweek repo test', () => {
     });
   });
 
+  describe('getPolicy', () => {
+    describe('notReady', () => {
+      it("should throw when not ready and policy is 'throw'", async () => {
+        // Arrange
+        await initRepository();
+        await _tweekRepo.prepare('path/that/was/not_ready');
+
+        // Act
+        const getPromise = _tweekRepo.get('path/that/was/not_ready', { notReady: 'throw' });
+
+        // Assert
+        return expect(getPromise).to.be.rejectedWith('value not available yet');
+      });
+
+      it("should refresh the requested key when policy is 'refresh'", async () => {
+        // Arrange
+        await initRepository();
+        await _tweekRepo.prepare('my_path/string_value');
+        await _tweekRepo.prepare('path/that/was/not_ready');
+
+        // Act
+        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: 'refresh' });
+        const getPromise = _tweekRepo.get('path/that/was/not_ready', { notReady: 'throw' });
+
+        // Assert
+        expect(key1.value).to.eq('my-string');
+        return expect(getPromise).to.be.rejectedWith('value not available yet');
+      });
+
+      it("should refresh all keys when policy is 'refreshAll'", async () => {
+        // Arrange
+        await initRepository();
+        await _tweekRepo.prepare('my_path/string_value');
+        await _tweekRepo.prepare('my_path/inner_path_1/int_value');
+
+        // Act
+        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: 'refreshAll' });
+        let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value', { notReady: 'throw' });
+
+        // Assert
+        expect(key1.value).to.eq('my-string');
+        expect(key2.value).to.eq(55);
+      });
+    });
+
+    describe('notPrepared', () => {
+      it("should throw when not prepared and policy is 'throw'", async () => {
+        // Arrange
+        await initRepository();
+        const keyPath = 'path/that/was/not_prepared';
+
+        // Act
+        const getPromise = _tweekRepo.get(keyPath, { notPrepared: 'throw' });
+
+        // Assert
+        return expect(getPromise).to.be.rejectedWith(`key ${keyPath} not managed, use prepare to add it to cache`);
+      });
+
+      it("should get key if not prepared and policy is 'prepare'", async () => {
+        // Arrange
+        await initRepository();
+
+        //Act
+        let key1 = await _tweekRepo.get('my_path/string_value', { notPrepared: 'prepare' });
+
+        //Assert
+        expect(key1.value).to.eq('my-string');
+      });
+    });
+  });
+
   describe('persistence', () => {
     it('should persist to store after refresh', async () => {
       // Arrange
@@ -273,20 +340,6 @@ describe('tweek repo test', () => {
     });
   });
 
-  describe('error flows', () => {
-    it('should throw error when requesting key that was not prepared or cached', async () => {
-      // Arrange
-      await initRepository();
-      await _tweekRepo.refresh();
-
-      try {
-        await _tweekRepo.get('path/that/was/not_prepared');
-      } catch (e) {
-        expect(e).to.eql('key path/that/was/not_prepared not managed, use prepare to add it to cache');
-      }
-    });
-  });
-
   describe('refresh', () => {
     it('should not do fetch request if there are no requested keys', async () => {
       // Arrange
@@ -363,14 +416,10 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('some_path/key');
 
       // Act
-      try {
-        await _tweekRepo.refresh();
-      } catch (e) {
-        // Assert
-        expect(e.message).to.equal('Internal Server Error');
-        return;
-      }
-      expect.fail();
+      const refreshPromise = _tweekRepo.refresh();
+
+      //Assert
+      return expect(refreshPromise).to.be.rejected;
     });
 
     it('should remove key if missing after refresh', async () => {
