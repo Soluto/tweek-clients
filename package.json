@@ -1,4 +1,7 @@
 {
+  "name": "tweek-clients",
+  "version": "0.1.0",
+  "license": "MIT",
   "devDependencies": {
     "husky": "^0.14.3",
     "lerna": "^2.1.2",

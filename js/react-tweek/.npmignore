@@ -1,5 +1,4 @@
-index.js
-index.test.js
+/src
+.babelrc
 .git
 node_modules
-.babelrc
