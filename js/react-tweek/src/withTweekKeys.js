@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { camelize } from 'humps';
 import repoPropType from './repoPropType';
 
-export default function(path, { mergeProps = true, propName, onError, repoKey = 'repo', getPolicy } = {}) {
+export default function(path, { mergeProps = true, propName, onError, repoKey = 'tweekRepo', getPolicy } = {}) {
   return function(EnhancedComponent) {
     return class extends Component {
       static displayName = `withTweekKeys(${EnhancedComponent.displayName || EnhancedComponent.name || 'Component'})`;

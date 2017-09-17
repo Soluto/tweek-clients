@@ -1,7 +1,7 @@
 import { Component, Children } from 'react';
 import repoPropType from './repoPropType';
 
-export function createProvider({ repoKey = 'repo' } = {}) {
+export function createProvider({ repoKey = 'tweekRepo' } = {}) {
   return class extends Component {
     static displayName = 'Provider';
 
@@ -9,7 +9,7 @@ export function createProvider({ repoKey = 'repo' } = {}) {
       [repoKey]: repoPropType,
     };
 
-    getChildContext = () => ({ [repoKey]: this.repo });
+    getChildContext = () => ({ [repoKey]: this.tweekRepo });
 
     constructor(props, context) {
       super(props, context);
@@ -17,14 +17,14 @@ export function createProvider({ repoKey = 'repo' } = {}) {
       let { repo, client, baseServiceUrl } = props;
 
       if (repo) {
-        this.repo = repo;
+        this.tweekRepo = repo;
       } else {
         if (!client) {
           const { createTweekClient } = require('tweek-client');
           client = createTweekClient({ baseServiceUrl });
         }
         const TweekLocalCache = require('tweek-local-cache').default;
-        this.repo = new TweekLocalCache({ client });
+        this.tweekRepo = new TweekLocalCache({ client });
       }
     }
 

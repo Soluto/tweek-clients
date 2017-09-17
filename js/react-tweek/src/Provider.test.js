@@ -22,7 +22,7 @@ jest.mock('tweek-local-cache', () => {
   return { default: tweekLocalCacheMock };
 });
 
-const createChild = (repoKey = 'repo') => {
+const createChild = (repoKey = 'tweekRepo') => {
   return class extends Component {
     static contextTypes = {
       [repoKey]: PropTypes.object.isRequired,
@@ -46,7 +46,7 @@ describe('Provider', () => {
       </Provider>,
     );
     const child = TestUtils.findRenderedComponentWithType(tree, Child);
-    expect(child.context.repo).toBe(repositoryMock);
+    expect(child.context.tweekRepo).toBe(repositoryMock);
   });
 
   it('should add the store to the child context using a custom store key', () => {
@@ -65,26 +65,22 @@ describe('Provider', () => {
   });
 
   it('should create a repository if client is passed', () => {
-    const tree = TestUtils.renderIntoDocument(
+    TestUtils.renderIntoDocument(
       <Provider client={repositoryMock}>
         <Child />
       </Provider>,
     );
-
-    TestUtils.findRenderedComponentWithType(tree, Child);
 
     expect(tweekLocalCacheMock).toBeCalled();
   });
 
   it('should create client and repository if baseServiceUrl is passed', () => {
     const baseServiceUrl = 'someUrl';
-    const tree = TestUtils.renderIntoDocument(
+    TestUtils.renderIntoDocument(
       <Provider baseServiceUrl={baseServiceUrl}>
         <Child />
       </Provider>,
     );
-
-    TestUtils.findRenderedComponentWithType(tree, Child);
 
     expect(createTweekClientMock).toBeCalledWith({ baseServiceUrl });
     expect(tweekLocalCacheMock).toBeCalled();
