@@ -1,5 +1,6 @@
 *
 !js
+js/clients-example/
 !lerna.json
 !package.json
 !yarn.lock
