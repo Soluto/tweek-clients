@@ -1,0 +1,80 @@
+[
+  {
+    "id": "tweek-watch",
+    "displayName": "Tweek Watch",
+    "description":
+      "Tweek Watch is a computerized wristwatch with functionality that goes beyond timekeeping, such as time travel",
+    "price": 1337,
+    "image": "http://ambygear.com/img/body/features-watch.png"
+  },
+  {
+    "id": "tweek-phone",
+    "displayName": "Tweek Phone",
+    "description":
+      "Tweek Phone is a portable personal computer with a mobile operating system with features useful for handheld use",
+    "price": 799.99,
+    "image": "http://www.industrytap.com/wp-content/uploads/2013/06/Graphene.jpg"
+  },
+  {
+    "id": "rubber-duck",
+    "displayName": "Rubber Duck",
+    "description": "A rubber duck that will keep all your secrets",
+    "price": 9.9,
+    "image": "https://www.amsterdamduckstore.com/wp-content/uploads/2016/03/punki-woman-rubber-duck-front.jpg"
+  },
+  {
+    "id": "round-transportation-device",
+    "displayName": "Round Transportation Device",
+    "description": "It's actually just a wheel",
+    "price": 200,
+    "image": "https://www.cokertire.com/skin/frontend/default/coker_responsive/cms/woodenwheels/big_wheel.png"
+  },
+  {
+    "id": "sonic-screwdriver",
+    "displayName": "Sonic Screwdriver",
+    "description":
+      "The sonic screwdriver is a multifunctional tool that can hack, disable, activate, and otherwise control technology from almost every era",
+    "price": 60,
+    "image": "http://www.thewandcompany.com/wp-content/uploads/2015/08/Sonic-Side-tip-ON-3266x1566-1024x491.jpg"
+  },
+  {
+    "id": "star-destroyer",
+    "displayName": "Star Destroyer",
+    "description":
+      "A moon-sized, deep-space mobile battle station, designed to fire a single planet-destroying superlaser powered by massive kyber crystals",
+    "price": 850000000000000000,
+    "image": "https://vignette.wikia.nocookie.net/disney/images/e/eb/Death_Star_Render_01.png"
+  },
+  {
+    "id": "energy-matter-scrambler",
+    "displayName": "Energy-Matter Scrambler",
+    "description":
+      "The Energy-Matter Scrambler is a subspace device capable of almost instantaneously moving an object from one location to another",
+    "price": 12001,
+    "image": "http://www.startrek.com/uploads/assets/articles/transporter-1.jpg"
+  },
+  {
+    "id": "protoss-pylon",
+    "displayName": "Protoss Pylon",
+    "description":
+      "Each pylon generates a short-ranged aura of energy, which can provide the power needed by structures and warp gates",
+    "price": 85,
+    "image":
+      "https://cache.popcultcha.com.au/media/catalog/product/cache/1/image/1800x/040ec09b1e35df139433887a97daa66f/t/h/thie1f45.png"
+  },
+  {
+    "id": "magic-wand",
+    "displayName": "Magic Wand",
+    "description":
+      "A thin, hand-held stick that may be transformed into other items, grow, vanish, move, display a will of its own, or behave magically in its own right",
+    "price": 134,
+    "image": "http://www.old-earth.com/pics/wwwands-tryngala-pop.jpg"
+  },
+  {
+    "id": "one-ring",
+    "displayName": "One Ring",
+    "description": "One of the most powerful artifacts ever created in Middle-earth",
+    "price": 8654,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/e/ef/One_ring.png"
+  }
+]

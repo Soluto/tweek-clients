@@ -3,3 +3,30 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.shop {
+  padding: 32px 64px;
+}
+
+.shop .header {
+  text-transform: uppercase;
+  font-size: xx-large;
+  text-align: center;
+}
+
+.shop .item-list {
+}
+
+.shop .item-list .item {
+  margin-top: 32px;
+}
+
+.shop .item-list .item .thumbnail {
+  width: 256px;
+  height: 256px;
+}
+
+.shop .item-list .item .display-name {
+  text-transform: uppercase;
+  font-size: x-large;
+}

@@ -2,16 +2,27 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { withTweekKeys, Provider } from 'react-tweek';
 import './index.css';
+import items from './items.json';
 
-const WithKey = withTweekKeys('some/string')(({ string }) => <div>{string}</div>);
-
-const App = () => (
-  <Provider baseServiceUrl="http://localhost:4003">
-    <div>
-      text text text
-      <WithKey />
-    </div>
-  </Provider>
+const Item = ({ displayName, image, description, price }) => (
+  <div className="item">
+    <div className="display-name">{displayName}</div>
+    <div className="description">Description: {description}</div>
+    <div className="price">Price: {price}</div>
+    <img className="thumbnail" src={image} alt={displayName} />
+  </div>
 );
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const Shop = () => (
+  <div className="shop">
+    <div className="header">Tweek Shop</div>
+    <div className="item-list">{items.map(({ id, ...props }) => <Item key={id} {...props} />)}</div>
+  </div>
+);
+
+ReactDOM.render(
+  <Provider baseServiceUrl="http://localhost:4003">
+    <Shop />
+  </Provider>,
+  document.getElementById('root'),
+);
