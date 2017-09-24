@@ -58,9 +58,9 @@ describe('tweek rest deleteContext', () => {
       // Arrange
       const { tweekClient, fetchStub } = prepare(test.baseUrl);
       if (test.expectedSuccess) {
-        fetchStub.resolves(new Response());
+        fetchStub.resolves(Promise.resolve(new Response()));
       } else {
-        fetchStub.rejects('Error!');
+        fetchStub.resolves(Promise.reject('Error!'));
       }
       const expectedCallArgs = [test.expectedUrl, { method: 'DELETE' }];
 
@@ -71,9 +71,9 @@ describe('tweek rest deleteContext', () => {
       expect(fetchStub).to.have.been.calledOnce;
       expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
       if (!test.expectedSuccess) {
-        expect(testPromise).to.be.rejectedWith(Error, 'Error!');
+        await expect(testPromise).to.be.rejectedWith('Error!');
       } else {
-        expect(testPromise).to.be.fulfilled;
+        await expect(testPromise).to.be.fulfilled;
       }
     });
   });

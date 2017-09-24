@@ -9,63 +9,67 @@ import fetchMock = require('fetch-mock');
 import { createTweekClient } from '../index';
 
 chai.use(chaiAsProised);
-let {expect} = chai;
+let { expect } = chai;
 
 describe('tweek-client authentication', () => {
-    const baseServiceUrl = 'http://test/';
-    const matcherName = 'authentication';
-    const token = 'expected_token';
-    const url = 'expected_url';
-    const expectedOptions = {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        }
-    };
+  const baseServiceUrl = 'http://test/';
+  const matcherName = 'authentication';
+  const token = 'expected_token';
+  const url = 'expected_url';
+  const expectedOptions = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
-    beforeEach(() => {
-        fetchMock.getOnce('*', {},{
-            name: matcherName,
-        });
+  beforeEach(() => {
+    fetchMock.getOnce(
+      '*',
+      {},
+      {
+        name: matcherName,
+      },
+    );
+  });
+
+  it('authentication token should be passed to fetch request', async () => {
+    // Arrange
+    const getAuthenticationToken = () => token;
+    const tweekClient = createTweekClient({
+      baseServiceUrl,
+      getAuthenticationToken,
     });
 
-    it('authentication token should be passed to fetch request', async () => {
-        // Arrange
-        const getAuthenticationToken = () => token;
-        const tweekClient = createTweekClient({
-            baseServiceUrl,
-            getAuthenticationToken
-        });
+    // Act
+    await tweekClient.fetch(url);
 
-        // Act
-        await tweekClient.fetch(url);
+    // Assert
+    expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
+  });
 
-        // Assert
-        expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
+  it('authentication token promise should be passed to fetch request', async () => {
+    // Arrange
+    const getAuthenticationToken = () => Promise.resolve(token);
+    const tweekClient = createTweekClient({
+      baseServiceUrl,
+      getAuthenticationToken,
     });
 
-    it('authentication token promise should be passed to fetch request', async () => {
-        // Arrange
-        const getAuthenticationToken = () => Promise.resolve(token);
-        const tweekClient = createTweekClient({
-            baseServiceUrl,
-            getAuthenticationToken
-        });
+    // Act
+    await tweekClient.fetch(url);
 
-        // Act
-        await tweekClient.fetch(url);
+    // Assert
+    expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
+  });
 
-        // Assert
-        expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
+  it('should not fail if getAuthenticationToken is not passed', () => {
+    // Arrange
+    const tweekClient = createTweekClient({
+      baseServiceUrl,
     });
 
-    it('should not fail if getAuthenticationToken is not passed', () => {
-        // Arrange
-        const tweekClient = createTweekClient({
-            baseServiceUrl,
-        });
+    const testPromise = tweekClient.fetch(url);
 
-        const testPromise = tweekClient.fetch(url);
-        
-        expect(testPromise).to.be.fulfilled;
-    });
+    return expect(testPromise).to.be.fulfilled;
+  });
 });

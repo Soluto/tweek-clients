@@ -10,4 +10,6 @@ RUN yarn && yarn bootstrap
 
 COPY . /opt/
 
+RUN yarn build
+
 CMD yarn test
