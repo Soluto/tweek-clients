@@ -25,7 +25,7 @@
   },
   "scripts": {
     "dev": "tsc -w",
-    "test": "tsc && mocha --compilers ts:ts-node/register",
+    "test": "mocha --compilers ts:ts-node/register",
     "build": "tsc"
   },
   "author": "Soluto",

@@ -11,10 +11,10 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "test": "lerna run test",
+    "test": "lerna run test --stream",
     "test:full-env": "docker-compose up -d tweek-api && lerna run test",
     "test:docker":
-      "docker-compose up -d tweek-api && docker-compose build js_tests && docker-compose run --rm js_tests",
+      "docker-compose up -d tweek-api && docker build -t js_tests . && docker run --network=tweekclients_default -e TWEEK_LOCAL_API=http://tweek-api js_tests",
     "precommit": "lint-staged"
   },
   "prettier": {
