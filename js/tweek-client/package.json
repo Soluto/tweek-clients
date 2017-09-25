@@ -5,6 +5,7 @@
   "author": "Soluto",
   "license": "MIT",
   "url": "https://github.com/Soluto/tweek-clients/tree/master/js/tweek-client",
+  "repository": "Soluto/tweek-clients",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
@@ -13,19 +14,19 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
-    "@types/chai-as-promised": "7.1.0",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/isomorphic-fetch": "^0.0.34",
-    "@types/mocha": "^2.2.36",
-    "@types/sinon": "^2.3.4",
-    "@types/sinon-chai": "^2.7.27",
+    "@types/mocha": "^2.2.43",
+    "@types/sinon": "^2.3.5",
+    "@types/sinon-chai": "^2.7.29",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "fetch-mock": "^5.12.1",
-    "mocha": "^3.2.0",
-    "sinon": "^3.2.1",
-    "sinon-chai": "^2.8.0",
-    "ts-node": "^3.2.0",
-    "typescript": "^2.4.1"
+    "fetch-mock": "^5.12.2",
+    "mocha": "^3.5.3",
+    "sinon": "^3.3.0",
+    "sinon-chai": "^2.13.0",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.2"
   },
   "scripts": {
     "dev": "tsc -w",

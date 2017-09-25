@@ -5,6 +5,7 @@
   "author": "Soluto",
   "license": "MIT",
   "url": "https://github.com/Soluto/tweek-clients/tree/master/js/tweek-local-cache",
+  "repository": "Soluto/tweek-clients",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
@@ -15,21 +16,21 @@
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/mocha": "^2.2.36",
-    "@types/node": "^8.0.28",
-    "@types/sinon": "^2.3.4",
-    "@types/sinon-chai": "^2.7.27",
+    "@types/mocha": "^2.2.43",
+    "@types/node": "^8.0.30",
+    "@types/sinon": "^2.3.5",
+    "@types/sinon-chai": "^2.7.29",
     "axios": "^0.16.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "getenv": "^0.7.0",
     "isomorphic-fetch": "^2.2.1",
-    "mocha": "^3.2.0",
-    "simple-fake-server": "^0.3.3",
-    "sinon": "^3.2.1",
-    "sinon-chai": "^2.8.0",
+    "mocha": "^3.5.3",
+    "simple-fake-server": "^0.4.0",
+    "sinon": "^3.3.0",
+    "sinon-chai": "^2.13.0",
     "ts-node": "^3.3.0",
-    "typescript": "^2.1.4"
+    "typescript": "^2.5.2"
   },
   "scripts": {
     "dev": "tsc -w",
