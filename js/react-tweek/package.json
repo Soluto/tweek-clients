@@ -5,11 +5,12 @@
   "main": "./dist/index.js",
   "author": "Soluto",
   "license": "MIT",
+  "url": "https://github.com/Soluto/tweek-clients/tree/master/js/react-tweek",
   "peerDependencies": {
     "prop-types": "^15.5.10",
     "react": "^15.4.1",
-    "tweek-client": "^0.1.2",
-    "tweek-local-cache": "^0.1.3"
+    "tweek-client": "^0.1.3",
+    "tweek-local-cache": "^0.1.4"
   },
   "dependencies": {
     "humps": "^2.0.0"
@@ -24,8 +25,8 @@
     "react": "^15.4.2",
     "react-dom": "^15.6.1",
     "react-test-renderer": "^15.4.2",
-    "tweek-client": "^0.1.2",
-    "tweek-local-cache": "^0.1.3"
+    "tweek-client": "^0.1.3",
+    "tweek-local-cache": "^0.1.4"
   },
   "scripts": {
     "test": "jest",

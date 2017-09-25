@@ -1,7 +1,10 @@
 {
   "name": "tweek-client",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Tweek client for JavaScript",
+  "author": "Soluto",
+  "license": "MIT",
+  "url": "https://github.com/Soluto/tweek-clients/tree/master/js/tweek-client",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
@@ -28,7 +31,5 @@
     "dev": "tsc -w",
     "test": "mocha --compilers ts:ts-node/register",
     "build": "tsc"
-  },
-  "author": "Soluto",
-  "license": "MIT"
+  }
 }
