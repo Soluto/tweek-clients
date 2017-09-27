@@ -37,11 +37,47 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - PUBLIC_KEY_PATH=/gitkeys/tweekgit_public.pfx
+      - Rules__Management__SampleIntervalInMs=500
       - Rules__Management__Url=http://tweek-management:3000
       - ContextProvider=redis
       - Redis__ConnectionString=tweek-redis:6379
       - Addons__Redis__className=Tweek.Drivers.Redis.RedisServiceAddon
       - Addons__Redis__assemblyName=Tweek.Drivers.Redis
+      - CorsPolicies__Keys__Origins=http://localhost:3000
+      - CorsPolicies__Keys__Methods=GET
+      - CorsPolicies__Keys__MaxPreflightAge=60
+      - CorsPolicies__Keys__Headers=
+      - CorsPolicies__Keys__ExposedHeaders=
+      - CorsEnabled=true
+
+  tweek-authoring:
+    image: soluto/tweek-authoring:0.2.2
+    depends_on:
+      - tweek-git
+    volumes_from: 
+      - keys
+    environment:
+      - GIT_USER=git
+      - GIT_URL=ssh://git@tweek-git/tweek/tests
+      - GIT_PRIVATE_KEY_PATH=/gitkeys/tweekgit
+      - GIT_PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
+      - CONTINUOUS_UPDATER_INTERVAL=500
+
+  tweek-editor:
+    image: soluto/tweek-editor:0.2.6
+    depends_on: 
+      - tweek-api
+      - tweek-authoring
+    volumes_from: 
+      - keys
+    ports:
+      - "1112:80"
+    environment:
+      - CONTINUOUS_UPDATER_INTERVAL=500
+      - GIT_PRIVATE_KEY_PATH=/gitkeys/tweekgit
+      - TWEEK_API_HOSTNAME=http://tweek-api
+      - AUTHORING_API_HOSTNAME=http://tweek-authoring:3000
+      - MANAGEMENT_HOSTNAME=http://tweek-management:3000
 
   tweek-redis:
     image: redis:alpine

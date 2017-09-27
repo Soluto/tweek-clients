@@ -1,6 +1,10 @@
 {
   "name": "clients-example",
   "version": "0.1.0",
+  "author": "Soluto",
+  "license": "MIT",
+  "url": "https://github.com/Soluto/tweek-clients/tree/master/js/clients-example",
+  "repository": "Soluto/tweek-clients",
   "dependencies": {
     "glamor": "^2.20.40",
     "glamorous": "^4.9.5",
@@ -14,6 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:full-env": "cd ../../ && docker-compose up -d tweek-editor && cd - && yarn start",
     "build": "react-scripts build",
     "eject": "react-scripts eject"
   }

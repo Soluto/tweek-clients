@@ -6,7 +6,7 @@ import App from './App';
 import './index.css';
 
 ReactDOM.render(
-  <Provider baseServiceUrl="http://localhost:4003">
+  <Provider baseServiceUrl="http://localhost:1111" refresh>
     <ThemeProvider>
       <App />
     </ThemeProvider>
