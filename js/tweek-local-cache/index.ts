@@ -255,6 +255,15 @@ export default class TweekRepository {
 
     return this._client
       .fetch<any>('_', fetchConfig)
+      .catch(err => {
+        expiredKeys.forEach(([key, valueNode]) =>
+          this._cache.set(key, {
+            ...valueNode,
+            expiration: 'expired',
+          }),
+        );
+        throw err;
+      })
       .then(config => this._updateTrieKeys(keysToRefresh, config))
       .then(() => this._store.save(this._cache.list()));
   }

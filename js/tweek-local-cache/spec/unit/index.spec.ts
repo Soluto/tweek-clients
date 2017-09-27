@@ -497,5 +497,45 @@ describe('tweek repo test', () => {
 
       expect(fetchStub).to.have.been.calledTwice;
     });
+
+    it('should refresh keys in next cycle if first one failed', async () => {
+      const persistedNodes = {
+        key1: cachedItem(1),
+        key2: cachedItem(1),
+        key3: cachedItem(1),
+      };
+      const store = new MemoryStore(persistedNodes);
+
+      const fetchStub = sinon.stub();
+      fetchStub.onCall(0).rejects();
+      fetchStub.resolves(Object.keys(persistedNodes).reduce((acc, key) => ({ ...acc, [key]: 2 }), {}));
+
+      const clientMock: ITweekClient = {
+        fetch: <any>fetchStub,
+        appendContext: sinon.stub(),
+        deleteContext: sinon.stub(),
+      };
+
+      await initRepository({ client: clientMock, store });
+
+      const refreshPromise = _tweekRepo.refresh();
+      await expect(refreshPromise).to.be.rejected;
+
+      await Promise.all(
+        Object.keys(persistedNodes).map(async key => {
+          const keyValue = await _tweekRepo.get(key);
+          expect(keyValue.value).to.equal(1);
+        }),
+      );
+
+      await _tweekRepo.refresh();
+
+      await Promise.all(
+        Object.keys(persistedNodes).map(async key => {
+          const keyValue = await _tweekRepo.get(key);
+          expect(keyValue.value).to.equal(2);
+        }),
+      );
+    });
   });
 });
