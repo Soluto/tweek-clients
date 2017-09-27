@@ -14,6 +14,10 @@ const { expect } = chai;
 
 const cachedItem = (value?: any) => ({ value, state: 'cached', isScan: value === undefined });
 
+function delay(timeout) {
+  return new Promise(resolve => setTimeout(resolve, timeout));
+}
+
 type InitRepoConfig = {
   store?: ITweekStore;
   client?: ITweekClient;
@@ -429,6 +433,69 @@ describe('tweek repo test', () => {
 
       //Assert
       expect(key).to.deep.include({ value: undefined, hasValue: false });
+    });
+
+    it('should refresh expired keys when using store', async () => {
+      // Arrange
+      const persistedNodes = {
+        'my_path/string_value': { state: 'cached', value: 'old-value', expiration: 'expired' },
+        'my_path/inner_path_1/int_value': { state: 'cached', value: 10, expiration: 'refreshing' },
+        'some_path/inner_path_1/first_value': cachedItem(''),
+      };
+      let store = new MemoryStore(persistedNodes);
+      await initRepository({ store });
+
+      await _tweekRepo.refresh(['some_path/inner_path_1/first_value']);
+
+      // Act
+      let key1 = await _tweekRepo.get('my_path/string_value');
+      let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value');
+      let key3 = await _tweekRepo.get('some_path/inner_path_1/first_value');
+
+      // Assert
+      expect(key1.value).to.equal('my-string');
+      expect(key2.value).to.equal(55);
+      expect(key3.value).to.equal('value_1');
+    });
+
+    it('should batch all the refresh requests together', async () => {
+      const persistedNodes = {
+        key1: cachedItem(1),
+        key2: cachedItem(1),
+        key3: cachedItem(1),
+      };
+      let store = new MemoryStore(persistedNodes);
+
+      const initialDelay = delay(5);
+      const fetchPromise = initialDelay.then(() => delay(15)).then(() => ({}));
+
+      const fetchStub = sinon.stub();
+      fetchStub.onCall(0).resolves(fetchPromise);
+      fetchStub.resolves({});
+
+      const clientMock: ITweekClient = {
+        fetch: <any>fetchStub,
+        appendContext: sinon.stub(),
+        deleteContext: sinon.stub(),
+      };
+
+      await initRepository({ client: clientMock, store });
+
+      const promises = [_tweekRepo.refresh(['key1', 'key2'])];
+
+      await initialDelay;
+
+      const refreshPromise = _tweekRepo.refresh(['key1']);
+      promises.push(refreshPromise);
+      promises.push(_tweekRepo.refresh(['key2', 'key3']));
+
+      await refreshPromise;
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      await Promise.all(promises);
+
+      expect(fetchStub).to.have.been.calledTwice;
     });
   });
 });
