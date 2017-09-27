@@ -1,5 +1,7 @@
-import Trie from './trie';
 import { ITweekClient, Context, FetchConfig } from 'tweek-client';
+import { createChangeEmitter } from 'change-emitter';
+import $$observable from 'symbol-observable';
+import Trie from './trie';
 import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
 
@@ -98,6 +100,7 @@ export class MemoryStore implements ITweekStore {
 }
 
 export default class TweekRepository {
+  private _emitter = createChangeEmitter();
   private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
@@ -221,6 +224,27 @@ export default class TweekRepository {
     return Promise.resolve();
   }
 
+  public subscribe = this._emitter.listen;
+
+  public [$$observable]() {
+    const outerSubscribe = this.subscribe;
+    return {
+      subscribe(observer: { next?: () => void }) {
+        function observeState() {
+          if (observer.next) {
+            observer.next();
+          }
+        }
+
+        const unsubscribe = outerSubscribe(observeState);
+        return { unsubscribe };
+      },
+      [$$observable]() {
+        return this;
+      },
+    };
+  }
+
   private _rollRefresh() {
     this._refreshPromise = this._refreshKeys();
     this._nextRefreshPromise = this._refreshPromise
@@ -265,7 +289,8 @@ export default class TweekRepository {
         throw err;
       })
       .then(config => this._updateTrieKeys(keysToRefresh, config))
-      .then(() => this._store.save(this._cache.list()));
+      .then(() => this._store.save(this._cache.list()))
+      .then(() => this._emitter.emit());
   }
 
   private _updateTrieKeys(keys, config) {
