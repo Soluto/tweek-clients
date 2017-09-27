@@ -65,10 +65,11 @@ describe('tweek rest appendContext', () => {
     it('should execute appendContext correctly', async () => {
       // Arrange
       const { tweekClient, fetchStub } = prepare(test.baseUrl);
+      const error = new Error('Error!');
       if (test.expectedSuccess) {
-        fetchStub.resolves(Promise.resolve(new Response()));
+        fetchStub.resolves(new Response());
       } else {
-        fetchStub.resolves(Promise.reject('Error!'));
+        fetchStub.rejects(error);
       }
       const expectedCallArgs = [
         test.expectedUrl,
@@ -82,7 +83,7 @@ describe('tweek rest appendContext', () => {
       expect(fetchStub).to.have.been.calledOnce;
       expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
       if (!test.expectedSuccess) {
-        await expect(testPromise).to.be.rejectedWith('Error!');
+        await expect(testPromise).to.be.rejectedWith(error);
       } else {
         await expect(testPromise).to.be.fulfilled;
       }

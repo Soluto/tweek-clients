@@ -2,6 +2,8 @@
   "name": "tweek-clients",
   "version": "0.1.0",
   "license": "MIT",
+  "url": "https://github.com/Soluto/tweek-clients/issues",
+  "repository": "Soluto/tweek-clients",
   "devDependencies": {
     "husky": "^0.14.3",
     "lerna": "^2.1.2",
