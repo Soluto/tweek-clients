@@ -22,3 +22,5 @@ export function snakeToCamelCase(keyName) {
 export function delay(timeout): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
+
+export function noop() {}

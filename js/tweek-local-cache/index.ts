@@ -2,7 +2,7 @@ import { ITweekClient, Context, FetchConfig } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
 import $$observable from 'symbol-observable';
 import Trie from './trie';
-import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
+import { partitionByIndex, snakeToCamelCase, distinct, delay, noop } from './utils';
 import Optional from './optional';
 
 require('object.entries').shim();
@@ -65,6 +65,12 @@ export type TweekRepositoryConfig = {
 export type GetPolicy = {
   notReady?: 'throw' | 'refresh' | 'refreshAll';
   notPrepared?: 'throw' | 'prepare';
+};
+
+export type Observer = {
+  start?: (subscription) => void;
+  next?: (value) => void;
+  error?: (error) => void;
 };
 
 let getAllPrefixes = key => {
@@ -154,44 +160,18 @@ export default class TweekRepository {
   }
 
   public get(key: string, policy?: GetPolicy): Promise<never | Optional<any> | any> {
-    policy = { ...this._getPolicy, ...policy };
-
-    let isScan = TweekRepository._isScan(key);
-    let node = this._cache.get(key);
-
-    if (!node) {
-      if (policy.notPrepared === 'prepare') {
-        this.prepare(key);
-        return this.get(key, policy);
-      }
-      return Promise.reject(`key ${key} not managed, use prepare to add it to cache`);
-    }
-
-    if (isScan) {
-      let prefix = getKeyPrefix(key);
-      let relative = Object.entries(this._cache.listRelative(prefix));
-      if (node.state === 'requested' || relative.some(([key, value]) => value.state === 'requested' && !value.isScan)) {
-        if (policy.notReady === 'throw') {
-          return Promise.reject('value not available yet for key: ' + key);
-        }
-
-        const refreshPromise =
-          policy.notReady === 'refresh' ? this.refresh(relative.map(([key]) => key)) : this.refresh();
-        return refreshPromise.then(() => this.get(key, policy));
-      }
-      return Promise.resolve(this._extractScanResult(key));
-    }
-    if (node.state === 'requested') {
-      if (policy.notReady === 'throw') {
-        return Promise.reject('value not available yet');
-      }
-
-      const refreshPromise = policy.notReady === 'refresh' ? this.refresh([key]) : this.refresh();
-      return refreshPromise.then(() => this.get(key, policy));
-    }
-    if (node.state === 'missing') return Promise.resolve(Optional.none());
-    if (node.isScan) return Promise.reject('corrupted cache');
-    return Promise.resolve(Optional.some(node.value));
+    return new Promise((resolve, reject) => {
+      const observer = this.observe(key, policy);
+      let subscription;
+      observer.subscribe({
+        start: s => (subscription = s),
+        next: value => {
+          subscription.unsubscribe();
+          resolve(value);
+        },
+        error: reject,
+      });
+    });
   }
 
   public refresh(keysToRefresh = Object.keys(this._cache.list())) {
@@ -224,25 +204,90 @@ export default class TweekRepository {
     return Promise.resolve();
   }
 
-  public subscribe = this._emitter.listen;
+  public observe(key: string, policy: GetPolicy = {}) {
+    policy = { ...this._getPolicy, ...policy };
+    const outerSubscribe = this._emitter.listen;
+    const isScan = TweekRepository._isScan(key);
 
-  public [$$observable]() {
-    const outerSubscribe = this.subscribe;
+    const handleNotReady = handleError => {
+      switch (policy.notReady) {
+        case 'refresh':
+          return this.refresh([key]);
+        case 'refreshAll':
+          return this.refresh();
+        default:
+          return handleError('value not available yet for key: ' + key);
+      }
+    };
+
+    const getKey = (observer: Observer) => {
+      const handleError = err => {
+        if (observer.error) observer.error(err);
+        else throw err;
+      };
+      const handleNext = value => observer.next && observer.next(value);
+
+      const node = this._cache.get(key);
+
+      if (!node) {
+        if (policy.notPrepared === 'prepare') return this.prepare(key);
+        return handleError(`key ${key} not managed, use prepare to add it to cache`);
+      }
+
+      if (isScan) {
+        const prefix = getKeyPrefix(key);
+        const relative = Object.entries(this._cache.listRelative(prefix));
+        if (
+          node.state === 'requested' ||
+          relative.some(([key, value]) => value.state === 'requested' && !value.isScan)
+        ) {
+          return handleNotReady(handleError);
+        }
+        return handleNext(this._extractScanResult(key));
+      }
+
+      if (node.state === 'requested') return handleNotReady(handleError);
+      if (node.state === 'missing') return handleNext(Optional.none());
+      if (node.isScan) return handleError('corrupted cache');
+      return handleNext(Optional.some(node.value));
+    };
+
     return {
-      subscribe(observer: { next?: () => void }) {
+      subscribe(observerOrNext: Observer | ((value) => void), onError?: (error) => void) {
+        const observer =
+          typeof observerOrNext === 'function'
+            ? {
+                next: observerOrNext,
+                error: onError,
+              }
+            : observerOrNext;
+
+        let unsubscribe;
+
         function observeState() {
-          if (observer.next) {
-            observer.next();
-          }
+          getKey(observer);
         }
 
-        const unsubscribe = outerSubscribe(observeState);
-        return { unsubscribe };
+        unsubscribe = outerSubscribe(observeState);
+
+        const subscription = { unsubscribe };
+
+        if (observer.start) {
+          observer.start(subscription);
+        }
+
+        observeState();
+
+        return subscription;
       },
       [$$observable]() {
         return this;
       },
     };
+  }
+
+  public [$$observable]() {
+    return this.observe('_');
   }
 
   private _rollRefresh() {
