@@ -41,6 +41,6 @@
     "test:behavior-debug":
       "mocha --debug-brk --require spec/init-mocha.js --compilers ts:ts-node/register spec/behavior/*.spec.ts",
     "test:unit": "mocha --compilers ts:ts-node/register spec/unit/*.spec.ts",
-    "build": "tsc"
+    "build": "rm -rf dist && tsc"
   }
 }

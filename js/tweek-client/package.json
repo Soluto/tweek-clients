@@ -31,6 +31,6 @@
   "scripts": {
     "dev": "tsc -w",
     "test": "mocha --compilers ts:ts-node/register",
-    "build": "tsc"
+    "build": "rm -rf dist && tsc"
   }
 }
