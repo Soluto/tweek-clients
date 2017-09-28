@@ -2,7 +2,7 @@ import { ITweekClient, Context, FetchConfig } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
 import $$observable from 'symbol-observable';
 import Trie from './trie';
-import { partitionByIndex, snakeToCamelCase, distinct, delay, noop } from './utils';
+import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
 
 require('object.entries').shim();
@@ -156,7 +156,10 @@ export default class TweekRepository {
 
   public prepare(key: string) {
     let node = this._cache.get(key);
-    if (!node) this._requestKey(key);
+    if (!node) {
+      let isScan = TweekRepository._isScan(key);
+      this._cache.set(key, { state: 'requested', isScan });
+    }
   }
 
   public get(key: string, policy?: GetPolicy): Promise<never | Optional<any> | any> {
@@ -169,7 +172,10 @@ export default class TweekRepository {
           subscription.unsubscribe();
           resolve(value);
         },
-        error: reject,
+        error: error => {
+          subscription.unsubscribe();
+          reject(error);
+        },
       });
     });
   }
@@ -178,13 +184,15 @@ export default class TweekRepository {
     let isExpired = false;
     let isRefreshing = false;
 
-    keysToRefresh.forEach(key => {
-      let node = this._cache.get(key);
+    for (let key of keysToRefresh) {
+      const node = this._cache.get(key);
       if (!node) {
         if (this._getPolicy.notPrepared === 'throw') {
           throw `key ${key} not managed, use prepare to add it to cache`;
         } else {
-          node = this._requestKey(key);
+          this.prepare(key);
+          isExpired = true;
+          continue;
         }
       }
 
@@ -192,12 +200,15 @@ export default class TweekRepository {
         isRefreshing = true;
       } else {
         isExpired = true;
-        this._cache.set(key, {
-          ...node,
-          expiration: 'expired',
-        });
+
+        if (node.expiration !== 'expired') {
+          this._cache.set(key, {
+            ...node,
+            expiration: 'expired',
+          });
+        }
       }
-    });
+    }
 
     if (isExpired) return this._nextRefreshPromise;
     if (isRefreshing) return this._refreshPromise;
@@ -206,26 +217,25 @@ export default class TweekRepository {
 
   public observe(key: string, policy: GetPolicy = {}) {
     policy = { ...this._getPolicy, ...policy };
-    const outerSubscribe = this._emitter.listen;
+    const emitter = this._emitter;
     const isScan = TweekRepository._isScan(key);
 
-    const handleNotReady = handleError => {
-      switch (policy.notReady) {
-        case 'refresh':
-          return this.refresh([key]);
-        case 'refreshAll':
-          return this.refresh();
-        default:
-          return handleError('value not available yet for key: ' + key);
-      }
-    };
-
-    const getKey = (observer: Observer) => {
+    const onKey = (observer: Observer) => {
+      const handleNext = value => observer.next && observer.next(value);
       const handleError = err => {
         if (observer.error) observer.error(err);
         else throw err;
       };
-      const handleNext = value => observer.next && observer.next(value);
+      const handleNotReady = () => {
+        switch (policy.notReady) {
+          case 'refresh':
+            return this.refresh([key]);
+          case 'refreshAll':
+            return this.refresh();
+          default:
+            return handleError('value not available yet for key: ' + key);
+        }
+      };
 
       const node = this._cache.get(key);
 
@@ -241,12 +251,12 @@ export default class TweekRepository {
           node.state === 'requested' ||
           relative.some(([key, value]) => value.state === 'requested' && !value.isScan)
         ) {
-          return handleNotReady(handleError);
+          return handleNotReady();
         }
         return handleNext(this._extractScanResult(key));
       }
 
-      if (node.state === 'requested') return handleNotReady(handleError);
+      if (node.state === 'requested') return handleNotReady();
       if (node.state === 'missing') return handleNext(Optional.none());
       if (node.isScan) return handleError('corrupted cache');
       return handleNext(Optional.some(node.value));
@@ -262,15 +272,21 @@ export default class TweekRepository {
               }
             : observerOrNext;
 
-        let unsubscribe;
-
         function observeState() {
-          getKey(observer);
+          onKey(observer);
         }
 
-        unsubscribe = outerSubscribe(observeState);
-
-        const subscription = { unsubscribe };
+        let closed = false;
+        const unlisten = emitter.listen(observeState);
+        const subscription = {
+          get closed() {
+            return closed;
+          },
+          unsubscribe: () => {
+            closed = true;
+            return unlisten();
+          },
+        };
 
         if (observer.start) {
           observer.start(subscription);
@@ -333,41 +349,42 @@ export default class TweekRepository {
         );
         throw err;
       })
-      .then(config => this._updateTrieKeys(keysToRefresh, config))
+      .then(keyValues => this._updateTrieKeys(keysToRefresh, keyValues))
       .then(() => this._store.save(this._cache.list()))
       .then(() => this._emitter.emit());
   }
 
-  private _updateTrieKeys(keys, config) {
-    keys.forEach(keyToUpdate => {
+  private _updateTrieKeys(keys, keyValues) {
+    let valuesTrie;
+    for (let keyToUpdate of keys) {
       const isScan = TweekRepository._isScan(keyToUpdate);
-      if (!isScan) {
-        this._updateNode(keyToUpdate, config[keyToUpdate]);
-        return;
+      if (isScan) {
+        if (!valuesTrie) {
+          valuesTrie = new Trie(TweekKeySplitJoin);
+          Object.entries(keyValues).forEach(([k, v]) => {
+            valuesTrie.set(k, v);
+          });
+        }
+        this._updateTrieScanKey(keyToUpdate, keyValues, valuesTrie);
+      } else {
+        this._updateNode(keyToUpdate, keyValues[keyToUpdate]);
       }
-
-      this._updateTrieScanKey(keyToUpdate, config);
-    });
+    }
   }
 
-  private _updateTrieScanKey(key, config) {
+  private _updateTrieScanKey(key, keyValues, valuesTrie) {
     let prefix = getKeyPrefix(key);
-
-    let configResults = new Trie(TweekKeySplitJoin);
-    Object.entries(config).forEach(([k, v]) => {
-      configResults.set(k, v);
-    });
 
     let entries = Object.entries(this._cache.list(prefix));
     entries.forEach(([subKey, valueNode]) => {
-      this._updateNode(subKey, config[subKey]);
+      this._updateNode(subKey, keyValues[subKey]);
       if (valueNode.state === 'missing' || !valueNode.isScan) {
         return;
       }
 
       this._cache.set(subKey, { state: 'cached', isScan: true });
       let fullPrefix = getKeyPrefix(subKey);
-      let nodes = fullPrefix === '' ? configResults.list() : configResults.listRelative(fullPrefix);
+      let nodes = fullPrefix === '' ? valuesTrie.list() : valuesTrie.listRelative(fullPrefix);
       this._setScanNodes(fullPrefix, Object.keys(nodes), 'cached');
       Object.entries(nodes).forEach(([n, value]) => {
         let fullKey = [...(fullPrefix === '' ? [] : [fullPrefix]), n].join('/');
@@ -409,13 +426,6 @@ export default class TweekRepository {
         value: value,
       });
     }
-  }
-
-  private _requestKey(key) {
-    let isScan = TweekRepository._isScan(key);
-    let node: RequestedKey = { state: 'requested', isScan, expiration: 'expired' };
-    this._cache.set(key, node);
-    return node;
   }
 
   private static _tryParse(value) {
