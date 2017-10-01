@@ -536,6 +536,19 @@ describe('tweek repo test', () => {
         }),
       );
     });
+
+    it('should not refresh if not dirty', async () => {
+      await initRepository();
+
+      const spy = sinon.spy(_tweekRepo._cache, 'list');
+
+      try {
+        await delay(10);
+        expect(spy.notCalled).to.be.true;
+      } finally {
+        _tweekRepo._cache.list.restore();
+      }
+    });
   });
 
   describe('observe', () => {
