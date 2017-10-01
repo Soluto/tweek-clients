@@ -113,11 +113,12 @@ export default class TweekRepository {
   private _context: Context = {};
   private _getPolicy: GetPolicy;
   private _refreshInterval: number;
+  private _isDirty = false;
 
   private _refreshPromise: Promise<void>;
   private _nextRefreshPromise: Promise<void>;
 
-  constructor({ client, getPolicy, refreshInterval = 100 }: TweekRepositoryConfig) {
+  constructor({ client, getPolicy, refreshInterval = 30 }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'refresh', notPrepared: 'prepare', ...getPolicy };
@@ -146,10 +147,15 @@ export default class TweekRepository {
     return this._store.load().then(keys => {
       keys = keys || {};
       Object.entries(keys).forEach(([key, value]) => {
-        this._cache.set(key, {
-          ...value,
-          expiration: value.expiration === 'refreshing' ? 'expired' : value.expiration,
-        });
+        if (value.expiration) {
+          this._isDirty = true;
+          this._cache.set(key, {
+            ...value,
+            expiration: 'expired',
+          });
+        } else {
+          this._cache.set(key, value);
+        }
       });
     });
   }
@@ -159,6 +165,7 @@ export default class TweekRepository {
     if (!node) {
       let isScan = TweekRepository._isScan(key);
       this._cache.set(key, { state: 'requested', isScan });
+      this._isDirty = true;
     }
   }
 
@@ -200,7 +207,7 @@ export default class TweekRepository {
         isRefreshing = true;
       } else {
         isExpired = true;
-
+        this._isDirty = true;
         if (node.expiration !== 'expired') {
           this._cache.set(key, {
             ...node,
@@ -316,6 +323,9 @@ export default class TweekRepository {
   }
 
   private _refreshKeys() {
+    if (!this._isDirty) return Promise.resolve();
+    this._isDirty = false;
+
     let expiredKeys = Object.entries(this._cache.list()).filter(
       ([key, valueNode]) => valueNode.state === 'requested' || valueNode.expiration === 'expired',
     );
@@ -347,6 +357,7 @@ export default class TweekRepository {
             expiration: 'expired',
           }),
         );
+        this._isDirty = true;
         throw err;
       })
       .then(keyValues => this._updateTrieKeys(keysToRefresh, keyValues))
