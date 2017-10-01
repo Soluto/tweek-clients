@@ -4,6 +4,7 @@ import $$observable from 'symbol-observable';
 import Trie from './trie';
 import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
+import { isNullOrUndefined, isObject } from 'util';
 
 require('object.entries').shim();
 require('object.values').shim();
@@ -121,7 +122,7 @@ export default class TweekRepository {
   constructor({ client, getPolicy, refreshInterval = 30 }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
-    this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...getPolicy };
+    this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
     this._refreshInterval = refreshInterval;
 
     this._refreshPromise = Promise.resolve();
@@ -223,7 +224,7 @@ export default class TweekRepository {
   }
 
   public observe(key: string, policy: GetPolicy = {}) {
-    policy = { ...this._getPolicy, ...policy };
+    policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
     const emitter = this._emitter;
     const isScan = TweekRepository._isScan(key);
 
@@ -447,5 +448,26 @@ export default class TweekRepository {
 
   private static _isScan(key) {
     return key === '_' || key.endsWith('/_');
+  }
+
+  private static _ensurePolicy(policy) {
+    if (isNullOrUndefined(policy)) return policy;
+    if (!isObject(policy)) throw new TypeError('expected getPolicy to be an object');
+
+    if (policy.notReady === 'refresh') {
+      policy = { ...policy, notReady: 'wait' };
+    }
+
+    if (!isNullOrUndefined(policy.notReady) && !['wait', 'throw'].includes(policy.notReady)) {
+      throw new TypeError(`expected notReady policy to be one of ['wait', 'throw'], instead got '${policy.notReady}'`);
+    }
+
+    if (!isNullOrUndefined(policy.notPrepared) && !['prepare', 'throw'].includes(policy.notPrepared)) {
+      throw new TypeError(
+        `expected notPrepared policy to be one of ['prepare', 'throw'], instead got '${policy.notPrepared}'`,
+      );
+    }
+
+    return policy;
   }
 }

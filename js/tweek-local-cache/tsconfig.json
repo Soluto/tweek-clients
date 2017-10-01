@@ -2,7 +2,7 @@
   "compileOnSave": true,
   "exclude": ["dist", "node_modules", "spec"],
   "compilerOptions": {
-    "lib": ["dom", "es2015", "es2017.object"],
+    "lib": ["dom", "es2015", "es2017.object", "ES2016.Array.Include"],
     "target": "es5",
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
