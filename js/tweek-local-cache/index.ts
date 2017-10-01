@@ -63,7 +63,7 @@ export type TweekRepositoryConfig = {
 };
 
 export type GetPolicy = {
-  notReady?: 'throw' | 'refresh' | 'refreshAll';
+  notReady?: 'throw' | 'wait';
   notPrepared?: 'throw' | 'prepare';
 };
 
@@ -121,7 +121,7 @@ export default class TweekRepository {
   constructor({ client, getPolicy, refreshInterval = 30 }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
-    this._getPolicy = { notReady: 'refresh', notPrepared: 'prepare', ...getPolicy };
+    this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...getPolicy };
     this._refreshInterval = refreshInterval;
 
     this._refreshPromise = Promise.resolve();
@@ -235,10 +235,8 @@ export default class TweekRepository {
       };
       const handleNotReady = () => {
         switch (policy.notReady) {
-          case 'refresh':
+          case 'wait':
             return this.refresh([key]);
-          case 'refreshAll':
-            return this.refresh();
           default:
             return handleError('value not available yet for key: ' + key);
         }

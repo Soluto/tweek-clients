@@ -209,34 +209,19 @@ describe('tweek repo test', () => {
         await expect(getPromise).to.be.rejectedWith('value not available yet');
       });
 
-      it("should only refresh the requested key when policy is 'refresh'", async () => {
+      it("should only refresh the requested key when policy is 'wait'", async () => {
         // Arrange
         let store = new MemoryStore({ 'my_path/inner_path_1/int_value': cachedItem(10) });
         await initRepository({ store });
         await _tweekRepo.prepare('my_path/string_value');
 
         // Act
-        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: 'refresh' });
+        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: 'wait' });
         let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value', { notReady: 'throw' });
 
         // Assert
         expect(key1.value).to.equal('my-string');
         expect(key2.value).to.equal(10);
-      });
-
-      it("should refresh all keys when policy is 'refreshAll'", async () => {
-        // Arrange
-        let store = new MemoryStore({ 'my_path/inner_path_1/int_value': cachedItem(10) });
-        await initRepository({ store });
-        await _tweekRepo.prepare('my_path/string_value');
-
-        // Act
-        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: 'refreshAll' });
-        let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value', { notReady: 'throw' });
-
-        // Assert
-        expect(key1.value).to.equal('my-string');
-        expect(key2.value).to.equal(55);
       });
     });
 
