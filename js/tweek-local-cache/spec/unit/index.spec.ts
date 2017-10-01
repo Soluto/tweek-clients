@@ -1,7 +1,6 @@
 import 'mocha';
 import chai = require('chai');
-import TweekRepository from '../../';
-import { MemoryStore, ITweekStore } from '../../';
+import TweekRepository, { MemoryStore, ITweekStore } from '../../';
 import { FetchConfig, createTweekClient, ITweekClient, Context } from 'tweek-client';
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import sinon = require('sinon');
@@ -536,6 +535,160 @@ describe('tweek repo test', () => {
           expect(keyValue.value).to.equal(2);
         }),
       );
+    });
+  });
+
+  describe('observe', () => {
+    function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
+      return new Promise((resolve, reject) => {
+        let subscription;
+        const items: any[] = [];
+        _tweekRepo.observe(key, getPolicy).subscribe({
+          start: s => (subscription = s),
+          next: value => {
+            items.push(value);
+            if (items.length === count) {
+              subscription.unsubscribe();
+              resolve(items);
+            }
+          },
+          error: err => {
+            subscription.unsubscribe();
+            reject(err);
+          },
+        });
+      });
+    }
+
+    it('should observe single key', async () => {
+      // Arrange
+      await initRepository();
+
+      await _tweekRepo.prepare('my_path/string_value');
+      await _tweekRepo.prepare('my_path/inner_path_1/int_value');
+      await _tweekRepo.prepare('my_path/inner_path_1/bool_positive_value');
+      await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_value');
+
+      await _tweekRepo.refresh();
+
+      // Act
+      let [key1] = await observeKey('my_path/string_value');
+      let [key2] = await observeKey('my_path/inner_path_1/int_value');
+      let [key3] = await observeKey('my_path/inner_path_1/bool_positive_value');
+      let [key4] = await observeKey('my_path/inner_path_2/bool_negative_value');
+
+      // Assert
+      expect(key1).to.have.property('value', 'my-string');
+      expect(key2).to.have.property('value', 55);
+      expect(key3).to.have.property('value', true);
+      expect(key4).to.have.property('value', false);
+    });
+
+    it('should observe scan key', async () => {
+      // Arrange
+      await initRepository();
+
+      await _tweekRepo.prepare('some_path/_');
+      await _tweekRepo.refresh();
+
+      const expectedKeysNode = {
+        innerPath1: {
+          firstValue: 'value_1',
+          secondValue: 'value_2',
+        },
+      };
+
+      // Act
+      let [keysNode] = await observeKey('some_path/_');
+
+      // Assert
+      expect(keysNode).to.deep.equal(expectedKeysNode);
+    });
+
+    it('should observe root scan', async () => {
+      // Arrange
+      await initRepository();
+      await _tweekRepo.prepare('_');
+      await _tweekRepo.refresh();
+
+      // Act
+      let [config] = await observeKey('_');
+
+      // Assert
+      expect(config)
+        .to.have.property('innerPath1')
+        .that.deep.include({ firstValue: 'value_1' });
+    });
+
+    it('should be case insensitive', async () => {
+      // Arrange
+      await initRepository();
+
+      await _tweekRepo.prepare('my_Path/string_value');
+      await _tweekRepo.prepare('my_path/inneR_path_1/int_value');
+      await _tweekRepo.prepare('my_path/inner_path_1/bool_Positive_value');
+      await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_Value');
+
+      await _tweekRepo.refresh();
+
+      // Act
+      let [key1] = await observeKey('My_path/string_value');
+      let [key2] = await observeKey('my_Path/inner_path_1/int_value');
+      let [key3] = await observeKey('my_path/Inner_path_1/bool_positive_value');
+      let [key4] = await observeKey('my_path/inner_path_2/Bool_negative_value');
+
+      // Assert
+      expect(key1).to.have.property('value', 'my-string');
+      expect(key2).to.have.property('value', 55);
+      expect(key3).to.have.property('value', true);
+      expect(key4).to.have.property('value', false);
+    });
+
+    it('should notify after refresh new value', async () => {
+      const persistedNodes = {
+        'my_path/string_value': cachedItem('old-value'),
+      };
+      const store = new MemoryStore(persistedNodes);
+      await initRepository({ store });
+      const keysPromise = observeKey('my_path/string_value', 2);
+
+      await _tweekRepo.refresh();
+
+      const keys = await keysPromise;
+      expect(keys).to.have.lengthOf(2);
+      expect(keys.map(x => x.value)).to.deep.equal(['old-value', 'my-string']);
+    });
+
+    it('should call error when fetch fails', async () => {
+      // Arrange
+      await initRepository({ client: _createClientThatFails() });
+
+      // Act
+      const keysPromise = observeKey('some_path/key', 1, { notPrepared: 'throw' });
+
+      //Assert
+      await expect(keysPromise).to.be.rejected;
+    });
+
+    it('should stop notifying after unsubscribe', async () => {
+      const persistedNodes = {
+        'my_path/string_value': cachedItem('old-value'),
+      };
+      const store = new MemoryStore(persistedNodes);
+      await initRepository({ store });
+
+      const items: any[] = [];
+      const subscription = _tweekRepo.observe('my_path/string_value').subscribe({
+        next: x => items.push(x.value),
+        error: () => subscription.unsubscribe(),
+      });
+
+      subscription.unsubscribe();
+
+      await _tweekRepo.refresh();
+
+      expect(items).to.have.lengthOf(1);
+      expect(items).to.deep.equal(['old-value']);
     });
   });
 });

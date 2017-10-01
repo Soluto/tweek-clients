@@ -2,9 +2,8 @@ import 'mocha';
 import chai = require('chai');
 import getenv = require('getenv');
 const expect = chai.expect;
-import TweekRepository from '../../';
-import { MemoryStore } from '../../';
-import { createTweekClient, TweekClient, ITweekClient, Context } from 'tweek-client';
+import TweekRepository, { MemoryStore } from '../../';
+import { createTweekClient, ITweekClient, Context } from 'tweek-client';
 
 const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://127.0.0.1:1111');
 

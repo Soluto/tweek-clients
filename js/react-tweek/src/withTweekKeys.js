@@ -19,14 +19,18 @@ export default function(path, { mergeProps = true, propName, onError, repoKey = 
           error: error => {
             if (onError) onError(error);
             else console.error(error);
-            this.subscription.unsubscribe();
-            this.subscription = null;
+            this.unsubscribe();
           },
         });
       }
 
       componentWillUnmount() {
+        this.unsubscribe();
+      }
+
+      unsubscribe() {
         this.subscription && this.subscription.unsubscribe();
+        this.subscription = null;
       }
 
       setTweekValue = (result = {}) => {
