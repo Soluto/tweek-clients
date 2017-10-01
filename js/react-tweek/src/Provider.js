@@ -1,12 +1,12 @@
 import { Component, Children } from 'react';
-import repoPropType from './repoPropType';
+import PropTypes from 'prop-types';
 
 export function createProvider({ repoKey = 'tweekRepo' } = {}) {
   return class extends Component {
     static displayName = 'Provider';
 
     static childContextTypes = {
-      [repoKey]: repoPropType,
+      [repoKey]: PropTypes.object,
     };
 
     getChildContext = () => ({ [repoKey]: this.tweekRepo });
