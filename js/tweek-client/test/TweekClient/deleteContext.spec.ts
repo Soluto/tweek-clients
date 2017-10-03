@@ -1,12 +1,5 @@
-import 'mocha';
 import sinon = require('sinon');
-import chai = require('chai');
-import sinonChai = require('sinon-chai');
-import chaiAsProised = require('chai-as-promised');
-chai.use(sinonChai);
-chai.use(chaiAsProised);
-let { expect } = chai;
-
+import { expect } from 'chai';
 import TweekClient from '../../src/TweekClient';
 
 describe('tweek-client deleteContext', () => {

@@ -1,11 +1,6 @@
-import 'mocha';
 import sinon = require('sinon');
-import chai = require('chai');
-import sinonChai = require('sinon-chai');
+import { expect } from 'chai';
 import { FetchConfig } from '../../src/index';
-chai.use(sinonChai);
-let { expect } = chai;
-
 import TweekClient from '../../src/TweekClient';
 
 describe('tweek-client fetch', () => {
