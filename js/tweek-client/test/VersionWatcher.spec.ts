@@ -1,14 +1,11 @@
 import fetchMock = require('fetch-mock');
 import { expect } from 'chai';
 import VersionWatcher from '../src/VersionWatcher';
+import { delay } from '../src/utils';
 
 describe('VersionWatcher', () => {
   const baseServiceUrl = 'http://test/';
   const matcher = 'http://test/api/v1/repo-version';
-
-  function delay(timeout) {
-    return new Promise(resolve => setTimeout(resolve, timeout));
-  }
 
   function watcherToPromise(watcher: VersionWatcher, count?: number): Promise<any[]> {
     return new Promise((resolve, reject) => {

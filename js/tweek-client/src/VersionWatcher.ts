@@ -1,7 +1,7 @@
 import { createChangeEmitter } from 'change-emitter';
 import $$observable from 'symbol-observable';
 import { Observer } from './types';
-import { getObserver } from './utils';
+import { delay, getObserver } from './utils';
 
 enum MessageType {
   Value,
@@ -23,7 +23,6 @@ export default class {
   private _currentVersion: string;
   private _emitter = createChangeEmitter();
   private _isDisposed = false;
-  private _timeout;
 
   constructor(baseServiceUrl: string, private _sampleInterval: number = 30) {
     if (!baseServiceUrl.endsWith('/')) {
@@ -31,7 +30,7 @@ export default class {
     }
 
     this._versionUrl = `${baseServiceUrl}api/v1/repo-version`;
-    this._getVersion();
+    this._watchVersion();
   }
 
   public get currentVersion() {
@@ -43,12 +42,7 @@ export default class {
   }
 
   public dispose() {
-    if (this._isDisposed) return;
-
     this._isDisposed = true;
-    clearTimeout(this._timeout);
-    this._timeout = null;
-    this._emit({ type: MessageType.Complete });
   }
 
   public subscribe(observerOrNext: Observer | ((value) => void)) {
@@ -88,21 +82,27 @@ export default class {
     return this;
   }
 
-  private _getVersion() {
-    fetch(this._versionUrl)
-      .then(result => (result.ok ? result.text() : this._currentVersion))
-      .then(version => {
-        if (version !== this._currentVersion) {
-          this._currentVersion = version;
-          this._emit({ type: MessageType.Value, payload: version });
+  private async _watchVersion() {
+    try {
+      while (!this._isDisposed) {
+        const result = await fetch(this._versionUrl);
+        if (result.ok) {
+          const version = await result.text();
+          if (version && version !== this._currentVersion) {
+            this._currentVersion = version;
+            this._emit({ type: MessageType.Value, payload: version });
+          }
         }
-      })
-      .then(() => {
-        if (!this._isDisposed) {
-          this._timeout = setTimeout(this._getVersion.bind(this), this._sampleInterval);
-        }
-      })
-      .catch(error => this._emit({ type: MessageType.Error, payload: error }));
+
+        if (this._isDisposed) break;
+
+        await delay(this._sampleInterval);
+      }
+
+      this._emit({ type: MessageType.Complete });
+    } catch (error) {
+      this._emit({ type: MessageType.Error, payload: error });
+    }
   }
 
   private _emit(message: Message) {
