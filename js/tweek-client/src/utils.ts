@@ -1,3 +1,5 @@
+import { Observer } from './types';
+
 export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -25,4 +27,13 @@ export function convertTypingFromJSON(target) {
       return o;
     }, {});
   } else return target;
+}
+
+export function getObserver(observerOrNext: Observer | ((value) => void)): Observer {
+  if (typeof observerOrNext === 'function') {
+    return {
+      next: observerOrNext,
+    };
+  }
+  return observerOrNext;
 }

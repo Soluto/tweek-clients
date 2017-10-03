@@ -9,8 +9,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "change-emitter": "^0.1.6",
     "isomorphic-fetch": "^2.2.1",
-    "query-string": "^5.0.0"
+    "query-string": "^5.0.0",
+    "symbol-observable": "^1.0.4"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
