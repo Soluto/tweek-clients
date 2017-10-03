@@ -90,13 +90,7 @@ export default class {
 
   private _getVersion() {
     fetch(this._versionUrl)
-      .then(result => {
-        if (!result.ok) {
-          console.warn('error getting repository version:', result.status, result.statusText);
-          return this._currentVersion;
-        }
-        return result.text();
-      })
+      .then(result => (result.ok ? result.text() : this._currentVersion))
       .then(version => {
         if (version !== this._currentVersion) {
           this._currentVersion = version;
