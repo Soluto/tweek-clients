@@ -29,10 +29,16 @@ export function convertTypingFromJSON(target) {
   } else return target;
 }
 
-export function getObserver(observerOrNext: Observer | ((value) => void)): Observer {
+export function getObserver(
+  observerOrNext: Observer | ((value) => void),
+  onError?: (error) => void,
+  onComplete?: () => void,
+): Observer {
   if (typeof observerOrNext === 'function') {
     return {
       next: observerOrNext,
+      error: onError,
+      complete: onComplete,
     };
   }
   return observerOrNext;

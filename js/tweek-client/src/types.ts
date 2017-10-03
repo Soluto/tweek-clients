@@ -28,6 +28,8 @@ export interface ITweekClient {
 }
 
 export type Observer = {
-  start?: (subscription) => void;
+  start?: (subscription: { unsubscribe: () => void }) => void;
   next?: (value) => void;
+  error?: (error) => void;
+  complete?: () => void;
 };
