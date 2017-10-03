@@ -3,14 +3,13 @@ import sinon = require('sinon');
 import chai = require('chai');
 import sinonChai = require('sinon-chai');
 import chaiAsProised = require('chai-as-promised');
-import { FetchConfig } from '../index';
 chai.use(sinonChai);
 chai.use(chaiAsProised);
 let { expect } = chai;
 
-import { TweekClient } from '../index';
+import TweekClient from '../../src/TweekClient';
 
-describe('tweek rest deleteContext', () => {
+describe('tweek-client appendContext', () => {
   const defaultUrl = 'http://test';
   let prepare = url => {
     const fetchStub = sinon.stub();
@@ -31,30 +30,38 @@ describe('tweek rest deleteContext', () => {
   const testsDefenitions: {
     identityType: string;
     identityId: string;
-    property: string;
     expectedUrl: string;
     expectedSuccess: boolean;
     baseUrl?: string;
+    context: object;
   }[] = [];
 
   testsDefenitions.push({
     identityId: 'abcd1234',
     identityType: 'user',
-    property: 'name',
-    expectedUrl: `${defaultUrl}/api/v1/context/user/abcd1234/name`,
+    expectedUrl: `${defaultUrl}/api/v1/context/user/abcd1234`,
     expectedSuccess: true,
+    context: {
+      name: 'SomeName',
+      lastName: 'SomeLastName',
+      age: 42,
+    },
   });
 
   testsDefenitions.push({
     identityId: 'a1b2c3d4',
     identityType: 'device',
-    property: 'osType',
-    expectedUrl: `${defaultUrl}/api/v1/context/device/a1b2c3d4/osType`,
+    expectedUrl: `${defaultUrl}/api/v1/context/device/a1b2c3d4`,
     expectedSuccess: false,
+    context: {
+      osType: 'Android',
+      osVersion: '6.0',
+      batteryPercentage: 99.1,
+    },
   });
 
   testsDefenitions.forEach(test => {
-    it('should execute deleteContext correctly', async () => {
+    it('should execute appendContext correctly', async () => {
       // Arrange
       const { tweekClient, fetchStub } = prepare(test.baseUrl);
       const error = new Error('Error!');
@@ -63,10 +70,13 @@ describe('tweek rest deleteContext', () => {
       } else {
         fetchStub.rejects(error);
       }
-      const expectedCallArgs = [test.expectedUrl, { method: 'DELETE' }];
+      const expectedCallArgs = [
+        test.expectedUrl,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(test.context) },
+      ];
 
       // Act
-      let testPromise = tweekClient.deleteContext(test.identityType, test.identityId, test.property);
+      let testPromise = tweekClient.appendContext(test.identityType, test.identityId, test.context);
 
       // Assert
       expect(fetchStub).to.have.been.calledOnce;

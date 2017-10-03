@@ -1,12 +1,9 @@
-declare const global: any;
-
 import 'mocha';
 import 'isomorphic-fetch';
 import chai = require('chai');
 import chaiAsProised = require('chai-as-promised');
 import fetchMock = require('fetch-mock');
-
-import { createTweekClient } from '../index';
+import createTweekClient from '../../src/createTweekClient';
 
 chai.use(chaiAsProised);
 let { expect } = chai;

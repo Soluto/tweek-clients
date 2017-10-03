@@ -30,7 +30,7 @@
   },
   "scripts": {
     "dev": "tsc -w",
-    "test": "mocha --compilers ts:ts-node/register",
+    "test": "mocha --recursive --compilers ts:ts-node/register",
     "build": "rm -rf dist && tsc"
   }
 }

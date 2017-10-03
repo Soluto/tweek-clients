@@ -1,65 +1,8 @@
 import * as queryString from 'query-string';
-import 'isomorphic-fetch';
+import { convertTypingFromJSON, snakeToCamelCase } from './utils';
+import { FetchConfig, ITweekClient, TweekInitConfig } from './types';
 
-export type IdentityContext = { id?: string } & {
-  [prop: string]: string | number | boolean;
-};
-
-export type Context = {
-  [identityType: string]: IdentityContext;
-};
-
-export type TweekCasing = 'snake' | 'camelCase';
-
-export type FetchConfig = {
-  include?: string[];
-  casing?: TweekCasing;
-  convertTyping?: boolean;
-  flatten?: boolean;
-  context?: Context;
-};
-
-export type TweekInitConfig = FetchConfig & {
-  baseServiceUrl: string;
-  fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-};
-
-function captialize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function snakeToCamelCase(target) {
-  if (typeof target !== 'object') return target;
-  return Object.keys(target).reduce((o, key) => {
-    let [firstKey, ...others] = key.split('_');
-    let newKey = [firstKey, ...others.map(captialize)].join('');
-    o[newKey] = snakeToCamelCase(target[key]);
-    return o;
-  }, {});
-}
-
-function convertTypingFromJSON(target) {
-  if (typeof target === 'string') {
-    try {
-      return JSON.parse(target);
-    } catch (e) {
-      return target;
-    }
-  } else if (typeof target === 'object') {
-    return Object.keys(target).reduce((o, key) => {
-      o[key] = convertTypingFromJSON(target[key]);
-      return o;
-    }, {});
-  } else return target;
-}
-
-export interface ITweekClient {
-  fetch<T>(path: string, config?: FetchConfig): Promise<T>;
-  appendContext(identityType: string, identityId: string, context: object): Promise<void>;
-  deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
-}
-
-export class TweekClient implements ITweekClient {
+export default class TweekClient implements ITweekClient {
   config: TweekInitConfig;
 
   private static ENCODE_$_CHARACTER = encodeURIComponent('$');
@@ -159,34 +102,4 @@ export class TweekClient implements ITweekClient {
       return pre;
     }, {});
   };
-}
-
-export function createTweekClient(config: {
-  baseServiceUrl: string;
-  context?: any;
-  getAuthenticationToken?: () => Promise<string> | string;
-}) {
-  const { baseServiceUrl, context = {}, getAuthenticationToken } = config;
-
-  let fetchClient = (input, init) => fetch(input, init);
-  if (getAuthenticationToken) {
-    fetchClient = async (input, init = {}) => {
-      const token = await Promise.resolve(getAuthenticationToken());
-      return fetch(input, {
-        ...init,
-        headers: {
-          ...init.headers,
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    };
-  }
-
-  return new TweekClient({
-    baseServiceUrl,
-    casing: 'camelCase',
-    convertTyping: false,
-    context,
-    fetch: fetchClient,
-  });
 }
