@@ -9,10 +9,8 @@ describe('watchVersion', () => {
 
   function watcherToPromise(watcher, count?: number): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      let subscription;
       const result: any[] = [];
       watcher.subscribe({
-        start: s => (subscription = s),
         next: v => {
           result.push(v);
           if (count !== undefined && result.length >= count) {
@@ -20,11 +18,9 @@ describe('watchVersion', () => {
           }
         },
         error: err => {
-          subscription.unsubscribe();
           reject(err);
         },
         complete: () => {
-          subscription.unsubscribe();
           resolve(result);
         },
       });

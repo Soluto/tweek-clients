@@ -1,7 +1,7 @@
 import { createChangeEmitter } from 'change-emitter';
+import Observable = require('zen-observable');
 import $$observable from 'symbol-observable';
-import { Observer } from './types';
-import { delay, getObserver } from './utils';
+import { delay } from './utils';
 
 enum MessageType {
   Value,
@@ -18,7 +18,6 @@ type Message = {
  * Version Watcher for Tweek rules repository.
  * This is an experimental function and it will change in future releases
  */
-
 export default function watchVersion(baseServiceUrl: string, sampleIterval: number = 30) {
   if (!baseServiceUrl.endsWith('/')) {
     baseServiceUrl += '/';
@@ -57,6 +56,32 @@ export default function watchVersion(baseServiceUrl: string, sampleIterval: numb
 
   watchVersion();
 
+  const observable = new Observable<any>(observer => {
+    if (isDisposed) {
+      observer.complete();
+    }
+
+    function observeVersion({ type, payload }: Message) {
+      switch (type) {
+        case MessageType.Value:
+          observer.next(payload);
+          break;
+        case MessageType.Error:
+          observer.error(payload);
+          break;
+        case MessageType.Complete:
+          observer.complete();
+          break;
+      }
+    }
+
+    if (currentVersion) {
+      observeVersion({ type: MessageType.Value, payload: currentVersion });
+    }
+
+    return emitter.listen(observeVersion);
+  });
+
   return {
     get currentVersion() {
       return currentVersion;
@@ -67,38 +92,7 @@ export default function watchVersion(baseServiceUrl: string, sampleIterval: numb
     dispose() {
       isDisposed = true;
     },
-    subscribe(observerOrNext: Observer | ((value) => void), onError?: (error) => void, onComplete?: () => void) {
-      if (isDisposed) {
-        throw new Error('Attempting to subscribe to a disposed watcher');
-      }
-
-      const observer = getObserver(observerOrNext, onError, onComplete);
-
-      function observeVersion({ type, payload }: Message) {
-        switch (type) {
-          case MessageType.Value:
-            observer.next && observer.next(payload);
-            break;
-          case MessageType.Error:
-            observer.error && observer.error(payload);
-            break;
-          case MessageType.Complete:
-            observer.complete && observer.complete();
-            break;
-        }
-      }
-
-      const subscription = { unsubscribe: emitter.listen(observeVersion) };
-      if (observer.start) {
-        observer.start(subscription);
-      }
-
-      if (currentVersion) {
-        observeVersion({ type: MessageType.Value, payload: currentVersion });
-      }
-
-      return subscription;
-    },
+    subscribe: observable.subscribe.bind(observable),
     [$$observable]() {
       return this;
     },

@@ -26,10 +26,3 @@ export interface ITweekClient {
   appendContext(identityType: string, identityId: string, context: object): Promise<void>;
   deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
 }
-
-export type Observer = {
-  start?: (subscription: { unsubscribe: () => void }) => void;
-  next?: (value) => void;
-  error?: (error) => void;
-  complete?: () => void;
-};

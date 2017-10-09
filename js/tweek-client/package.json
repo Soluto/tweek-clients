@@ -12,7 +12,8 @@
     "change-emitter": "^0.1.6",
     "isomorphic-fetch": "^2.2.1",
     "query-string": "^5.0.0",
-    "symbol-observable": "^1.0.4"
+    "symbol-observable": "^1.0.4",
+    "zen-observable": "^0.6.0"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -21,6 +22,7 @@
     "@types/mocha": "^2.2.43",
     "@types/sinon": "^2.3.5",
     "@types/sinon-chai": "^2.7.29",
+    "@types/zen-observable": "^0.5.3",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "fetch-mock": "^5.12.2",
