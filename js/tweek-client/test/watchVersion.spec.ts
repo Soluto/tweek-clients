@@ -1,13 +1,13 @@
 import fetchMock = require('fetch-mock');
 import { expect } from 'chai';
-import VersionWatcher from '../src/VersionWatcher';
+import watchVersion from '../src/watchVersion';
 import { delay } from '../src/utils';
 
-describe('VersionWatcher', () => {
+describe('watchVersion', () => {
   const baseServiceUrl = 'http://test/';
   const matcher = 'http://test/api/v1/repo-version';
 
-  function watcherToPromise(watcher: VersionWatcher, count?: number): Promise<any[]> {
+  function watcherToPromise(watcher, count?: number): Promise<any[]> {
     return new Promise((resolve, reject) => {
       let subscription;
       const result: any[] = [];
@@ -41,7 +41,7 @@ describe('VersionWatcher', () => {
       return currentCount.toString();
     });
 
-    const watcher = new VersionWatcher(baseServiceUrl, 2);
+    const watcher = watchVersion(baseServiceUrl, 2);
 
     const versions = await watcherToPromise(watcher, 5);
 
@@ -51,7 +51,7 @@ describe('VersionWatcher', () => {
 
   it('should emit items only when version changes', async () => {
     fetchMock.get(matcher, 'someVersion');
-    const watcher = new VersionWatcher(baseServiceUrl, 2);
+    const watcher = watchVersion(baseServiceUrl, 2);
 
     const resultPromise = watcherToPromise(watcher);
     await delay(10);
@@ -66,7 +66,7 @@ describe('VersionWatcher', () => {
 
   it("should stop emitting after 'dispose' was called", async () => {
     fetchMock.get(matcher, 'someVersion');
-    const watcher = new VersionWatcher(baseServiceUrl, 2);
+    const watcher = watchVersion(baseServiceUrl, 2);
 
     await watcherToPromise(watcher, 1);
 
@@ -80,7 +80,7 @@ describe('VersionWatcher', () => {
     fetchMock.getOnce(matcher, 500);
     fetchMock.get(matcher, 'someVersion');
 
-    const watcher = new VersionWatcher(baseServiceUrl, 2);
+    const watcher = watchVersion(baseServiceUrl, 2);
 
     const resultPromise = watcherToPromise(watcher, 1);
 
