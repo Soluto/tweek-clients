@@ -3,7 +3,7 @@ export function captialize(string) {
 }
 
 export function snakeToCamelCase(target) {
-  if (typeof target !== 'object') return target;
+  if (target === null || typeof target !== 'object') return target;
   return Object.keys(target).reduce((o, key) => {
     let [firstKey, ...others] = key.split('_');
     let newKey = [firstKey, ...others.map(captialize)].join('');
