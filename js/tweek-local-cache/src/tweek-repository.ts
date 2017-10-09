@@ -1,77 +1,19 @@
+import { isNullOrUndefined, isObject } from 'util';
 import { ITweekClient, Context, FetchConfig } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
+import Observable = require('zen-observable');
 import $$observable from 'symbol-observable';
 import Trie from './trie';
 import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
-import { isNullOrUndefined, isObject } from 'util';
-
-require('object.entries').shim();
-require('object.values').shim();
-
-export type TweekRepositoryKeys = {
-  [key: string]: RepositoryKey<any>;
-};
-
-export type FlatKeys = {
-  [key: string]: string | number | boolean;
-};
+import MemoryStore from './memory-store';
+import { FlatKeys, GetPolicy, ITweekStore, TweekRepositoryConfig, RepositoryKey, CachedKey, Expiration } from './types';
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
     return key.toLowerCase().split('/');
   },
   join: (fragments: string[]) => fragments.join('/'),
-};
-
-export interface ITweekStore {
-  save: (keys: TweekRepositoryKeys) => Promise<void>;
-  load: () => Promise<TweekRepositoryKeys>;
-}
-
-export type Expiration = 'expired' | 'refreshing';
-
-export type RequestedKey = {
-  state: 'requested';
-  isScan: boolean;
-  expiration?: Expiration;
-};
-
-export type MissingKey = {
-  state: 'missing';
-  expiration?: Expiration;
-};
-
-export type CachedKey<T> = {
-  state: 'cached';
-  value: T;
-  isScan: false;
-  expiration?: Expiration;
-};
-
-export type ScanNode = {
-  state: 'cached' | 'requested';
-  isScan: true;
-  expiration?: Expiration;
-};
-
-export type RepositoryKey<T> = CachedKey<T> | RequestedKey | ScanNode | MissingKey;
-
-export type TweekRepositoryConfig = {
-  client: ITweekClient;
-  getPolicy?: GetPolicy;
-  refreshInterval?: number;
-};
-
-export type GetPolicy = {
-  notReady?: 'throw' | 'wait';
-  notPrepared?: 'throw' | 'prepare';
-};
-
-export type Observer = {
-  start?: (subscription) => void;
-  next?: (value) => void;
-  error?: (error) => void;
 };
 
 let getAllPrefixes = key => {
@@ -88,23 +30,6 @@ let getKeyPrefix = key =>
     .join('/');
 
 let flatMap = (arr, fn) => Array.prototype.concat.apply([], arr.map(fn));
-
-export class MemoryStore implements ITweekStore {
-  _keys;
-
-  constructor(initialKeys = {}) {
-    this._keys = initialKeys;
-  }
-
-  save(keys) {
-    this._keys = keys || {};
-    return Promise.resolve();
-  }
-
-  load() {
-    return Promise.resolve(this._keys);
-  }
-}
 
 export default class TweekRepository {
   private _emitter = createChangeEmitter();
@@ -225,83 +150,51 @@ export default class TweekRepository {
 
   public observe(key: string, policy: GetPolicy = {}) {
     policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
-    const emitter = this._emitter;
     const isScan = TweekRepository._isScan(key);
-
-    const onKey = (observer: Observer) => {
-      const handleNext = value => observer.next && observer.next(value);
-      const handleError = err => {
-        if (observer.error) observer.error(err);
-        else throw err;
-      };
-      const handleNotReady = () => {
+    const self = this;
+    const observable = new Observable<any>(observer => {
+      function handleNotReady() {
         switch (policy.notReady) {
           case 'wait':
-            return this.refresh([key]);
+            return self.refresh([key]);
           default:
-            return handleError('value not available yet for key: ' + key);
+            return observer.error('value not available yet for key: ' + key);
         }
-      };
-
-      const node = this._cache.get(key);
-
-      if (!node) {
-        if (policy.notPrepared === 'prepare') return this.prepare(key);
-        return handleError(`key ${key} not managed, use prepare to add it to cache`);
       }
 
-      if (isScan) {
-        const prefix = getKeyPrefix(key);
-        const relative = Object.entries(this._cache.listRelative(prefix));
-        if (
-          node.state === 'requested' ||
-          relative.some(([key, value]) => value.state === 'requested' && !value.isScan)
-        ) {
-          return handleNotReady();
+      function onKey() {
+        const node = self._cache.get(key);
+
+        if (!node) {
+          if (policy.notPrepared === 'prepare') return self.prepare(key);
+          return observer.error(`key ${key} not managed, use prepare to add it to cache`);
         }
-        return handleNext(this._extractScanResult(key));
+
+        if (isScan) {
+          const prefix = getKeyPrefix(key);
+          const relative = Object.entries(self._cache.listRelative(prefix));
+          if (
+            node.state === 'requested' ||
+            relative.some(([key, value]) => value.state === 'requested' && !value.isScan)
+          ) {
+            return handleNotReady();
+          }
+          return observer.next(self._extractScanResult(key));
+        }
+
+        if (node.state === 'requested') return handleNotReady();
+        if (node.state === 'missing') return observer.next(Optional.none());
+        if (node.isScan) return observer.error('corrupted cache');
+        return observer.next(Optional.some(node.value));
       }
 
-      if (node.state === 'requested') return handleNotReady();
-      if (node.state === 'missing') return handleNext(Optional.none());
-      if (node.isScan) return handleError('corrupted cache');
-      return handleNext(Optional.some(node.value));
-    };
+      onKey();
+
+      return self._emitter.listen(onKey);
+    });
 
     return {
-      subscribe(observerOrNext: Observer | ((value) => void), onError?: (error) => void) {
-        const observer =
-          typeof observerOrNext === 'function'
-            ? {
-                next: observerOrNext,
-                error: onError,
-              }
-            : observerOrNext;
-
-        function observeState() {
-          onKey(observer);
-        }
-
-        let closed = false;
-        const unlisten = emitter.listen(observeState);
-        const subscription = {
-          get closed() {
-            return closed;
-          },
-          unsubscribe: () => {
-            closed = true;
-            return unlisten();
-          },
-        };
-
-        if (observer.start) {
-          observer.start(subscription);
-        }
-
-        observeState();
-
-        return subscription;
-      },
+      subscribe: observable.subscribe.bind(observable),
       [$$observable]() {
         return this;
       },

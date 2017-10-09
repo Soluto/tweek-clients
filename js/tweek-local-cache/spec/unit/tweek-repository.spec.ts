@@ -1,11 +1,13 @@
 import 'mocha';
 import chai = require('chai');
-import TweekRepository, { MemoryStore, ITweekStore } from '../../';
 import { FetchConfig, createTweekClient, ITweekClient, Context } from 'tweek-client';
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import sinon = require('sinon');
 import sinonChai = require('sinon-chai');
 import chaiAsPromise = require('chai-as-promised');
+import MemoryStore from '../../src/memory-store';
+import TweekRepository from '../../src/tweek-repository';
+import { ITweekStore } from '../../src/types';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromise);

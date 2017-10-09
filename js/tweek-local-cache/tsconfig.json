@@ -1,6 +1,6 @@
 {
   "compileOnSave": true,
-  "exclude": ["dist", "node_modules", "spec"],
+  "include": ["src"],
   "compilerOptions": {
     "lib": ["dom", "es2015", "es2017.object", "ES2016.Array.Include"],
     "target": "es5",
