@@ -43,11 +43,6 @@ services:
       - Redis__ConnectionString=tweek-redis:6379
       - Addons__Redis__className=Tweek.Drivers.Redis.RedisServiceAddon
       - Addons__Redis__assemblyName=Tweek.Drivers.Redis
-      - CorsPolicies__Keys__Origins=http://localhost:3000
-      - CorsPolicies__Keys__Methods=GET
-      - CorsPolicies__Keys__MaxPreflightAge=60
-      - CorsPolicies__Keys__Headers=
-      - CorsPolicies__Keys__ExposedHeaders=
       - CorsEnabled=true
 
   tweek-authoring:
@@ -71,7 +66,7 @@ services:
     volumes_from: 
       - keys
     ports:
-      - "1112:80"
+      - "1112:3000"
     environment:
       - CONTINUOUS_UPDATER_INTERVAL=500
       - GIT_PRIVATE_KEY_PATH=/gitkeys/tweekgit

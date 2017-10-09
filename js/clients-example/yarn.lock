@@ -6292,22 +6292,26 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tweek-client@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/tweek-client/-/tweek-client-0.1.4.tgz#633e58c1e13556b1ca51f1ae0c1019f3dc4a9051"
+tweek-client@^0.1.5, tweek-client@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/tweek-client/-/tweek-client-0.1.6.tgz#48e3b708748131c82f4b919dcdd85b4c5068f5f5"
   dependencies:
+    change-emitter "^0.1.6"
     isomorphic-fetch "^2.2.1"
     query-string "^5.0.0"
+    symbol-observable "^1.0.4"
+    zen-observable "^0.6.0"
 
-tweek-local-cache@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/tweek-local-cache/-/tweek-local-cache-0.2.0.tgz#008b7dde589aaf20ef7d76923b93e23f6e5d7e00"
+tweek-local-cache@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/tweek-local-cache/-/tweek-local-cache-0.2.1.tgz#8d6528a74a1426f335a91c92629fcc1f2efe1355"
   dependencies:
     change-emitter "^0.1.6"
     object.entries "^1.0.4"
     object.values "^1.0.4"
     symbol-observable "^1.0.4"
-    tweek-client "^0.1.4"
+    tweek-client "^0.1.5"
+    zen-observable "^0.6.0"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
@@ -6829,3 +6833,7 @@ yargs@~3.10.0:
     cliui "^2.1.0"
     decamelize "^1.0.0"
     window-size "0.1.0"
+
+zen-observable@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/zen-observable/-/zen-observable-0.6.0.tgz#8a6157ed15348d185d948cfc4a59d90a2c0f70ee"
