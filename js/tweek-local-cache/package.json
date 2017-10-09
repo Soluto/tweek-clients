@@ -1,6 +1,6 @@
 {
   "name": "tweek-local-cache",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Local cache to be used with tweek-client",
   "author": "Soluto",
   "license": "MIT",
@@ -13,7 +13,8 @@
     "object.entries": "^1.0.4",
     "object.values": "^1.0.4",
     "symbol-observable": "^1.0.4",
-    "tweek-client": "^0.1.4"
+    "tweek-client": "^0.1.5",
+    "zen-observable": "^0.6.0"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -22,6 +23,7 @@
     "@types/node": "^8.0.30",
     "@types/sinon": "^2.3.5",
     "@types/sinon-chai": "^2.7.29",
+    "@types/zen-observable": "^0.5.3",
     "axios": "^0.16.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
