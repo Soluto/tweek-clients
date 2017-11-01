@@ -1,16 +1,8 @@
-import 'mocha';
 import sinon = require('sinon');
-import chai = require('chai');
-import sinonChai = require('sinon-chai');
-import chaiAsProised = require('chai-as-promised');
-import { FetchConfig } from '../index';
-chai.use(sinonChai);
-chai.use(chaiAsProised);
-let { expect } = chai;
+import { expect } from 'chai';
+import TweekClient from '../../src/TweekClient';
 
-import { TweekClient } from '../index';
-
-describe('tweek rest appendContext', () => {
+describe('tweek-client appendContext', () => {
   const defaultUrl = 'http://test';
   let prepare = url => {
     const fetchStub = sinon.stub();

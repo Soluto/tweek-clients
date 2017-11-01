@@ -1,15 +1,6 @@
-declare const global: any;
-
-import 'mocha';
-import 'isomorphic-fetch';
-import chai = require('chai');
-import chaiAsProised = require('chai-as-promised');
 import fetchMock = require('fetch-mock');
-
-import { createTweekClient } from '../index';
-
-chai.use(chaiAsProised);
-let { expect } = chai;
+import { expect } from 'chai';
+import createTweekClient from '../../src/createTweekClient';
 
 describe('tweek-client authentication', () => {
   const baseServiceUrl = 'http://test/';

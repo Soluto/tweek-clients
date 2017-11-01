@@ -1,27 +1,38 @@
+/* global describe, beforeEach, test, expect, jest */
 import React from 'react';
 import renderer from 'react-test-renderer';
 import Provider from './Provider';
 import withTweekKeys from './withTweekKeys';
 
-const repositoryMock = result => ({
-  prepare: jest.fn(),
-  get: jest.fn().mockReturnValue(result),
-  refresh: jest.fn().mockReturnValue(Promise.resolve()),
-});
-
 describe('withTweekKeys', () => {
   const value = 'someValue';
-  let tweekRepositoryMock;
+  let observeMock;
+  let subscribeMock;
+  let unsubscribeMock;
 
-  const renderComponent = async (path, config) => {
+  const mockRepository = (result, isError) => {
+    unsubscribeMock = jest.fn();
+    subscribeMock = jest.fn(observer => {
+      const subscription = { unsubscribe: unsubscribeMock };
+
+      observer.start(subscription);
+
+      if (isError) observer.error(result);
+      else observer.next(result);
+
+      return subscription;
+    });
+    observeMock = jest.fn().mockReturnValue({ subscribe: subscribeMock });
+  };
+
+  const renderComponent = (path, config) => {
     const withTweekKeysHoc = withTweekKeys(path, config);
     const Component = withTweekKeysHoc('div');
     const result = renderer.create(
-      <Provider repo={tweekRepositoryMock}>
+      <Provider repo={{ observe: observeMock }}>
         <Component />
       </Provider>,
     );
-    await Promise.resolve(true);
     return result;
   };
 
@@ -29,54 +40,74 @@ describe('withTweekKeys', () => {
     const path = 'path/someKey';
 
     beforeEach(() => {
-      tweekRepositoryMock = repositoryMock(Promise.resolve({ value }));
+      mockRepository({ value });
     });
 
-    test('default behavior', async () => {
-      const component = await renderComponent(path);
+    test('default behavior', () => {
+      const component = renderComponent(path);
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true}', async () => {
-      const component = await renderComponent(path, { mergeProps: true, propName: undefined });
+    test('with {mergeProps: true}', () => {
+      const component = renderComponent(path, { mergeProps: true, propName: undefined });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true, propName: someName}', async () => {
-      const component = await renderComponent(path, { mergeProps: true, propName: 'someName' });
+    test('with {mergeProps: true, propName: someName}', () => {
+      const component = renderComponent(path, { mergeProps: true, propName: 'someName' });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someName).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false}', async () => {
-      const component = await renderComponent(path, { mergeProps: false, propName: undefined });
+    test('with {mergeProps: false}', () => {
+      const component = renderComponent(path, { mergeProps: false, propName: undefined });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.tweek).toBeDefined();
       expect(tree.props.tweek.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false, propName: someName}', async () => {
-      const component = await renderComponent(path, { mergeProps: false, propName: 'someName' });
+    test('with {mergeProps: false, propName: someName}', () => {
+      const component = renderComponent(path, { mergeProps: false, propName: 'someName' });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someName).toBeDefined();
       expect(tree.props.someName.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
   });
 
@@ -84,75 +115,96 @@ describe('withTweekKeys', () => {
     const path = 'path/_';
 
     beforeEach(() => {
-      tweekRepositoryMock = repositoryMock(Promise.resolve({ someKey: value }));
+      mockRepository({ someKey: value });
     });
 
-    test('default behavior', async () => {
-      const component = await renderComponent(path);
+    test('default behavior', () => {
+      const component = renderComponent(path);
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true}', async () => {
-      const component = await renderComponent(path, { mergeProps: true, propName: undefined });
+    test('with {mergeProps: true}', () => {
+      const component = renderComponent(path, { mergeProps: true, propName: undefined });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true, propName: someName} should ignore propName', async () => {
-      const component = await renderComponent(path, { mergeProps: true, propName: 'someName' });
+    test('with {mergeProps: true, propName: someName} should ignore propName', () => {
+      const component = renderComponent(path, { mergeProps: true, propName: 'someName' });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false}', async () => {
-      const component = await renderComponent(path, { mergeProps: false, propName: undefined });
+    test('with {mergeProps: false}', () => {
+      const component = renderComponent(path, { mergeProps: false, propName: undefined });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.tweek).toBeDefined();
       expect(tree.props.tweek.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false, propName: someName}', async () => {
-      const component = await renderComponent(path, { mergeProps: false, propName: 'someName' });
+    test('with {mergeProps: false, propName: someName}', () => {
+      const component = renderComponent(path, { mergeProps: false, propName: 'someName' });
 
-      expect(tweekRepositoryMock.get).toBeCalled();
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
 
       let tree = component.toJSON();
       expect(tree.props.someName).toBeDefined();
       expect(tree.props.someName.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
     });
   });
 
-  test('with error handler', async () => {
+  test('with error handler', () => {
     let error = null;
     let expectedError = 'test error';
     const path = 'path/someKey';
-    tweekRepositoryMock = repositoryMock(Promise.reject(expectedError));
+    mockRepository(expectedError, true);
 
-    await renderComponent(path, { onError: e => (error = e) });
+    renderComponent(path, { onError: e => (error = e) });
 
     expect(error).toEqual(expectedError);
+    expect(unsubscribeMock).toBeCalled();
   });
 
-  test('with getPolicy', async () => {
+  test('with getPolicy', () => {
     const path = 'path/someKey';
     const getPolicy = 'somePolicy';
-    tweekRepositoryMock = repositoryMock(Promise.resolve({ value }));
+    mockRepository({ value });
 
-    await renderComponent(path, { getPolicy });
+    renderComponent(path, { getPolicy });
 
-    expect(tweekRepositoryMock.get).toBeCalledWith(path, getPolicy);
+    expect(observeMock).toBeCalledWith(path, getPolicy);
   });
 });
