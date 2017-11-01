@@ -2,11 +2,14 @@ export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export const fetchWithTimeout = (timeout, fetch): Promise<Response> => {
+  return Promise.race([fetch(), requestTimeout(timeout)]);
+};
+
 export const requestTimeout = (timeoutInMillis): Promise<Response> => {
   const failureResponse = new Response(null, { status: 408 });
   return new Promise((res, rej) => {
     let wait = setTimeout(() => {
-      clearTimeout(wait);
       res(failureResponse);
     }, timeoutInMillis);
   });
