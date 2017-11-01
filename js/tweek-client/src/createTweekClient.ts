@@ -9,7 +9,7 @@ export default function(config: {
 }) {
   const { baseServiceUrl, context = {}, getAuthenticationToken, requestTimeoutInMillis = 8000 } = config;
 
-  let fetchClient = (input, init) => fetch(input, init);
+  let fetchClient = fetch;
   if (getAuthenticationToken) {
     fetchClient = async (input, init = {}) => {
       const token = await Promise.resolve(getAuthenticationToken());

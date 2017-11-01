@@ -2,22 +2,12 @@ export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export const fetchWithTimeout = (timeout, fetch): Promise<Response> => {
-  return Promise.race([fetch(), requestTimeout(timeout)]);
-};
+export const createFetchWithTimeout = (timeout, fetch) => (input, init) =>
+  Promise.race([fetch(input, init), requestTimeout(timeout)]);
 
-export const createFetchWithTimeout = (timeout, fetch) => (input, init) => {
-  return Promise.race([fetch(input, init), requestTimeout(timeout)]);
-};
-
-export const requestTimeout = (timeoutInMillis): Promise<Response> => {
-  const failureResponse = new Response(null, { status: 408 });
-  return new Promise((res, rej) => {
-    let wait = setTimeout(() => {
-      res(failureResponse);
-    }, timeoutInMillis);
-  });
-};
+export function requestTimeout(timeoutInMillis): Promise<Response> {
+  return new Promise(res => setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis));
+}
 
 export function snakeToCamelCase(target) {
   if (target === null || typeof target !== 'object') return target;

@@ -1,4 +1,4 @@
-FROM node:8.5.0-slim
+FROM node:8.7.0-slim
 
 COPY lerna.json package.json yarn.lock /opt/
 COPY js/react-tweek/package.json js/react-tweek/yarn.lock /opt/js/react-tweek/
