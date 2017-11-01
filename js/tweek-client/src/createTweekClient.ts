@@ -1,5 +1,5 @@
 import TweekClient from './TweekClient';
-import { fetchWithTimeout } from './utils';
+import { createFetchWithTimeout } from './utils';
 
 export default function(config: {
   baseServiceUrl: string;
@@ -9,19 +9,17 @@ export default function(config: {
 }) {
   const { baseServiceUrl, context = {}, getAuthenticationToken, requestTimeoutInMillis = 8000 } = config;
 
-  let fetchClient = (input, init) => fetchWithTimeout(requestTimeoutInMillis, () => fetch(input, init));
+  let fetchClient = (input, init) => fetch(input, init);
   if (getAuthenticationToken) {
     fetchClient = async (input, init = {}) => {
       const token = await Promise.resolve(getAuthenticationToken());
-      return fetchWithTimeout(requestTimeoutInMillis, () =>
-        fetch(input, {
-          ...init,
-          headers: {
-            ...init.headers,
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-      );
+      return fetch(input, {
+        ...init,
+        headers: {
+          ...init.headers,
+          Authorization: `Bearer ${token}`,
+        },
+      });
     };
   }
 
@@ -30,6 +28,6 @@ export default function(config: {
     casing: 'camelCase',
     convertTyping: false,
     context,
-    fetch: fetchClient,
+    fetch: createFetchWithTimeout(requestTimeoutInMillis, fetchClient),
   });
 }

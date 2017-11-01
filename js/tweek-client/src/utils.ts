@@ -6,6 +6,10 @@ export const fetchWithTimeout = (timeout, fetch): Promise<Response> => {
   return Promise.race([fetch(), requestTimeout(timeout)]);
 };
 
+export const createFetchWithTimeout = (timeout, fetch) => (input, init) => {
+  return Promise.race([fetch(input, init), requestTimeout(timeout)]);
+};
+
 export const requestTimeout = (timeoutInMillis): Promise<Response> => {
   const failureResponse = new Response(null, { status: 408 });
   return new Promise((res, rej) => {
