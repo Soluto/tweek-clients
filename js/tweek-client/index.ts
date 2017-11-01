@@ -17,12 +17,23 @@ export type FetchConfig = {
   convertTyping?: boolean;
   flatten?: boolean;
   context?: Context;
+  requestTimeout?: number;
 };
 
 export type TweekInitConfig = FetchConfig & {
   baseServiceUrl: string;
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 };
+
+function requestTimeout(timeoutInMillis): Promise<Response> {
+  const failureResponse = new Response(null, { status: 408 });
+  return new Promise((res, rej) => {
+    let wait = setTimeout(() => {
+      clearTimeout(wait);
+      res(failureResponse);
+    }, timeoutInMillis);
+  });
+}
 
 function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -100,7 +111,7 @@ export class TweekClient implements ITweekClient {
       (path.startsWith('/') ? '' : '/') +
       path +
       (!!queryParams ? `?${queryParams}` : '');
-    let result: Promise<any> = this.config.fetch(url).then(response => {
+    let result: Promise<any> = this.config.fetch(url, {}).then(response => {
       if (response.ok) {
         return response.json();
       } else {
@@ -164,21 +175,25 @@ export class TweekClient implements ITweekClient {
 export function createTweekClient(config: {
   baseServiceUrl: string;
   context?: any;
+  requestTimeoutInMillis?: number;
   getAuthenticationToken?: () => Promise<string> | string;
 }) {
-  const { baseServiceUrl, context = {}, getAuthenticationToken } = config;
+  const { baseServiceUrl, context = {}, getAuthenticationToken, requestTimeoutInMillis = 8000 } = config;
 
-  let fetchClient = (input, init) => fetch(input, init);
+  let fetchClient = (input, init) => Promise.race([fetch(input, init), requestTimeout(requestTimeoutInMillis)]);
   if (getAuthenticationToken) {
     fetchClient = async (input, init = {}) => {
       const token = await Promise.resolve(getAuthenticationToken());
-      return fetch(input, {
-        ...init,
-        headers: {
-          ...init.headers,
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      return Promise.race([
+        fetch(input, {
+          ...init,
+          headers: {
+            ...init.headers,
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        requestTimeout(requestTimeoutInMillis),
+      ]);
     };
   }
 
