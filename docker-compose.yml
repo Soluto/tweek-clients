@@ -44,7 +44,6 @@ services:
       - Addons__Redis__assemblyName=Tweek.Drivers.Redis
       - Addons__RulesManagement__className=Tweek.Drivers.Rules.Management.RulesManagementAddon
       - Addons__RulesManagement__assemblyName=Tweek.Drivers.Rules.Management
-      - Rules__Management__Url=http://management:3000
 
   tweek-redis:
     image: redis:alpine
