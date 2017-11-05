@@ -42,6 +42,9 @@ services:
       - Redis__ConnectionString=tweek-redis:6379
       - Addons__Redis__className=Tweek.Drivers.Redis.RedisServiceAddon
       - Addons__Redis__assemblyName=Tweek.Drivers.Redis
+      - Addons__Management__className=Tweek.Drivers.Rules.Management.RulesManagementAddon
+      - Addons__Management__assemblyName=Tweek.Drivers.Rules.Management
+      - Rules__Management__Url=http://management:3000
 
   tweek-redis:
     image: redis:alpine
