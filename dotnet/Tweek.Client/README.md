@@ -55,7 +55,7 @@ public class AuthenticatedMessageHandler: DelegatingHandler
         mAuthorizationProvider = authorizationProvider;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToekn cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var token = await mAuthorizationProvider.GetTokenAsync();
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
