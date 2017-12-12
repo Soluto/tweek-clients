@@ -53,6 +53,7 @@ public class AuthenticatedMessageHandler: DelegatingHandler
     public AuthenticatedMessageHandler(Func<Task<string>> authorizationProvider)
     {
         mAuthorizationProvider = authorizationProvider;
+        InnerHandler = new HttpClientHandler();
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToekn cancellationToken)
