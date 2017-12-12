@@ -31,9 +31,7 @@ Documentation for Polly is found [here](https://github.com/App-vNext/Polly#resil
 
 Example:
 ```csharp
-var retryPolicy = new Policy<JToken>
-    .Handle<HttpRequestException>
-    .Retry(3);
+var retryPolicy = Policy<JToken>.Handle<HttpRequestException>().Retry(3);
 
 var configurationClient = new TweekApiClient("https://mydomain");
 var clientWithRetries = new TweekApiPolicyClient(configurationClient, retryPolicy);
