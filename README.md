@@ -9,3 +9,5 @@ js
 .net
 - [Tweek.Client](https://github.com/Soluto/tweek-clients/tree/master/dotnet/Tweek.Client) [![NuGet version](https://badge.fury.io/nu/tweek.client.svg)](https://badge.fury.io/nu/tweek.client)
 
+examples:  
+- react-tweek example app - https://github.com/Soluto/react-tweek-shop-example
