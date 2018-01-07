@@ -6,6 +6,7 @@ export default function(config: {
   context?: any;
   requestTimeoutInMillis?: number;
   getAuthenticationToken?: () => Promise<string> | string;
+  clientName: string?;
 }) {
   const { baseServiceUrl, context = {}, getAuthenticationToken, requestTimeoutInMillis = 8000 } = config;
 
@@ -17,6 +18,7 @@ export default function(config: {
         ...init,
         headers: {
           ...init.headers,
+          ["X-Api-Client"]: config.clientName || "unknown",
           Authorization: `Bearer ${token}`,
         },
       });
