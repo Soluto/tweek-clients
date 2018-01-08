@@ -4,62 +4,24 @@ services:
   keys:
     build: "ssh"
 
-  tweek-git:
-    image: soluto/tweek-bare-repo
-    volumes_from: 
-      - keys
+  tweek-blackbox:
+    image: soluto/tweek-blackbox
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./testRepoData:/repo
     environment:
-      - PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
-      - TWEEK_MANAGEMENT_URL=http://tweek-management:3000
-
-  tweek-management:
-    image: soluto/tweek-management:0.1.11
-    depends_on:
-      - tweek-git
-    volumes_from: 
-      - keys
-    environment:
-      - GIT_USER=git
-      - GIT_URL=ssh://git@tweek-git/tweek/tests
-      - GIT_PRIVATE_KEY_PATH=/gitkeys/tweekgit
-      - GIT_PUBLIC_KEY_PATH=/gitkeys/tweekgit.pub
-      - VALIDATION_URL=http://tweek-api/validation
-
-  tweek-api:
-    image: soluto/tweek-api:0.2.3
-    ports:
-      - "1111:80"
-    depends_on:
-      - tweek-management
-      - tweek-redis
-    volumes_from: 
-      - keys
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - PUBLIC_KEY_PATH=/gitkeys/tweekgit_public.pfx
-      - Rules__Management__Url=http://tweek-management:3000
-      - ContextProvider=redis
-      - Redis__ConnectionString=tweek-redis:6379
-      - Addons__Redis__className=Tweek.Drivers.Redis.RedisServiceAddon
-      - Addons__Redis__assemblyName=Tweek.Drivers.Redis
-      - Addons__RulesManagement__className=Tweek.Drivers.Rules.Management.RulesManagementAddon
-      - Addons__RulesManagement__assemblyName=Tweek.Drivers.Rules.Management
-
-  tweek-redis:
-    image: redis:alpine
-    expose:
-      - "6379"
+      - API_PORT=1111
 
   js_tests:
     build: .
     depends_on:
-      - tweek-api
+      - tweek-blackbox
     environment:
-      - TWEEK_LOCAL_API=http://tweek-api
+      - TWEEK_LOCAL_API=http://api
 
   dotnet_tests:
     build: ./dotnet
     depends_on:
-      - tweek-api
+      - tweek-blackbox
     environment:
-      - TWEEK_TEST_URI=http://tweek-api
+      - TWEEK_TEST_URI=http://api
