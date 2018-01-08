@@ -1,0 +1,8 @@
+{
+    "partitions": [
+        "user.FavoriteFruit",
+        "user.FatherName"
+    ],
+    "valueType": "string",
+    "rules": {}
+}
