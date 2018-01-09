@@ -42,6 +42,6 @@ jobs:
           name: Test js clients
           command: |
             sleep 160
-            docker ps
+            docker ps -a
             docker run --network=blackbox_default node:8.5.0-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/health 
             docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
