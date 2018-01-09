@@ -27,13 +27,19 @@ jobs:
             chmod +x /usr/bin/docker-compose
 
       - run:
-          name: Prepare for tests
+          name: Build client containers
           command: |
-            docker-compose -p blackbox build js_tests
-            docker-compose -p blackbox build dotnet_tests
+            docker build -t js_tests .
+            docker build -t dotnet_tests ./dotnet
+
+      - run: 
+          name: Run environment
+          command: docker run -e API_PORT=1111 --rm -v=/var/run/docker.sock:/var/run/docker.sock -v=./testRepoData/:/repo soluto/tweek-blackbox:latest
+          background: true
+      
       - run: 
           name: Test js clients
-          command: docker-compose -p blackbox up js_tests
+          command: docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://tweek-api js_tests
 
       - run:
           name: Test dotnet client
