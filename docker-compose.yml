@@ -24,4 +24,4 @@ services:
     depends_on:
       - tweek-blackbox
     environment:
-      - TWEEK_TEST_URI=http://api
+      - TWEEK_LOCAL_API=http://api
