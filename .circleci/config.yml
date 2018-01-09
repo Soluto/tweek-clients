@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Test dotnet client
           command: |
-            docker-compose -p blackbox up -d dotnet_tests && \
+            docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api dotnet_tests && \
             docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
             docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
 
