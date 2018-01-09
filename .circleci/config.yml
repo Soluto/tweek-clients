@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  test_js:
     working_directory: ~/tweek-clients
     environment:
       NODE_ENV: development
@@ -12,7 +12,8 @@ jobs:
 
       - run:
           name: Build client containers
-          command: docker build -t js_tests .
+          command: |
+            docker build -t js_tests .
 
       - run: 
           name: Run environment
@@ -37,7 +38,8 @@ jobs:
 
       - run:
           name: Build client containers
-          command: docker build -t dotnet_tests ./dotnet
+          command: |
+            docker build -t dotnet_tests ./dotnet
     - run: 
           name: Run environment
           command: |
@@ -60,6 +62,6 @@ workflows:
   version: 2
   test_deploy:
     jobs:
-      - build
+      - test_js
       - test_dotnet
       #- deploy
