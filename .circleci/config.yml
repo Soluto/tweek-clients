@@ -34,7 +34,7 @@ jobs:
 
       - run: 
           name: Run environment
-          command: docker run -e API_PORT=1111 --rm -v=/var/run/docker.sock:/var/run/docker.sock -v=./testRepoData/:/repo soluto/tweek-blackbox
+          command: docker pull soluto/tweek-blackbox && docker run -e API_PORT=1111 --rm -v=/var/run/docker.sock:/var/run/docker.sock -v=./testRepoData/:/repo soluto/tweek-blackbox
           background: true
       
       - run: 
