@@ -10,12 +10,24 @@ jobs:
     steps:
       - checkout
 
+      - run:
+          name: Build client containers
+          command: |
+            docker build -t js_tests .
+            docker build -t dotnet_tests ./dotnet
+
       - run: 
           name: Run environment
           command: |
             docker pull soluto/tweek-blackbox:latest
             docker run -d -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
+
+      - run: 
+          name: Test js clients
+          command: docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
+      
   #test:
+
 
   #deploy:
 
