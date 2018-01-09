@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test_js:
+  build:
     working_directory: ~/tweek-clients
     environment:
       NODE_ENV: development
@@ -60,6 +60,6 @@ workflows:
   version: 2
   test_deploy:
     jobs:
-      - test_js
+      - build
       - test_dotnet
       #- deploy
