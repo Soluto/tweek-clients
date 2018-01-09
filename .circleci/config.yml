@@ -36,7 +36,7 @@ jobs:
           name: Run environment
           command: |
             docker pull soluto/tweek-blackbox:latest
-            docker run -d -e API_PORT=1111 --rm -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
+            docker run -d -e API_PORT=1111 -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
       
       - run: 
           name: Test js clients
