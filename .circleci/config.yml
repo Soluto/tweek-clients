@@ -47,11 +47,11 @@ jobs:
       - checkout
 
       - run:
-        name: Run dotNet tests
-        command: |
-          docker-compose -p blackbox up -d --exit-code-from dotnet_tests dotnet_tests \
-          docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
-          docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+          name: Run dotNet tests
+          command: |
+            docker-compose -p blackbox up -d --exit-code-from dotnet_tests dotnet_tests && \
+            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
+            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
       
       - deploy: 
           name: nuget
