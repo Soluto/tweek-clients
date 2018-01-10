@@ -18,10 +18,10 @@ jobs:
 
       - run: 
           name: Run environment
+          background: true
           command: |
             docker pull soluto/tweek-blackbox:latest
-            docker run -rm -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
-          background: true
+            docker run -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
 
       - run:
           name: Test js clients
