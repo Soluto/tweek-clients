@@ -14,7 +14,7 @@ jobs:
           name: Build client containers
           command: |
             docker build -t js_tests .
-            docker build -t dotnet_tests ./dotnet
+            #docker build -t dotnet_tests ./dotnet
 
       - run: 
           name: Run environment
@@ -22,18 +22,19 @@ jobs:
           command: |
             docker pull soluto/tweek-blackbox:latest
             docker run -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
+            true
 
       - run:
           name: Test js clients
           command: |
             docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
-      - run:
-          name: Test dotnet client
-          command: |
-            docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api dotnet_tests
-            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release"
-            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+      #- run:
+      #    name: Test dotnet client
+      #    command: |
+      #      docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api dotnet_tests
+      #      docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release"
+      #      docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
 
       
   #test:
