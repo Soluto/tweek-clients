@@ -8,7 +8,7 @@ services:
     image: soluto/tweek-blackbox
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./testRepoData:/repo
+      - $PWD/testRepoData:/repo
     environment:
       - API_PORT=1111
 
