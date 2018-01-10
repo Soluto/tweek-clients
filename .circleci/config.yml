@@ -20,7 +20,7 @@ jobs:
           name: Run environment
           command: |
             docker pull soluto/tweek-blackbox:latest
-            docker run -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
+            docker run -d -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
             docker ps
             sleep 70
             docker ps
