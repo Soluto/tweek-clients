@@ -25,7 +25,6 @@ jobs:
       - run:
           name: Test js clients
           command: |
-            sleep 70
             docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
       - run:
