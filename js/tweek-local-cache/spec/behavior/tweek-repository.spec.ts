@@ -101,7 +101,7 @@ describe('tweek repo behavior test', () => {
   const waitUntil = async function(action, timeout, delayDuration) {
     let shouldStop = false;
     const timeoutRef = setTimeout(() => {
-      console.log(`${timeout / 1000} sec passed. Cann't wait any more! :-(`);
+      console.log(`${timeout / 1000} sec passed. Can't wait any more! :-(`);
       shouldStop = true;
     }, timeout);
     let error;
@@ -123,9 +123,11 @@ describe('tweek repo behavior test', () => {
     await Promise.all([
       waitUntil(
         async () =>
-          await axios.get(`${TWEEK_LOCAL_API}/api/v1/keys/behavior_tests/routing`, { timeout: 900 }).then(res => {
-            if (res.data !== 'value') throw new Error('Not yet');
-          }),
+          await axios
+            .get(`${TWEEK_LOCAL_API}/api/v1/keys/@tweek_clients_tests/test_category/test_key1`, { timeout: 900 })
+            .then(res => {
+              if (res.data !== 'def value') throw new Error('Not yet');
+            }),
         180000,
         1000,
       ),
