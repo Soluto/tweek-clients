@@ -21,7 +21,7 @@ jobs:
           command: |
             docker pull soluto/tweek-blackbox:latest
             docker run -d -v=/var/run/docker.sock:/var/run/docker.sock -v=/$(pwd)/testRepoData/:/repo soluto/tweek-blackbox:latest
-            until docker inspect -f {{.State.Health.Status}} `docker ps -f "name=tweek-blackbox" -f "health=healthy" --format "{{.ID}}"` | grep -m 1 "healthy"; do sleep 1; done      
+            until docker inspect -f {{.State.Health.Status}} soluto/tweek-blackbox | grep -m 1 "healthy"; do sleep 1; done      
       
       - run:
           name: Test js clients
