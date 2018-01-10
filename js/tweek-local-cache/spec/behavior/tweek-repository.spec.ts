@@ -122,7 +122,7 @@ describe('tweek repo behavior test', () => {
         async () =>
           await axios
             .get(`${TWEEK_LOCAL_API}/api/v1/keys/behavior_tests/routing`, { timeout: 900 })
-            .then(res => expect(JSON.parse(res.data)).to.equal('value')),
+            .then(res => expect(res.data).to.equal('value')),
         78000,
         1000,
       ),
