@@ -18,7 +18,7 @@ jobs:
 
       - run:
           name: AAA
-          command: docker-compose -p blackbox up js_tests
+          command: docker-compose -p blackbox up --exit-code-from js_tests js_tests
 
       #- run: 
       #    name: Run environment
