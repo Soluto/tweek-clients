@@ -21,6 +21,8 @@ namespace Tweek.Client.Tests
             Uri baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_LOCAL_API") ?? "http://tweek-api");
             mTweek = new TweekApiClient(new HttpClient { BaseAddress = baseUri });
             mOutput = output;
+
+            System.Threading.Thread.Sleep(100000);
         }
 
         private static void AssertJTokenEqual(JToken expected, JToken actual)
