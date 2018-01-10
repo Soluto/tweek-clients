@@ -98,7 +98,7 @@ describe('tweek repo behavior test', () => {
 
   const delay = duration => new Promise(resolve => setTimeout(resolve, duration));
 
-  const waitUntil = async function(action, timeout = 15000, delayDuration = 25) {
+  const waitUntil = async function(action, timeout, delayDuration) {
     let shouldStop = false;
     const timeoutRef = setTimeout(() => (shouldStop = true), timeout);
     let error;
@@ -123,7 +123,7 @@ describe('tweek repo behavior test', () => {
           await axios
             .get(`${TWEEK_LOCAL_API}/api/v1/keys/behavior_tests/routing`, { timeout: 900 })
             .then(res => expect(JSON.parse(res.data)).to.equal('value')),
-        60000,
+        78000,
         1000,
       ),
     ]);

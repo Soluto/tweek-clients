@@ -17,7 +17,7 @@ jobs:
             #docker build -t dotnet_tests ./dotnet
 
       - run:
-          name: AAA
+          name: Run JS tests
           command: docker-compose -p blackbox up --exit-code-from js_tests js_tests
 
       #- run: 
