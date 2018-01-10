@@ -10,10 +10,10 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Build client containers
-          command: |
-            docker build -t js_tests .
+      #- run:
+      #    name: Build client containers
+      #    command: |
+      #      docker build -t js_tests .
             #docker build -t dotnet_tests ./dotnet
 
       - run:
