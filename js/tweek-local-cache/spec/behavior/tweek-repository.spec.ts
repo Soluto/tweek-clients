@@ -116,13 +116,13 @@ describe('tweek repo behavior test', () => {
   };
 
   before(async function() {
-    this.timeout(70000);
+    this.timeout(80000);
     await Promise.all([
       waitUntil(
         async () =>
           await axios
-            .get(`${TWEEK_LOCAL_API}/api/v1/keys/_`, { timeout: 900 })
-            .then(res => expect(res.data).haveOwnProperty('behavior_tests')),
+            .get(`${TWEEK_LOCAL_API}/api/v1/keys/behavior_tests/routing`, { timeout: 900 })
+            .then(res => expect(JSON.parse(res.data)).to.equal('value')),
         60000,
         1000,
       ),
