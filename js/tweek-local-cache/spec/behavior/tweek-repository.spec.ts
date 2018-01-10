@@ -116,15 +116,15 @@ describe('tweek repo behavior test', () => {
   };
 
   before(async function() {
-    this.timeout(80000);
+    this.timeout(100000);
     await Promise.all([
       waitUntil(
         async () =>
           await axios.get(`${TWEEK_LOCAL_API}/api/v1/keys/behavior_tests/routing`, { timeout: 900 }).then(res => {
             console.log('RES.data', res.data);
-            expect(res.data).to.equal('value');
+            if (res.data !== 'value') throw new Error('Not yet');
           }),
-        78000,
+        98000,
         1000,
       ),
     ]);
