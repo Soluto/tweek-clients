@@ -36,10 +36,36 @@ jobs:
               echo "not deploying on non master branches"
             fi
 
+  test_dotnet:
+    working_directory: ~/tweek-clients
+    environment:
+      NODE_ENV: development
+    
+    machine: true
+
+    steps:
+      - checkout
+
+      - run:
+        name: Run dotNet tests
+        command: |
+          docker-compose -p blackbox up --exit-code-from dotnet_tests dotnet_tests
+          docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
+          docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose  -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+      
+      - deploy: 
+          name: nuget
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
+            else
+              echo "not deploying on non master branches"
+            fi
+
 workflows:
   version: 2
   build_test_deploy:
     jobs:
       - build
-      #- test
+      - test_dotnet
       #- deploy
