@@ -65,7 +65,7 @@ jobs:
       - run:
           name: Run dotNet tests
           command: |
-            docker build -t dotnet_tests ./dotnet_tests
+            docker build -t dotnet_tests ./dotnet
             docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api --name=dotnet_tests dotnet_tests
             export RETRIES=0
             until docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" || [ $RETRIES -lt 180 ] ; do sleep 1 && (( RETRIES++ )); done
