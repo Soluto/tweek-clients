@@ -14,12 +14,14 @@ jobs:
           name: Run environment
           command: |
             docker pull soluto/tweek-blackbox:latest
-            docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/testRepoData:/repo --name tweek-environment soluto/tweek-blackbox
+            docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/testRepoData:/repo --name tweek_environment soluto/tweek-blackbox
 
       - run:
           name: Run JS tests
           command: |
             docker build -t js_tests .
+            export RETRIES=0
+            until docker inspect -f {{.State.Health.Status}} tweek_environment | grep "healthy" || [ $RETRIES -lt 180 ] ; do sleep 1 && (( RETRIES++ )); done
             docker run --network=blackbox_default js_tests
 
       - deploy: 
