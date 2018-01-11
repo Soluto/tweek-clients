@@ -10,9 +10,14 @@ jobs:
     steps:
       - checkout
 
+      - run: 
+          name: Run environment
+          command: docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v ./testRepoData:/repo --name tweek-environment tweek-blackbox
+
       - run:
           name: Run JS tests
-          command: docker-compose -p blackbox up --exit-code-from js_tests js_tests
+          command: |
+            docker run --network=blackbox_default js_tests
 
       - deploy: 
           name: npm
