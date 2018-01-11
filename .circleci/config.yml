@@ -19,6 +19,7 @@ jobs:
       - run:
           name: Run JS tests
           command: |
+            docker build -t js_tests .
             docker run --network=blackbox_default js_tests
 
       - deploy: 
