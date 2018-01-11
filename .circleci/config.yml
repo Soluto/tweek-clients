@@ -29,7 +29,7 @@ jobs:
             docker ps
             sleep 30
             docker ps
-            docker run --network=blackbox_default js_tests
+            docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
       - deploy: 
           name: npm
