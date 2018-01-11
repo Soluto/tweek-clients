@@ -21,8 +21,7 @@ jobs:
           name: Run JS tests
           command: |
             docker build -t js_tests .
-            export RETRIES=0
-            for retry in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
+            for retry in {1..5}; do if [ "x$(docker inspect -f '{{.State.Health.Status}}' tweek_environment )" == "xhealthy" ]; then break; else sleep 1; fi; done
             docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
       - deploy: 
@@ -67,7 +66,7 @@ jobs:
           command: |
             docker build -t dotnet_tests ./dotnet
             docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api --name=dotnet_tests dotnet_tests
-            for retry in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
+            for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && curl http://localhost:4003/api/v1/keys/@tweek_clients_tests/test_category/test_key1 | grep "def value" && break || sleep 1 ; done
             docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/ && dotnet build -c release"
             docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
       
