@@ -21,7 +21,7 @@ jobs:
           name: Run JS tests
           command: |
             docker build -t js_tests .
-            for retry in {1..5}; do if [ "x$(docker inspect -f '{{.State.Health.Status}}' tweek_environment )" == "xhealthy" ]; then break; else sleep 1; fi; done
+            for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
             docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
       - deploy: 
