@@ -74,7 +74,7 @@ jobs:
           name: nuget
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose -p blackbox ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
+              docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
             else
               echo "not deploying on non master branches"
             fi
