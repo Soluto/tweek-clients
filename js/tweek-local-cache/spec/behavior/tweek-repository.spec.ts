@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import getenv = require('getenv');
-import axios from 'axios';
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
@@ -94,44 +93,6 @@ describe('tweek repo behavior test', () => {
       { keyName: '@tweek_clients_tests/test_category/test_key2', value: false },
       { keyName: '@tweek_clients_tests/test_category2/user_fruit', value: 'orange' },
     ],
-  });
-
-  const delay = duration => new Promise(resolve => setTimeout(resolve, duration));
-
-  const waitUntil = async function(action, timeout, delayDuration) {
-    let shouldStop = false;
-    const timeoutRef = setTimeout(() => {
-      console.log(`${timeout / 1000} sec passed. Can't wait any more! :-(`);
-      shouldStop = true;
-    }, timeout);
-    let error;
-    while (!shouldStop) {
-      try {
-        await action();
-        clearTimeout(timeoutRef);
-        return;
-      } catch (ex) {
-        error = ex;
-      }
-      delayDuration && (await delay(delayDuration));
-    }
-    throw error;
-  };
-
-  before(async function() {
-    this.timeout(180000);
-    await Promise.all([
-      waitUntil(
-        async () =>
-          await axios
-            .get(`${TWEEK_LOCAL_API}/api/v1/keys/@tweek_clients_tests/test_category/test_key1`, { timeout: 900 })
-            .then(res => {
-              if (res.data !== 'def value') throw new Error('Not yet');
-            }),
-        180000,
-        1000,
-      ),
-    ]);
   });
 
   testDefenitions.forEach(test =>
