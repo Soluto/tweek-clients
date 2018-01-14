@@ -18,7 +18,7 @@ namespace Tweek.Client.Tests
 
         public SmokeTests(ITestOutputHelper output)
         {
-            Uri baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_TEST_URI") ?? "http://tweek-api");
+            Uri baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_LOCAL_API") ?? "http://tweek-api");
             mTweek = new TweekApiClient(new HttpClient { BaseAddress = baseUri });
             mOutput = output;
         }
