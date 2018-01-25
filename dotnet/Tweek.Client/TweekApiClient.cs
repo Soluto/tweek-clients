@@ -60,8 +60,10 @@ namespace Tweek.Client
             }
 
             var queryString = (parameters == null) ? "" : string.Join("&", parameters.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
-            var stream = await mClient.GetStreamAsync($"/api/v1/keys/{keyPath}?{queryString}");
-            return await JToken.LoadAsync(new JsonTextReader(new StreamReader(stream)));
+            using (var stream = await mClient.GetStreamAsync($"/api/v1/keys/{keyPath}?{queryString}"))
+            using (var sr = new StreamReader(stream))
+            using (var jr = new JsonTextReader(sr))
+                return await JToken.LoadAsync(jr);
         }
 
         public async Task DeleteContextProperty(string identityType, string identityId, string property)
