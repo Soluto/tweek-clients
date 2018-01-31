@@ -29,6 +29,7 @@ describe('tweek-client authentication', () => {
     const tweekClient = createTweekClient({
       baseServiceUrl,
       getAuthenticationToken,
+      fetch: fetch,
     });
 
     // Act
@@ -44,6 +45,7 @@ describe('tweek-client authentication', () => {
     const tweekClient = createTweekClient({
       baseServiceUrl,
       getAuthenticationToken,
+      fetch: fetch,
     });
 
     // Act
@@ -57,6 +59,7 @@ describe('tweek-client authentication', () => {
     // Arrange
     const tweekClient = createTweekClient({
       baseServiceUrl,
+      fetch: fetch,
     });
 
     const testPromise = tweekClient.fetch(url);

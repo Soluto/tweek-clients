@@ -1,9 +1,12 @@
+import crossFetch = require('cross-fetch');
+const { fetch, Response } = crossFetch;
+
 export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export const createFetchWithTimeout = (timeout, fetch) => (input, init) =>
-  Promise.race([fetch(input, init), requestTimeout(timeout)]);
+export const createFetchWithTimeout = (timeout, customFetch) => (input, init) =>
+  Promise.race([customFetch(input, init), requestTimeout(timeout)]);
 
 export function requestTimeout(timeoutInMillis): Promise<Response> {
   return new Promise(res => setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis));
