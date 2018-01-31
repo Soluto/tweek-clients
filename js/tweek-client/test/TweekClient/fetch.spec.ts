@@ -126,6 +126,24 @@ describe('tweek-client fetch', () => {
     baseUrl: defaultUrl.substr(0, defaultUrl.length - 1),
   });
 
+  testsDefenitions.push({
+    pathToFetch: '/_',
+    expectedUrl: `${defaultUrl}api/v1/keys/_`,
+    expectedQueryParams: `?$flatten=true&$ignoreKeyTypes=true`,
+    config: { casing: 'camelCase', convertTyping: true, flatten: true, ignoreKeyTypes: true },
+    resultsToResolve: { 'some_path/some_key': 'true' },
+    expectedResult: { 'some_path/some_key': true },
+  });
+
+  testsDefenitions.push({
+    pathToFetch: '/_',
+    expectedUrl: `${defaultUrl}api/v1/keys/_`,
+    expectedQueryParams: `?$flatten=true`,
+    config: { casing: 'camelCase', convertTyping: true, flatten: true, ignoreKeyTypes: false },
+    resultsToResolve: { 'some_path/some_key': 'true' },
+    expectedResult: { 'some_path/some_key': true },
+  });
+
   testsDefenitions.forEach(test =>
     it('should execute fetch correctly', async () => {
       // Arrange

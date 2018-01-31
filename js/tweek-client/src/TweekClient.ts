@@ -10,7 +10,7 @@ export default class TweekClient implements ITweekClient {
 
   constructor(config: TweekInitConfig) {
     this.config = <TweekInitConfig & FetchConfig>{
-      ...{ casing: 'snake', flatten: false, convertTyping: false, context: {} },
+      ...{ casing: 'snake', flatten: false, convertTyping: false, context: {}, ignoreKeyTypes: false },
       ...config,
     };
 
@@ -23,7 +23,8 @@ export default class TweekClient implements ITweekClient {
   }
 
   fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
-    const { casing, flatten, baseServiceUrl, convertTyping, context, include } = <TweekInitConfig & FetchConfig>{
+    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes } = <TweekInitConfig &
+      FetchConfig>{
       ...this.config,
       ..._config,
     };
@@ -31,6 +32,10 @@ export default class TweekClient implements ITweekClient {
 
     if (flatten) {
       queryParamsObject['$flatten'] = true;
+    }
+
+    if (ignoreKeyTypes) {
+      queryParamsObject['$ignoreKeyTypes'] = true;
     }
 
     queryParamsObject['$include'] = include;
