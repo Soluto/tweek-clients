@@ -1,7 +1,8 @@
 import TweekClient from './TweekClient';
 import { createFetchWithTimeout } from './utils';
 import crossFetch = require('cross-fetch');
-const { globalFetch, Response } = crossFetch;
+const Response = crossFetch.Response;
+const globalFetch = crossFetch.fetch;
 
 export default function(config: {
   baseServiceUrl: string;
@@ -17,6 +18,7 @@ export default function(config: {
     getAuthenticationToken,
     requestTimeoutInMillis = 8000,
   } = config;
+
   let fetchClient = fetch;
   if (getAuthenticationToken) {
     fetchClient = async (input, init: any = {}) => {
