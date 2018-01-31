@@ -1,5 +1,3 @@
-import 'isomorphic-fetch';
-
 export * from './types';
 export { default as TweekClient } from './TweekClient';
 export { default as createTweekClient } from './createTweekClient';

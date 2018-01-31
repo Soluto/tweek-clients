@@ -1,6 +1,6 @@
 {
   "name": "react-tweek",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "react bindings for tweek",
   "main": "./dist/index.js",
   "author": "Soluto",
@@ -26,8 +26,8 @@
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-test-renderer": "^15.6.1",
-    "tweek-client": "^0.1.5",
-    "tweek-local-cache": "^0.2.1"
+    "tweek-client": "^0.1.8",
+    "tweek-local-cache": "^0.2.2"
   },
   "scripts": {
     "test": "jest",
