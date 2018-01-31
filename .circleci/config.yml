@@ -5,8 +5,10 @@ jobs:
     environment:
       NODE_ENV: development
     
-    machine: true
-
+    machine:
+      node:
+        version: 8.7.0
+        
     steps:
       - checkout
 
@@ -28,6 +30,7 @@ jobs:
           name: npm
           command: |
             npm install -g yarn
+            lerna bootstrap
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               if [[ $(node -p -e "require('./js/tweek-client/package.json').version") != $(npm show tweek-client version) ]]; then
