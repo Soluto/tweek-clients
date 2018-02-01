@@ -1,4 +1,13 @@
-/src
+src/
+spec/
+node_modules/
+
 .babelrc
+
 .git
-node_modules
+.gitignore
+
+yarn.lock
+package-lock.json
+
+.vscode
