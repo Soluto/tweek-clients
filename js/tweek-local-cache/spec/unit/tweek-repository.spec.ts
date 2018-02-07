@@ -472,12 +472,13 @@ describe('tweek repo test', () => {
       await initialDelay;
 
       const refreshPromise = _tweekRepo.refresh(['key1']);
-      promises.push(refreshPromise);
-      promises.push(_tweekRepo.refresh(['key2', 'key3']));
 
       await refreshPromise;
 
       expect(fetchStub).to.have.been.calledOnce;
+
+      promises.push(refreshPromise);
+      promises.push(_tweekRepo.refresh(['key2', 'key3']));
 
       await Promise.all(promises);
 
