@@ -233,6 +233,7 @@ export default class TweekRepository {
   }
 
   private _refreshKeys() {
+    if (!this._isDirty) return Promise.resolve();
     this._isDirty = false;
 
     let expiredKeys = Object.entries(this._cache.list()).filter(
@@ -266,6 +267,7 @@ export default class TweekRepository {
             expiration: 'expired',
           }),
         );
+        this._isDirty = true;
         throw err;
       })
       .then(keyValues => this._updateTrieKeys(keysToRefresh, keyValues))
