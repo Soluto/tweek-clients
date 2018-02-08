@@ -45,14 +45,17 @@ export default class TweekRepository {
   private _refreshPromise: Promise<void>;
   private _nextRefreshPromise: Promise<void>;
 
-  constructor({ client, getPolicy, refreshInterval = 30, refreshDelay }: TweekRepositoryConfig) {
+  constructor({ client, getPolicy, refreshInterval, refreshDelay }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
-    this._refreshDelay = refreshDelay || refreshInterval;
-
+    this._refreshDelay = refreshDelay || refreshInterval || 30;
     this._refreshPromise = Promise.resolve();
     this._nextRefreshPromise = Promise.resolve();
+
+    if (refreshInterval) {
+      console.warn("TweekRepository constructor argument 'refreshInterval' is deprecated.  Use 'refreshDelay' instead");
+    }
   }
 
   set context(value: Context) {
