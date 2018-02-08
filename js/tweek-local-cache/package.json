@@ -1,6 +1,6 @@
 {
   "name": "tweek-local-cache",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Local cache to be used with tweek-client",
   "author": "Soluto",
   "license": "MIT",

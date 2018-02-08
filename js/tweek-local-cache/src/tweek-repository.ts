@@ -38,20 +38,24 @@ export default class TweekRepository {
   private _client: ITweekClient;
   private _context: Context = {};
   private _getPolicy: GetPolicy;
-  private _refreshInterval: number;
+  private _refreshDelay: number;
   private _isDirty = false;
 
+  private _refreshInProgress = false;
   private _refreshPromise: Promise<void>;
   private _nextRefreshPromise: Promise<void>;
 
-  constructor({ client, getPolicy, refreshInterval = 30 }: TweekRepositoryConfig) {
+  constructor({ client, getPolicy, refreshInterval, refreshDelay }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
-    this._refreshInterval = refreshInterval;
-
+    this._refreshDelay = refreshDelay || refreshInterval || 30;
     this._refreshPromise = Promise.resolve();
-    this._nextRefreshPromise = delay(this._refreshInterval).then(() => this._rollRefresh());
+    this._nextRefreshPromise = Promise.resolve();
+
+    if (refreshInterval) {
+      console.warn("TweekRepository constructor argument 'refreshInterval' is deprecated.  Use 'refreshDelay' instead");
+    }
   }
 
   set context(value: Context) {
@@ -74,7 +78,7 @@ export default class TweekRepository {
       keys = keys || {};
       Object.entries(keys).forEach(([key, value]) => {
         if (value.expiration) {
-          this._isDirty = true;
+          this._dirtyRefresh();
           this._cache.set(key, {
             ...value,
             expiration: 'expired',
@@ -91,7 +95,7 @@ export default class TweekRepository {
     if (!node) {
       let isScan = TweekRepository._isScan(key);
       this._cache.set(key, { state: 'requested', isScan });
-      this._isDirty = true;
+      this._dirtyRefresh();
     }
   }
 
@@ -133,7 +137,7 @@ export default class TweekRepository {
         isRefreshing = true;
       } else {
         isExpired = true;
-        this._isDirty = true;
+        this._dirtyRefresh();
         if (node.expiration !== 'expired') {
           this._cache.set(key, {
             ...node,
@@ -205,12 +209,29 @@ export default class TweekRepository {
     return this.observe('_');
   }
 
+  private _dirtyRefresh() {
+    this._isDirty = true;
+    this._rollRefresh();
+  }
+
   private _rollRefresh() {
-    this._refreshPromise = this._refreshKeys();
+    if (this._refreshInProgress || !this._isDirty) return this._refreshPromise;
+
+    this._refreshInProgress = true;
+
+    this._refreshPromise = delay(this._refreshDelay).then(() => this._refreshKeys());
+
     this._nextRefreshPromise = this._refreshPromise
-      .catch(() => {})
-      .then(() => delay(this._refreshInterval))
-      .then(() => this._rollRefresh());
+      .then(() => {
+        this._refreshInProgress = false;
+        return this._rollRefresh();
+      })
+      .catch(err => {
+        this._refreshInProgress = false;
+        this._dirtyRefresh();
+        throw err;
+      });
+
     return this._refreshPromise;
   }
 
