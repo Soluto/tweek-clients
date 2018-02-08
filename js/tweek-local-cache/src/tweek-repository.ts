@@ -38,18 +38,18 @@ export default class TweekRepository {
   private _client: ITweekClient;
   private _context: Context = {};
   private _getPolicy: GetPolicy;
-  private _refreshInterval: number;
+  private _refreshDelay: number;
   private _isDirty = false;
 
   private _refreshInProgress = false;
   private _refreshPromise: Promise<void>;
   private _nextRefreshPromise: Promise<void>;
 
-  constructor({ client, getPolicy, refreshInterval = 30 }: TweekRepositoryConfig) {
+  constructor({ client, getPolicy, refreshInterval = 30, refreshDelay }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
-    this._refreshInterval = refreshInterval;
+    this._refreshDelay = refreshDelay || refreshInterval;
 
     this._refreshPromise = Promise.resolve();
     this._nextRefreshPromise = Promise.resolve();
@@ -216,7 +216,7 @@ export default class TweekRepository {
 
     this._refreshInProgress = true;
 
-    this._refreshPromise = delay(this._refreshInterval).then(() => this._refreshKeys());
+    this._refreshPromise = delay(this._refreshDelay).then(() => this._refreshKeys());
 
     this._nextRefreshPromise = this._refreshPromise
       .then(() => {
