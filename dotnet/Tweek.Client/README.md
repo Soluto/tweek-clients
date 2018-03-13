@@ -16,8 +16,13 @@ JToken myConfiguration = await configurationClient.Get("/myconfiguration", null)
 
 ### Query your configuration key and get type safe result
 ```csharp
+using Tweek.Client.Extensions;
+
+/// ... 
+
 string myStringValue = await configurationClient.Get<string>("/mystring", null);
 ```
+
 
 ### Updating Context
 ```csharp
