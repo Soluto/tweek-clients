@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { FetchConfig } from '../../src/index';
 import TweekClient from '../../src/TweekClient';
 
-describe('tweek-client fetchChunks', () => {
+describe.only('tweek-client fetchChunks', () => {
   type TestConfiguration = {
     pathToFetch: string;
     expectedUrl: string;
@@ -69,6 +69,13 @@ describe('tweek-client fetchChunks', () => {
 
     // Assert
     expect(fetchStub).to.have.been.calledThrice;
+    expect(fetchStub).to.have.been.calledWithExactly(
+      'http://test/api/v1/keys/_?%24include=a1&%24include=a2&%24include=a3',
+    );
+    expect(fetchStub).to.have.been.calledWithExactly(
+      'http://test/api/v1/keys/_?%24include=b1&%24include=b2&%24include=b3',
+    );
+    expect(fetchStub).to.have.been.calledWithExactly('http://test/api/v1/keys/_?%24include=c5');
     expect(result).to.deep.equal(test.expectedResult);
   });
 });
