@@ -24,6 +24,7 @@ export type TweekInitConfig = FetchConfig & {
 
 export interface ITweekClient {
   fetch<T>(path: string, config?: FetchConfig): Promise<T>;
+  fetchChunks<T>(path: string, config?: FetchConfig, maxChunkSize?: number): Promise<T>;
   appendContext(identityType: string, identityId: string, context: object): Promise<void>;
   deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
 }

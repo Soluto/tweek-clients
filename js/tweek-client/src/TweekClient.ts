@@ -67,6 +67,21 @@ export default class TweekClient implements ITweekClient {
     return <Promise<T>>result;
   }
 
+  fetchChunks<T>(path: string, _config: FetchConfig, maxChunkSize: number): Promise<T> {
+    const { include } = _config;
+    if (include) {
+      const includeChunks = include
+        .map((e, i) => (i % maxChunkSize === 0 ? include.slice(i, i + maxChunkSize) : undefined))
+        .filter(e => e);
+      const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
+      const fetchPromises = fetchConfigChunks.map(cc => this.fetch(path, cc));
+      const result = Promise.all(fetchPromises).then(chuncks => chuncks.reduce((res, ch) => ({ ...res, ...ch }), {}));
+      return <Promise<T>>result;
+    }
+
+    return this.fetch(path, _config);
+  }
+
   appendContext(identityType: string, identityId: string, context: object): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
     let result = this.config
