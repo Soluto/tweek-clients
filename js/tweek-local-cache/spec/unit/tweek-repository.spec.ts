@@ -347,6 +347,7 @@ describe('tweek repo test', () => {
       const fetchStub = sinon.stub();
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
+        fetchChunks: sinon.stub(),
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -367,6 +368,7 @@ describe('tweek repo test', () => {
       const fetchStub = sinon.stub().resolves({});
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
+        fetchChunks: sinon.stub(),
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -461,6 +463,7 @@ describe('tweek repo test', () => {
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
+        fetchChunks: sinon.stub(),
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -498,6 +501,7 @@ describe('tweek repo test', () => {
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
+        fetchChunks: sinon.stub(),
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
