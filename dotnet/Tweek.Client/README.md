@@ -18,7 +18,7 @@ JToken myConfiguration = await configurationClient.Get("/myconfiguration", null)
 ```csharp
 using Tweek.Client.Extensions;
 
-/// ... 
+// ... 
 
 string myStringValue = await configurationClient.Get<string>("/mystring", null);
 ```
