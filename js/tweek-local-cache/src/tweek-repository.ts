@@ -262,7 +262,7 @@ export default class TweekRepository {
     };
 
     return this._client
-      .fetch<any>('_', fetchConfig)
+      .fetchChunks<any>('_', fetchConfig, 4000)
       .catch(err => {
         expiredKeys.forEach(([key, valueNode]) =>
           this._cache.set(key, {

@@ -31,7 +31,7 @@ describe('tweek repo test', () => {
   let _tweekRepo;
 
   async function initRepository({ store, client = _defaultClient, context }: InitRepoConfig = {}) {
-    _tweekRepo = new TweekRepository({ client, refreshInterval: 2 });
+    _tweekRepo = new TweekRepository({ client, refreshDelay: 2 });
     if (store) {
       await _tweekRepo.useStore(store);
     }
@@ -346,8 +346,8 @@ describe('tweek repo test', () => {
       // Arrange
       const fetchStub = sinon.stub();
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
-        fetchChunks: sinon.stub(),
+        fetch: sinon.stub(),
+        fetchChunks: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -367,8 +367,8 @@ describe('tweek repo test', () => {
       // Arrange
       const fetchStub = sinon.stub().resolves({});
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
-        fetchChunks: sinon.stub(),
+        fetch: sinon.stub(),
+        fetchChunks: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -462,8 +462,8 @@ describe('tweek repo test', () => {
       fetchStub.resolves({});
 
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
-        fetchChunks: sinon.stub(),
+        fetch: sinon.stub(),
+        fetchChunks: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -500,8 +500,8 @@ describe('tweek repo test', () => {
       fetchStub.resolves(Object.keys(persistedNodes).reduce((acc, key) => ({ ...acc, [key]: 2 }), {}));
 
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
-        fetchChunks: sinon.stub(),
+        fetch: sinon.stub(),
+        fetchChunks: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };

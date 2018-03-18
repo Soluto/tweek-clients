@@ -1,6 +1,6 @@
 {
   "name": "react-tweek",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "react bindings for tweek",
   "main": "./dist/index.js",
   "author": "Soluto",
@@ -8,26 +8,26 @@
   "url": "https://github.com/Soluto/tweek-clients/tree/master/js/react-tweek",
   "repository": "Soluto/tweek-clients",
   "peerDependencies": {
-    "prop-types": "15.x",
-    "react": "15.x",
-    "tweek-client": "^0.1.5",
-    "tweek-local-cache": "0.2.x"
+    "prop-types": "15.6.1",
+    "react": "16.2.0",
+    "tweek-client": "^0.1.9",
+    "tweek-local-cache": "0.2.4"
   },
   "dependencies": {
-    "humps": "^2.0.1"
+    "humps": "^2.0.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "tweek-client": "^0.1.x",
+    "tweek-local-cache": "^0.2.x"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-jest": "^21.0.2",
-    "babel-preset-env": "^1.6.0",
+    "babel-jest": "^23.0.0-alpha.0",
+    "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
-    "jest": "^21.1.0",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "react-test-renderer": "^15.6.1",
-    "tweek-client": "^0.1.8",
-    "tweek-local-cache": "^0.2.2"
+    "jest": "^22.4.2",
+    "react-test-renderer": "^16.2.0"
   },
   "scripts": {
     "test": "jest",
