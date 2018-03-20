@@ -9,7 +9,6 @@ WORKDIR /opt
 RUN yarn && yarn bootstrap
 
 COPY . /opt/
-WORKDIR /opt
 
 RUN yarn build
 
