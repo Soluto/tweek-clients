@@ -24,7 +24,7 @@ export default class TweekClient implements ITweekClient {
   }
 
   private fetchChunk<T>(path: string, _config?: FetchConfig): Promise<T> {
-    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes } = <TweekInitConfig &
+    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes, onError } = <TweekInitConfig &
       FetchConfig>{
       ...this.config,
       ..._config,
@@ -55,7 +55,9 @@ export default class TweekClient implements ITweekClient {
       if (response.ok) {
         return response.json();
       } else {
-        return Promise.reject(new Error(response.statusText));
+        const error = new Error(response.statusText);
+        onError && setImmediate(() => onError(error));
+        return Promise.reject(error);
       }
     });
 

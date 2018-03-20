@@ -10,6 +10,7 @@ export default function(config: {
   requestTimeoutInMillis?: number;
   getAuthenticationToken?: () => Promise<string> | string;
   fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  onError?(error: Error): void;
 }) {
   const {
     baseServiceUrl,
@@ -17,6 +18,7 @@ export default function(config: {
     context = {},
     getAuthenticationToken,
     requestTimeoutInMillis = 8000,
+    onError,
   } = config;
 
   let fetchClient = fetch;
@@ -39,5 +41,6 @@ export default function(config: {
     convertTyping: false,
     context,
     fetch: createFetchWithTimeout(requestTimeoutInMillis, fetchClient),
+    onError,
   });
 }

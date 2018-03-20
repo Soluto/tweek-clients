@@ -7,17 +7,20 @@ describe('tweek-client fetch', () => {
   const defaultUrl = 'http://test/';
   let prepare = url => {
     const fetchStub = sinon.stub();
+    const onErrorStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
       casing: 'snake',
       convertTyping: false,
       fetch: fetchStub,
+      onError: onErrorStub,
     });
 
     return {
       tweekClient,
       fetchStub,
+      onErrorStub,
     };
   };
 
@@ -147,7 +150,7 @@ describe('tweek-client fetch', () => {
   testsDefenitions.forEach(test =>
     it('should execute fetch correctly', async () => {
       // Arrange
-      const { tweekClient, fetchStub } = prepare(test.baseUrl);
+      const { tweekClient, fetchStub, onErrorStub } = prepare(test.baseUrl);
       if (!!test.resultsToResolve) {
         fetchStub.resolves(new Response(JSON.stringify(test.resultsToResolve)));
       } else {
@@ -161,7 +164,23 @@ describe('tweek-client fetch', () => {
       // Assert
       expect(fetchStub).to.have.been.calledOnce;
       expect(fetchStub).to.have.been.calledWithExactly(expectedUrl);
+      expect(onErrorStub).to.not.have.been.called;
       if (!!test.expectedResult) expect(result).to.eql(test.expectedResult, 'should return corerct keys result');
     }),
   );
+
+  it('should call onError if fetch returned an error', async () => {
+    const { tweekClient, fetchStub, onErrorStub } = prepare(defaultUrl);
+    const statusText = 'someStatusText';
+    fetchStub.resolves(
+      new Response(null, {
+        status: 500,
+        statusText,
+      }),
+    );
+    const fetchPromise = tweekClient.fetch('/_');
+    await expect(fetchPromise).to.be.rejectedWith(statusText);
+    await new Promise(res => setImmediate(res));
+    expect(onErrorStub).to.have.been.calledOnce;
+  });
 });
