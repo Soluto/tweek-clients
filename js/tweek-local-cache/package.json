@@ -13,7 +13,6 @@
     "object.entries": "^1.0.4",
     "object.values": "^1.0.4",
     "symbol-observable": "^1.0.4",
-    "tweek-client": "^0.1.10",
     "zen-observable": "^0.6.0"
   },
   "devDependencies": {
@@ -34,6 +33,7 @@
     "sinon": "^3.3.0",
     "sinon-chai": "^2.13.0",
     "ts-node": "^3.3.0",
+    "tweek-client": "^0.1.9",
     "typescript": "^2.5.2"
   },
   "scripts": {

@@ -346,8 +346,7 @@ describe('tweek repo test', () => {
       // Arrange
       const fetchStub = sinon.stub();
       const clientMock: ITweekClient = {
-        fetch: sinon.stub(),
-        fetchChunks: <any>fetchStub,
+        fetch: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -367,8 +366,7 @@ describe('tweek repo test', () => {
       // Arrange
       const fetchStub = sinon.stub().resolves({});
       const clientMock: ITweekClient = {
-        fetch: sinon.stub(),
-        fetchChunks: <any>fetchStub,
+        fetch: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -462,8 +460,7 @@ describe('tweek repo test', () => {
       fetchStub.resolves({});
 
       const clientMock: ITweekClient = {
-        fetch: sinon.stub(),
-        fetchChunks: <any>fetchStub,
+        fetch: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };
@@ -500,8 +497,7 @@ describe('tweek repo test', () => {
       fetchStub.resolves(Object.keys(persistedNodes).reduce((acc, key) => ({ ...acc, [key]: 2 }), {}));
 
       const clientMock: ITweekClient = {
-        fetch: sinon.stub(),
-        fetchChunks: <any>fetchStub,
+        fetch: <any>fetchStub,
         appendContext: sinon.stub(),
         deleteContext: sinon.stub(),
       };

@@ -1,6 +1,7 @@
 import * as qs from 'query-string';
 import { convertTypingFromJSON, snakeToCamelCase } from './utils';
 import { FetchConfig, ITweekClient, TweekInitConfig } from './types';
+import chunk = require('lodash.chunk');
 
 export default class TweekClient implements ITweekClient {
   config: TweekInitConfig;
@@ -22,7 +23,7 @@ export default class TweekClient implements ITweekClient {
     }
   }
 
-  fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
+  private fetchChunk<T>(path: string, _config?: FetchConfig): Promise<T> {
     const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes } = <TweekInitConfig &
       FetchConfig>{
       ...this.config,
@@ -69,19 +70,18 @@ export default class TweekClient implements ITweekClient {
     return <Promise<T>>result;
   }
 
-  fetchChunks<T>(path: string, _config: FetchConfig, maxChunkSize: number): Promise<T> {
-    const { include } = _config;
-    if (include) {
-      const includeChunks = include
-        .map((e, i) => (i % maxChunkSize === 0 ? include.slice(i, i + maxChunkSize) : undefined))
-        .filter(e => e);
-      const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
-      const fetchPromises = fetchConfigChunks.map(cc => this.fetch(path, cc));
-      const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
-      return <Promise<T>>result;
+  fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
+    if (_config) {
+      const { include, maxChunkSize } = _config;
+      if (include) {
+        const includeChunks = chunk(include, maxChunkSize || 100);
+        const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
+        const fetchPromises = fetchConfigChunks.map(cc => this.fetchChunk(path, cc));
+        const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
+        return <Promise<T>>result;
+      }
     }
-
-    return this.fetch(path, _config);
+    return this.fetchChunk(path, _config);
   }
 
   appendContext(identityType: string, identityId: string, context: object): Promise<void> {
