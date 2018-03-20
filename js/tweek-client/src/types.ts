@@ -15,6 +15,7 @@ export type FetchConfig = {
   flatten?: boolean;
   context?: Context;
   ignoreKeyTypes?: boolean;
+  maxChunkSize?: number;
   onError?(error: Error): void;
 };
 
