@@ -24,8 +24,16 @@ export default class TweekClient implements ITweekClient {
   }
 
   private fetchChunk<T>(path: string, _config?: FetchConfig): Promise<T> {
-    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes, onError } = <TweekInitConfig &
-      FetchConfig>{
+    const {
+      casing,
+      flatten,
+      baseServiceUrl,
+      convertTyping,
+      context,
+      include,
+      ignoreKeyTypes,
+      onError,
+    } = <TweekInitConfig & FetchConfig>{
       ...this.config,
       ..._config,
     };
@@ -72,18 +80,18 @@ export default class TweekClient implements ITweekClient {
     return <Promise<T>>result;
   }
 
-  fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
-    if (_config) {
-      const { include, maxChunkSize } = _config;
-      if (include) {
-        const includeChunks = chunk(include, maxChunkSize || 100);
-        const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
-        const fetchPromises = fetchConfigChunks.map(cc => this.fetchChunk(path, cc));
-        const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
-        return <Promise<T>>result;
-      }
+  fetch<T>(path: string, _config: FetchConfig = {}): Promise<T> {
+    if (!_config.include) {
+      return this.fetchChunk(path, _config);
     }
-    return this.fetchChunk(path, _config);
+
+    const { include, maxChunkSize = 100 } = _config;
+
+    const includeChunks = chunk(include, maxChunkSize);
+    const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
+    const fetchPromises = fetchConfigChunks.map(cc => this.fetchChunk(path, cc));
+    const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
+    return <Promise<T>>result;
   }
 
   appendContext(identityType: string, identityId: string, context: object): Promise<void> {

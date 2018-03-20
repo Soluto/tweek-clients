@@ -14,10 +14,7 @@
     "tweek-local-cache": "0.2.4"
   },
   "dependencies": {
-    "humps": "^2.0.1",
-
-    "tweek-client": "^0.1.x",
-    "tweek-local-cache": "^0.2.x"
+    "humps": "^2.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -28,7 +25,9 @@
     "jest": "^22.4.2",
     "react": ">=15.0.0",
     "react-dom": ">=15.0.0",
-    "react-test-renderer": ">=15.0.0"
+    "react-test-renderer": ">=15.0.0",
+    "tweek-client": "^0.1.x",
+    "tweek-local-cache": "^0.2.x"
   },
   "scripts": {
     "test": "jest",
