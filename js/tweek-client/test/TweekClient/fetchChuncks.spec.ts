@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { FetchConfig } from '../../src/index';
 import TweekClient from '../../src/TweekClient';
 
-describe.skip('tweek-client fetchChunks', () => {
+describe('tweek-client fetchChunks', () => {
   type TestConfiguration = {
     pathToFetch: string;
     expectedUrl: string;
