@@ -180,6 +180,7 @@ describe('tweek-client fetch', () => {
     );
     const fetchPromise = tweekClient.fetch('/_');
     await expect(fetchPromise).to.be.rejectedWith(statusText);
+    await new Promise(res => setImmediate(res));
     expect(onErrorStub).to.have.been.calledOnce;
   });
 });

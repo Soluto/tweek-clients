@@ -61,7 +61,7 @@ export default class TweekClient implements ITweekClient {
         return response.json();
       } else {
         const error = new Error(response.statusText);
-        onError && onError(error);
+        onError && setImmediate(() => onError(error));
         return Promise.reject(error);
       }
     });
