@@ -10,6 +10,7 @@ describe('tweek-client authentication', () => {
   const expectedOptions = {
     headers: {
       Authorization: `Bearer ${token}`,
+      "X-Api-Client": "unknown"
     },
   };
 
