@@ -40,6 +40,7 @@ export default class TweekRepository {
   private _getPolicy: GetPolicy;
   private _refreshDelay: number;
   private _isDirty = false;
+  private _backoffExponent = 1;
 
   private _refreshInProgress = false;
   private _refreshPromise: Promise<void>;
@@ -219,15 +220,17 @@ export default class TweekRepository {
 
     this._refreshInProgress = true;
 
-    this._refreshPromise = delay(this._refreshDelay).then(() => this._refreshKeys());
+    this._refreshPromise = delay(Math.pow(this._refreshDelay, this._backoffExponent)).then(() => this._refreshKeys());
 
     this._nextRefreshPromise = this._refreshPromise
       .then(() => {
+        this.__backoffExponent = 1;
         this._refreshInProgress = false;
         return this._rollRefresh();
       })
       .catch(err => {
         this._refreshInProgress = false;
+        this._backoffExponent = Math.max(this._backoffExponent + 1, 32)
         this._dirtyRefresh();
         throw err;
       });
