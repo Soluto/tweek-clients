@@ -7,7 +7,8 @@ import Trie from './trie';
 import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
-import { FlatKeys, GetPolicy, ITweekStore, TweekRepositoryConfig, RepositoryKey, CachedKey, Expiration } from './types';
+import { IntervalErrorPolicy, FlatKeys, GetPolicy, ITweekStore, TweekRepositoryConfig, RepositoryKey, CachedKey, Expiration } from './types';
+import exponentIntervalFailurePolicy from './exponent-interval-error-policy';
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -40,20 +41,21 @@ export default class TweekRepository {
   private _getPolicy: GetPolicy;
   private _refreshDelay: number;
   private _isDirty = false;
-  private _backoffExponent = 0;
-  private _maxBackoffExponent = 8;
+  private _retryCount = 0;
 
   private _refreshInProgress = false;
   private _refreshPromise: Promise<void>;
   private _nextRefreshPromise: Promise<void>;
+  private _intervalErrorPolicy: IntervalErrorPolicy;
 
-  constructor({ client, getPolicy, refreshInterval, refreshDelay }: TweekRepositoryConfig) {
+  constructor({ client, getPolicy, refreshInterval, refreshDelay, intervalErrorPolicy = exponentIntervalFailurePolicy(8)  }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
     this._refreshDelay = refreshDelay || refreshInterval || 30;
     this._refreshPromise = Promise.resolve();
     this._nextRefreshPromise = Promise.resolve();
+    this._intervalErrorPolicy = intervalErrorPolicy;
 
     if (refreshInterval) {
       console.warn("TweekRepository constructor argument 'refreshInterval' is deprecated.  Use 'refreshDelay' instead");
@@ -220,19 +222,20 @@ export default class TweekRepository {
     if (this._refreshInProgress || !this._isDirty) return this._refreshPromise;
 
     this._refreshInProgress = true;
-    const backOffdelay = this._backoffExponent > 0 && 1000 * (2 ** this._backoffExponent - 1)  || 0;
-    this._refreshPromise = delay(this._refreshDelay +  ).then(() => this._refreshKeys());
+    this._refreshPromise = delay(this._refreshDelay).then(() => this._refreshKeys());
 
     this._nextRefreshPromise = this._refreshPromise
       .then(() => {
-        this.__backoffExponent = 1;
+        this._retryCount = 0;
         this._refreshInProgress = false;
         return this._rollRefresh();
       })
       .catch(err => {
         this._refreshInProgress = false;
-        this._backoffExponent = Math.min(this._backoffExponent + 1, this._maxBackoffExponent)
-        this._dirtyRefresh();
+        this._retryCount++;
+        this._intervalErrorPolicy(()=> {    
+          this._dirtyRefresh();
+        }, ++this._retryCount);
         throw err;
       });
 
