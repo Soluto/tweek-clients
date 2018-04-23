@@ -9,7 +9,7 @@ export default function(config: {
   context?: any;
   requestTimeoutInMillis?: number;
   getAuthenticationToken?: () => Promise<string> | string;
-  clientName: string?;  
+  clientName?: string;  
   fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   onError?(error: Error): void;
 }) {
