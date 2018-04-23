@@ -14,6 +14,9 @@ export type FetchConfig = {
   convertTyping?: boolean;
   flatten?: boolean;
   context?: Context;
+  ignoreKeyTypes?: boolean;
+  maxChunkSize?: number;
+  onError?(error: Error): void;
 };
 
 export type TweekInitConfig = FetchConfig & {

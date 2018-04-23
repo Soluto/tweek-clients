@@ -1,3 +1,6 @@
+import crossFetch = require('cross-fetch');
+const { Response } = crossFetch;
+
 export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }

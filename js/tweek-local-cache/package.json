@@ -1,6 +1,6 @@
 {
   "name": "tweek-local-cache",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "Local cache to be used with tweek-client",
   "author": "Soluto",
   "license": "MIT",
@@ -26,22 +26,21 @@
     "axios": "^0.16.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "cross-fetch": "^1.1.1",
     "getenv": "^0.7.0",
-    "isomorphic-fetch": "^2.2.1",
     "mocha": "^3.5.3",
     "simple-fake-server": "^0.4.0",
     "sinon": "^3.3.0",
     "sinon-chai": "^2.13.0",
     "ts-node": "^3.3.0",
-    "tweek-client": "^0.1.6",
+    "tweek-client": "^0.1.9",
     "typescript": "^2.5.2"
   },
   "scripts": {
     "dev": "tsc -w",
     "test": "yarn test:unit && yarn test:behavior",
-    "test:behavior": "mocha --require spec/init-mocha.js --compilers ts:ts-node/register spec/behavior/*.spec.ts",
-    "test:behavior-debug":
-      "mocha --debug-brk --require spec/init-mocha.js --compilers ts:ts-node/register spec/behavior/*.spec.ts",
+    "test:behavior": "mocha --compilers ts:ts-node/register spec/behavior/*.spec.ts",
+    "test:behavior-debug": "mocha --debug-brk --compilers ts:ts-node/register spec/behavior/*.spec.ts",
     "test:unit": "mocha --compilers ts:ts-node/register spec/unit/*.spec.ts",
     "build": "rm -rf dist && tsc"
   }

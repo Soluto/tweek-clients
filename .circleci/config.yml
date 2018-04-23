@@ -1,57 +1,36 @@
 version: 2
 jobs:
-  build:
+  test_js:
     working_directory: ~/tweek-clients
-
     environment:
       NODE_ENV: development
-
-    docker:
-      - image: node:8.5.0
     
+    machine:
+      node:
+        version: 8.7.0
+        
     steps:
       - checkout
 
-      - setup_remote_docker:
-          reusable: true
-
-      - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="17.03.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
-            curl -L -o /usr/bin/docker-compose "https://github.com/docker/compose/releases/download/1.11.2/docker-compose-$(uname -s)-$(uname -m)"
-            chmod +x /usr/bin/docker-compose
-
       - run: 
-          name: run dependencies
-          command: docker-compose up tweek-management tweek-api
+          name: Run environment
+          command: |
+            docker pull soluto/tweek-blackbox:latest
+            docker run -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/testRepoData:/repo --name tweek_environment soluto/tweek-blackbox
           background: true
 
       - run:
-          name: Prepare for tests
+          name: Run JS tests
           command: |
-            docker build -t js_tests . 
-            docker-compose build dotnet_tests
-            docker run --network=tweekclients_default node:8.5.0-slim wget --tries 20 --timeout=15 --read-timeout=20 --waitretry=30 --retry-connrefused http://tweek-api/health
-
-      - run: 
-          name: Test js clients
-          command: docker run --network=tweekclients_default -e TWEEK_LOCAL_API=http://tweek-api js_tests
-
-      - run:
-          name: Test dotnet client
-          command: |
-            docker-compose up -d dotnet_tests && \
-            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/ && dotnet build -c release" && \
-            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+            docker build -t js_tests .
+            for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
+            docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
       - deploy: 
           name: npm
           command: |
+            npm install -g yarn
+            yarn && yarn bootstrap
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               if [[ $(node -p -e "require('./js/tweek-client/package.json').version") != $(npm show tweek-client version) ]]; then
@@ -71,11 +50,42 @@ jobs:
               echo "not deploying on non master branches"
             fi
 
+  test_dotnet:
+    working_directory: ~/tweek-clients
+    
+    machine: true
+
+    steps:
+      - checkout
+
+      - run: 
+          name: Run environment
+          command: |
+            docker pull soluto/tweek-blackbox:latest
+            docker run -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/testRepoData:/repo --name tweek_environment soluto/tweek-blackbox
+          background: true
+
+      - run:
+          name: Run dotNet tests
+          command: |
+            docker build -t dotnet_tests ./dotnet
+            docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api --name=dotnet_tests dotnet_tests
+            for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
+            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/ && dotnet build -c release"
+            docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+      
       - deploy: 
           name: nuget
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" $(docker-compose ps|grep dotnet_tests|cut -d" " -f1) /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
+              docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "dotnet nuget push /test-environment/Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY"
             else
               echo "not deploying on non master branches"
             fi
+
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - test_js
+      - test_dotnet

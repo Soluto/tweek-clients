@@ -31,7 +31,7 @@ describe('tweek repo test', () => {
   let _tweekRepo;
 
   async function initRepository({ store, client = _defaultClient, context }: InitRepoConfig = {}) {
-    _tweekRepo = new TweekRepository({ client, refreshInterval: 2 });
+    _tweekRepo = new TweekRepository({ client, refreshDelay: 2 });
     if (store) {
       await _tweekRepo.useStore(store);
     }

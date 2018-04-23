@@ -45,6 +45,7 @@ export type TweekRepositoryConfig = {
   client: ITweekClient;
   getPolicy?: GetPolicy;
   refreshInterval?: number;
+  refreshDelay?: number;
 };
 
 export type GetPolicy = {

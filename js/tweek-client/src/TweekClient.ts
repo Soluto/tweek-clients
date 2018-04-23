@@ -1,6 +1,7 @@
-import * as queryString from 'query-string';
+import * as qs from 'query-string';
 import { convertTypingFromJSON, snakeToCamelCase } from './utils';
 import { FetchConfig, ITweekClient, TweekInitConfig } from './types';
+import chunk = require('lodash.chunk');
 
 export default class TweekClient implements ITweekClient {
   config: TweekInitConfig;
@@ -10,7 +11,7 @@ export default class TweekClient implements ITweekClient {
 
   constructor(config: TweekInitConfig) {
     this.config = <TweekInitConfig & FetchConfig>{
-      ...{ casing: 'snake', flatten: false, convertTyping: false, context: {} },
+      ...{ casing: 'snake', flatten: false, convertTyping: false, context: {}, ignoreKeyTypes: false },
       ...config,
     };
 
@@ -22,32 +23,49 @@ export default class TweekClient implements ITweekClient {
     }
   }
 
-  fetch<T>(path: string, _config?: FetchConfig): Promise<T> {
-    const { casing, flatten, baseServiceUrl, convertTyping, context, include } = <TweekInitConfig & FetchConfig>{
+  private fetchChunk<T>(path: string, _config?: FetchConfig): Promise<T> {
+    const {
+      casing,
+      flatten,
+      baseServiceUrl,
+      convertTyping,
+      context,
+      include,
+      ignoreKeyTypes,
+      onError,
+    } = <TweekInitConfig & FetchConfig>{
       ...this.config,
       ..._config,
     };
-    let queryParamsObject = this._contextToQueryParams(context);
+
+    const queryParamsObject = this._contextToQueryParams(context);
 
     if (flatten) {
       queryParamsObject['$flatten'] = true;
     }
 
+    if (ignoreKeyTypes) {
+      queryParamsObject['$ignoreKeyTypes'] = true;
+    }
+
     queryParamsObject['$include'] = include;
-    let queryParams = queryString.stringify(queryParamsObject);
-    queryParams = this.queryParamsEncoder(queryParams);
+    const queryString = qs.stringify(queryParamsObject);
+    const encodedQueryString = this.queryParamsEncoder(queryString);
 
     const url =
       baseServiceUrl +
       '/api/v1/keys' +
       (path.startsWith('/') ? '' : '/') +
       path +
-      (!!queryParams ? `?${queryParams}` : '');
+      (!!encodedQueryString ? `?${encodedQueryString}` : '');
+
     let result: Promise<any> = this.config.fetch(url).then(response => {
       if (response.ok) {
         return response.json();
       } else {
-        return Promise.reject(new Error(response.statusText));
+        const error = new Error(response.statusText);
+        onError && setImmediate(() => onError(error));
+        return Promise.reject(error);
       }
     });
 
@@ -62,9 +80,23 @@ export default class TweekClient implements ITweekClient {
     return <Promise<T>>result;
   }
 
+  fetch<T>(path: string, _config: FetchConfig = {}): Promise<T> {
+    if (!_config.include) {
+      return this.fetchChunk(path, _config);
+    }
+
+    const { include, maxChunkSize = 100 } = _config;
+
+    const includeChunks = chunk(include, maxChunkSize);
+    const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
+    const fetchPromises = fetchConfigChunks.map(cc => this.fetchChunk(path, cc));
+    const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
+    return <Promise<T>>result;
+  }
+
   appendContext(identityType: string, identityId: string, context: object): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
-    let result = this.config
+    const result = this.config
       .fetch(url, {
         method: 'POST',
         headers: {
@@ -82,7 +114,7 @@ export default class TweekClient implements ITweekClient {
 
   deleteContext(identityType: string, identityId: string, property: string): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}/${property}`;
-    let result = this.config.fetch(url, { method: 'DELETE' }).then(response => {
+    const result = this.config.fetch(url, { method: 'DELETE' }).then(response => {
       if (!response.ok) {
         throw new Error(`Error deleting context property, code ${response.status}, message: '${response.statusText}'`);
       }
@@ -95,7 +127,7 @@ export default class TweekClient implements ITweekClient {
 
   private _contextToQueryParams = context => {
     return Object.keys(context).reduce((pre, cur) => {
-      let identityContext = context[cur];
+      const identityContext = context[cur];
       Object.keys(identityContext).forEach(
         x => (x === 'id' ? (pre[`${cur}`] = identityContext[x]) : (pre[`${cur}.${x}`] = identityContext[x])),
       );
