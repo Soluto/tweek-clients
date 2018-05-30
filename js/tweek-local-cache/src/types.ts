@@ -41,13 +41,12 @@ export type ScanNode = {
 
 export type RepositoryKey<T> = CachedKey<T> | RequestedKey | ScanNode | MissingKey;
 
-
 export type TweekRepositoryConfig = {
   client: ITweekClient;
   getPolicy?: GetPolicy;
   refreshInterval?: number;
   refreshDelay?: number;
-  intervalErrorPolicy?:IntervalErrorPolicy;
+  intervalErrorPolicy?: IntervalErrorPolicy;
 };
 
 export type GetPolicy = {
@@ -55,8 +54,6 @@ export type GetPolicy = {
   notPrepared?: 'throw' | 'prepare';
 };
 
-
 export interface IntervalErrorPolicy {
-  (next:()=>void, retryCount:number);
+  (next: () => void, retryCount: number, ex?: Error);
 }
-

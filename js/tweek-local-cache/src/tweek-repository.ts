@@ -7,7 +7,16 @@ import Trie from './trie';
 import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
-import { IntervalErrorPolicy, FlatKeys, GetPolicy, ITweekStore, TweekRepositoryConfig, RepositoryKey, CachedKey, Expiration } from './types';
+import {
+  IntervalErrorPolicy,
+  FlatKeys,
+  GetPolicy,
+  ITweekStore,
+  TweekRepositoryConfig,
+  RepositoryKey,
+  CachedKey,
+  Expiration,
+} from './types';
 import exponentIntervalFailurePolicy from './exponent-interval-error-policy';
 
 export const TweekKeySplitJoin = {
@@ -44,17 +53,20 @@ export default class TweekRepository {
   private _retryCount = 0;
 
   private _refreshInProgress = false;
-  private _refreshPromise: Promise<void>;
-  private _nextRefreshPromise: Promise<void>;
   private _intervalErrorPolicy: IntervalErrorPolicy;
+  private _refreshPromise = Promise.resolve();
 
-  constructor({ client, getPolicy, refreshInterval, refreshDelay, intervalErrorPolicy = exponentIntervalFailurePolicy(8)  }: TweekRepositoryConfig) {
+  constructor({
+    client,
+    getPolicy,
+    refreshInterval,
+    refreshDelay,
+    intervalErrorPolicy = exponentIntervalFailurePolicy(8),
+  }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
     this._refreshDelay = refreshDelay || refreshInterval || 30;
-    this._refreshPromise = Promise.resolve();
-    this._nextRefreshPromise = Promise.resolve();
     this._intervalErrorPolicy = intervalErrorPolicy;
 
     if (refreshInterval) {
@@ -151,8 +163,7 @@ export default class TweekRepository {
       }
     }
 
-    if (isExpired) return this._nextRefreshPromise;
-    if (isRefreshing) return this._refreshPromise;
+    if (this._refreshInProgress) return this._refreshPromise;
     return Promise.resolve();
   }
 
@@ -218,28 +229,29 @@ export default class TweekRepository {
     this._rollRefresh();
   }
 
-  private _rollRefresh() {
-    if (this._refreshInProgress || !this._isDirty) return this._refreshPromise;
+  private _rollRefresh(): void {
+    if (this._refreshInProgress || !this._isDirty) return;
 
     this._refreshInProgress = true;
-    this._refreshPromise = delay(this._refreshDelay).then(() => this._refreshKeys());
+    const promise = delay(this._refreshDelay).then(() => this._refreshKeys());
+    this._refreshPromise = promise.catch(ex => {});
 
-    this._nextRefreshPromise = this._refreshPromise
+    promise
       .then(() => {
+        this._refreshInProgress = false;
         this._retryCount = 0;
-        this._refreshInProgress = false;
-        return this._rollRefresh();
+        this._rollRefresh();
       })
-      .catch(err => {
+      .catch(ex => {
         this._refreshInProgress = false;
-        this._retryCount++;
-        this._intervalErrorPolicy(()=> {    
-          this._dirtyRefresh();
-        }, ++this._retryCount);
-        throw err;
+        this._intervalErrorPolicy(
+          () => {
+            this._dirtyRefresh();
+          },
+          ++this._retryCount,
+          ex,
+        );
       });
-
-    return this._refreshPromise;
   }
 
   private _refreshKeys() {

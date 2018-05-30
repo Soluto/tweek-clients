@@ -29,6 +29,26 @@ describe('tweek repo test', () => {
   let _defaultClient: ITweekClient;
   let _createClientThatFails: () => ITweekClient;
   let _tweekRepo;
+  function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      let subscription;
+      const items: any[] = [];
+      _tweekRepo.observe(key, getPolicy).subscribe({
+        start: s => (subscription = s),
+        next: value => {
+          items.push(value);
+          if (items.length === count) {
+            subscription.unsubscribe();
+            resolve(items);
+          }
+        },
+        error: err => {
+          subscription.unsubscribe();
+          reject(err);
+        },
+      });
+    });
+  }
 
   async function initRepository({ store, client = _defaultClient, context }: InitRepoConfig = {}) {
     _tweekRepo = new TweekRepository({ client, refreshDelay: 2 });
@@ -405,7 +425,7 @@ describe('tweek repo test', () => {
       const refreshPromise = _tweekRepo.refresh();
 
       //Assert
-      await expect(refreshPromise).to.be.rejected;
+      await expect(refreshPromise).to.be.eventually.eql(undefined);
     });
 
     it('should remove key if missing after refresh', async () => {
@@ -452,12 +472,10 @@ describe('tweek repo test', () => {
       };
       let store = new MemoryStore(persistedNodes);
 
-      const initialDelay = delay(5);
-      const fetchPromise = initialDelay.then(() => delay(15)).then(() => ({}));
+      const fetchPromise = () => delay(15).then(() => ({})); // initialDelay.then(() => delay(15)).then(() => ({}));
 
       const fetchStub = sinon.stub();
-      fetchStub.onCall(0).resolves(fetchPromise);
-      fetchStub.resolves({});
+      fetchStub.resolves(fetchPromise());
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
@@ -467,19 +485,12 @@ describe('tweek repo test', () => {
 
       await initRepository({ client: clientMock, store });
 
-      const promises = [_tweekRepo.refresh(['key1', 'key2'])];
-
-      await initialDelay;
-
-      const refreshPromise = _tweekRepo.refresh(['key1']);
-      promises.push(refreshPromise);
-      promises.push(_tweekRepo.refresh(['key2', 'key3']));
-
-      await refreshPromise;
+      await _tweekRepo.refresh(['key1', 'key2']);
 
       expect(fetchStub).to.have.been.calledOnce;
 
-      await Promise.all(promises);
+      _tweekRepo.refresh(['key1']);
+      await _tweekRepo.refresh(['key2', 'key3']);
 
       expect(fetchStub).to.have.been.calledTwice;
     });
@@ -503,9 +514,12 @@ describe('tweek repo test', () => {
       };
 
       await initRepository({ client: clientMock, store });
+      let recover;
+      _tweekRepo._intervalErrorPolicy = (resume, retryCount, err) => {
+        recover = resume;
+      };
 
-      const refreshPromise = _tweekRepo.refresh();
-      await expect(refreshPromise).to.be.rejected;
+      const refreshPromise = await _tweekRepo.refresh();
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {
@@ -514,7 +528,8 @@ describe('tweek repo test', () => {
         }),
       );
 
-      await _tweekRepo.refresh();
+      recover();
+      //await _tweekRepo.refresh();
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {
@@ -539,27 +554,6 @@ describe('tweek repo test', () => {
   });
 
   describe('observe', () => {
-    function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
-      return new Promise((resolve, reject) => {
-        let subscription;
-        const items: any[] = [];
-        _tweekRepo.observe(key, getPolicy).subscribe({
-          start: s => (subscription = s),
-          next: value => {
-            items.push(value);
-            if (items.length === count) {
-              subscription.unsubscribe();
-              resolve(items);
-            }
-          },
-          error: err => {
-            subscription.unsubscribe();
-            reject(err);
-          },
-        });
-      });
-    }
-
     it('should observe single key', async () => {
       // Arrange
       await initRepository();
