@@ -58,6 +58,7 @@ describe('tweek repo test', () => {
     if (context) {
       _tweekRepo.context = context;
     }
+    await new Promise(r => setTimeout(r, 5));
   }
 
   beforeEach(() => {
@@ -519,7 +520,7 @@ describe('tweek repo test', () => {
         recover = resume;
       };
 
-      const refreshPromise = await _tweekRepo.refresh();
+      await _tweekRepo.refresh();
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {
@@ -529,7 +530,7 @@ describe('tweek repo test', () => {
       );
 
       recover();
-      //await _tweekRepo.refresh();
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {

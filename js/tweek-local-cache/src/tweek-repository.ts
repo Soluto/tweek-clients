@@ -163,7 +163,9 @@ export default class TweekRepository {
       }
     }
 
-    if (this._refreshInProgress) return this._refreshPromise;
+    if (this._refreshInProgress) {
+      return this._refreshPromise;
+    }
     return Promise.resolve();
   }
 
@@ -233,10 +235,12 @@ export default class TweekRepository {
     if (this._refreshInProgress || !this._isDirty) return;
 
     this._refreshInProgress = true;
-    const promise = delay(this._refreshDelay).then(() => this._refreshKeys());
+
+    const promise = Promise.resolve().then(() => this._refreshKeys());
     this._refreshPromise = promise.catch(ex => {});
 
     promise
+      .then(async x => delay(this._refreshDelay) && x)
       .then(() => {
         this._refreshInProgress = false;
         this._retryCount = 0;
