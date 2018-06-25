@@ -7,7 +7,7 @@ import sinonChai = require('sinon-chai');
 import chaiAsPromise = require('chai-as-promised');
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
-import { ITweekStore } from '../../src/types';
+import { ITweekStore, RefreshErrorPolicy } from '../../src/types';
 
 chai.use(sinonChai);
 chai.use(chaiAsPromise);
@@ -28,7 +28,7 @@ type InitRepoConfig = {
 describe('tweek repo test', () => {
   let _defaultClient: ITweekClient;
   let _createClientThatFails: () => ITweekClient;
-  let _tweekRepo;
+  let _tweekRepo: TweekRepository;
   function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
     return new Promise((resolve, reject) => {
       let subscription;
@@ -516,7 +516,7 @@ describe('tweek repo test', () => {
 
       await initRepository({ client: clientMock, store });
       let recover;
-      _tweekRepo._intervalErrorPolicy = (resume, retryCount, err) => {
+      (<any>_tweekRepo)._refreshErrorPolicy = (resume, retryCount, err) => {
         recover = resume;
       };
 
@@ -540,16 +540,63 @@ describe('tweek repo test', () => {
       );
     });
 
+    it('should pass the right arguments to error policy and behave correctly', async () => {
+      const store = new MemoryStore({});
+
+      const fetchStub = sinon.stub();
+      fetchStub.onCall(0).rejects('someError');
+      fetchStub.onCall(1).rejects();
+      fetchStub.onCall(2).resolves({ test1: 1 });
+      fetchStub.onCall(3).rejects();
+      fetchStub.onCall(4).resolves({ test1: 2 });
+
+      const clientMock: ITweekClient = {
+        fetch: <any>fetchStub,
+        appendContext: sinon.stub(),
+        deleteContext: sinon.stub(),
+      };
+
+      await initRepository({ client: clientMock, store });
+      _tweekRepo.addKeys({ test1: 0 });
+      const readValue = async () => (await _tweekRepo.get('test1')).value;
+
+      let recover;
+      let retryCounts: number[] = [];
+      let errors: Error[] = [];
+      let policy: RefreshErrorPolicy = (resume, retryCount, err) => {
+        recover = resume;
+        retryCounts.push(retryCount);
+        err && errors.push(err);
+      };
+
+      (<any>_tweekRepo)._refreshErrorPolicy = policy;
+
+      await _tweekRepo.refresh();
+      expect(await readValue()).to.eql(0);
+      recover();
+      await new Promise(setImmediate);
+      recover();
+      await new Promise(setImmediate);
+      await _tweekRepo.refresh();
+      expect(await readValue()).to.eql(1);
+      recover();
+      await new Promise(setImmediate);
+      expect(await readValue()).to.eql(2);
+
+      expect(retryCounts).to.eql([1, 2, 1]);
+      expect(errors[0].name).to.eql('someError');
+    });
+
     it('should not refresh if not dirty', async () => {
       await initRepository();
 
-      const spy = sinon.spy(_tweekRepo._cache, 'list');
+      const spy = sinon.spy((<any>_tweekRepo)._cache, 'list');
 
       try {
         await delay(10);
         expect(spy.notCalled).to.be.true;
       } finally {
-        _tweekRepo._cache.list.restore();
+        (<any>_tweekRepo)._cache.list.restore();
       }
     });
   });

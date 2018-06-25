@@ -8,7 +8,7 @@ import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
-  IntervalErrorPolicy,
+  RefreshErrorPolicy,
   FlatKeys,
   GetPolicy,
   ITweekStore,
@@ -17,7 +17,16 @@ import {
   CachedKey,
   Expiration,
 } from './types';
-import exponentIntervalFailurePolicy from './exponent-interval-error-policy';
+import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
+
+function once(fn) {
+  let p = fn;
+  return function() {
+    let result = p && p.apply(this, arguments);
+    p = undefined;
+    return result;
+  };
+}
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -53,7 +62,7 @@ export default class TweekRepository {
   private _retryCount = 0;
 
   private _refreshInProgress = false;
-  private _intervalErrorPolicy: IntervalErrorPolicy;
+  private _refreshErrorPolicy: RefreshErrorPolicy;
   private _refreshPromise = Promise.resolve();
 
   constructor({
@@ -61,13 +70,13 @@ export default class TweekRepository {
     getPolicy,
     refreshInterval,
     refreshDelay,
-    intervalErrorPolicy = exponentIntervalFailurePolicy(8),
+    refreshErrorPolicy = exponentIntervalFailurePolicy(8),
   }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
     this._refreshDelay = refreshDelay || refreshInterval || 30;
-    this._intervalErrorPolicy = intervalErrorPolicy;
+    this._refreshErrorPolicy = refreshErrorPolicy;
 
     if (refreshInterval) {
       console.warn("TweekRepository constructor argument 'refreshInterval' is deprecated.  Use 'refreshDelay' instead");
@@ -233,25 +242,34 @@ export default class TweekRepository {
 
   private _rollRefresh(): void {
     if (this._refreshInProgress || !this._isDirty) return;
-
     this._refreshInProgress = true;
 
-    const promise = Promise.resolve().then(() => this._refreshKeys());
+    const promise = Promise.resolve()
+      .then(() => this._refreshKeys())
+      .then(
+        () => {
+          this._retryCount = 0;
+          this._refreshInProgress = false;
+        },
+        ex => {
+          this._refreshInProgress = false;
+          throw ex;
+        },
+      );
+
     this._refreshPromise = promise.catch(ex => {});
 
     promise
-      .then(async x => delay(this._refreshDelay) && x)
+      .then(() => delay(this._refreshDelay))
       .then(() => {
-        this._refreshInProgress = false;
-        this._retryCount = 0;
         this._rollRefresh();
       })
       .catch(ex => {
         this._refreshInProgress = false;
-        this._intervalErrorPolicy(
-          () => {
+        this._refreshErrorPolicy(
+          once(() => {
             this._dirtyRefresh();
-          },
+          }),
           ++this._retryCount,
           ex,
         );
