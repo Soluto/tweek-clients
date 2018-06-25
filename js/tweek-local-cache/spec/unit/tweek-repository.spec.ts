@@ -473,7 +473,7 @@ describe('tweek repo test', () => {
       };
       let store = new MemoryStore(persistedNodes);
 
-      const fetchPromise = () => delay(15).then(() => ({})); // initialDelay.then(() => delay(15)).then(() => ({}));
+      const fetchPromise = () => delay(15).then(() => ({}));
 
       const fetchStub = sinon.stub();
       fetchStub.resolves(fetchPromise());

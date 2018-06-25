@@ -4,7 +4,7 @@ import { createChangeEmitter } from 'change-emitter';
 import Observable = require('zen-observable');
 import $$observable from 'symbol-observable';
 import Trie from './trie';
-import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
+import { partitionByIndex, snakeToCamelCase, distinct, delay, once } from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
@@ -18,15 +18,6 @@ import {
   Expiration,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
-
-function once(fn) {
-  let p = fn;
-  return function() {
-    let result = p && p.apply(this, arguments);
-    p = undefined;
-    return result;
-  };
-}
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -248,8 +239,8 @@ export default class TweekRepository {
       .then(() => this._refreshKeys())
       .then(
         () => {
-          this._retryCount = 0;
           this._refreshInProgress = false;
+          this._retryCount = 0;
         },
         ex => {
           this._refreshInProgress = false;
@@ -261,9 +252,7 @@ export default class TweekRepository {
 
     promise
       .then(() => delay(this._refreshDelay))
-      .then(() => {
-        this._rollRefresh();
-      })
+      .then(() => this._rollRefresh())
       .catch(ex => {
         this._refreshInProgress = false;
         this._refreshErrorPolicy(

@@ -22,3 +22,12 @@ export function snakeToCamelCase(keyName) {
 export function delay(timeout): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
+
+export function once(fn) {
+  let p = fn;
+  return function() {
+    let result = p && p.apply(this, arguments);
+    p = undefined;
+    return result;
+  };
+}
