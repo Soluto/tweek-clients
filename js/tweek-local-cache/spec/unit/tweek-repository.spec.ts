@@ -29,6 +29,12 @@ describe('tweek repo test', () => {
   let _defaultClient: ITweekClient;
   let _createClientThatFails: () => ITweekClient;
   let _tweekRepo: TweekRepository;
+
+  async function refreshAndWait(keys?: string[]) {
+    _tweekRepo.refresh(keys);
+    await (<any>_tweekRepo).waitRefreshCycle();
+  }
+
   function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
     return new Promise((resolve, reject) => {
       let subscription;
@@ -103,7 +109,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let key1 = await _tweekRepo.get('my_path/string_value');
@@ -123,7 +129,7 @@ describe('tweek repo test', () => {
       await initRepository();
 
       await _tweekRepo.prepare('some_path/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       const expectedKeysNode = {
         innerPath1: {
@@ -143,7 +149,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('some_path/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let config = await _tweekRepo.get('some_path/_');
@@ -157,7 +163,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('deeply_nested/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let config = await _tweekRepo.get('deeply_nested/a/b/_');
@@ -170,7 +176,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let config = await _tweekRepo.get('_');
@@ -184,7 +190,7 @@ describe('tweek repo test', () => {
       await initRepository();
       _tweekRepo.prepare('some_path/_');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let key = await _tweekRepo.get('some_path/inner_path_1/first_value');
@@ -202,7 +208,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_Positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_Value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let key1 = await _tweekRepo.get('My_path/string_value');
@@ -282,7 +288,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('some_path/inner_path_1/_');
 
       // Act
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Assert
       const persistedResult = await store.load();
@@ -338,7 +344,8 @@ describe('tweek repo test', () => {
       let old = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(old.value).to.eql('old_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
+      await new Promise(setImmediate);
 
       let _new = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(_new.value).to.eql('value_1');
@@ -356,7 +363,7 @@ describe('tweek repo test', () => {
       const result1 = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(result1.value).to.eql('default_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
       const result2 = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(result2.value).to.eql('value_1');
     });
@@ -375,7 +382,7 @@ describe('tweek repo test', () => {
       await initRepository({ client: clientMock });
 
       // Act
-      const refreshPromise = _tweekRepo.refresh();
+      const refreshPromise = refreshAndWait();
       await refreshPromise;
 
       // Assert
@@ -406,7 +413,7 @@ describe('tweek repo test', () => {
       };
 
       // Act
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Assert
       expect(fetchStub).to.have.been.calledOnce;
@@ -423,7 +430,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('some_path/key');
 
       // Act
-      const refreshPromise = _tweekRepo.refresh();
+      const refreshPromise = refreshAndWait();
 
       //Assert
       await expect(refreshPromise).to.be.eventually.eql(undefined);
@@ -435,7 +442,7 @@ describe('tweek repo test', () => {
       await initRepository({ store });
 
       //Act
-      await _tweekRepo.refresh();
+      await refreshAndWait();
       const key = await _tweekRepo.get('some_key/should_be_removed');
 
       //Assert
@@ -452,7 +459,7 @@ describe('tweek repo test', () => {
       let store = new MemoryStore(persistedNodes);
       await initRepository({ store });
 
-      await _tweekRepo.refresh(['some_path/inner_path_1/first_value']);
+      await refreshAndWait(['some_path/inner_path_1/first_value']);
 
       // Act
       let key1 = await _tweekRepo.get('my_path/string_value');
@@ -486,12 +493,12 @@ describe('tweek repo test', () => {
 
       await initRepository({ client: clientMock, store });
 
-      await _tweekRepo.refresh(['key1', 'key2']);
+      await refreshAndWait(['key1', 'key2']);
 
       expect(fetchStub).to.have.been.calledOnce;
 
       _tweekRepo.refresh(['key1']);
-      await _tweekRepo.refresh(['key2', 'key3']);
+      await refreshAndWait(['key2', 'key3']);
 
       expect(fetchStub).to.have.been.calledTwice;
     });
@@ -520,7 +527,7 @@ describe('tweek repo test', () => {
         recover = resume;
       };
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {
@@ -571,13 +578,13 @@ describe('tweek repo test', () => {
 
       (<any>_tweekRepo)._refreshErrorPolicy = policy;
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
       expect(await readValue()).to.eql(0);
       recover();
       await new Promise(setImmediate);
       recover();
       await new Promise(setImmediate);
-      await _tweekRepo.refresh();
+      await refreshAndWait();
       expect(await readValue()).to.eql(1);
       recover();
       await new Promise(setImmediate);
@@ -611,7 +618,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let [key1] = await observeKey('my_path/string_value');
@@ -631,7 +638,7 @@ describe('tweek repo test', () => {
       await initRepository();
 
       await _tweekRepo.prepare('some_path/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       const expectedKeysNode = {
         innerPath1: {
@@ -651,7 +658,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let [config] = await observeKey('_');
@@ -671,7 +678,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_Positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_Value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let [key1] = await observeKey('My_path/string_value');
@@ -694,7 +701,7 @@ describe('tweek repo test', () => {
       await initRepository({ store });
       const keysPromise = observeKey('my_path/string_value', 2);
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       const keys = await keysPromise;
       expect(keys).to.have.lengthOf(2);
@@ -727,7 +734,7 @@ describe('tweek repo test', () => {
 
       subscription.unsubscribe();
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       expect(items).to.have.lengthOf(1);
       expect(items).to.deep.equal(['old-value']);

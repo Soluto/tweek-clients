@@ -133,10 +133,14 @@ export default class TweekRepository {
     });
   }
 
-  public refresh(keysToRefresh = Object.keys(this._cache.list())) {
-    let isExpired = false;
-    let isRefreshing = false;
+  private waitRefreshCycle() {
+    if (this._refreshInProgress) {
+      return this._refreshPromise;
+    }
+    return Promise.resolve();
+  }
 
+  public refresh(keysToRefresh = Object.keys(this._cache.list())) {
     for (let key of keysToRefresh) {
       const node = this._cache.get(key);
       if (!node) {
@@ -144,15 +148,11 @@ export default class TweekRepository {
           throw `key ${key} not managed, use prepare to add it to cache`;
         } else {
           this.prepare(key);
-          isExpired = true;
           continue;
         }
       }
 
-      if (node.expiration === 'refreshing') {
-        isRefreshing = true;
-      } else {
-        isExpired = true;
+      if (node.expiration !== 'refreshing') {
         this._dirtyRefresh();
         if (node.expiration !== 'expired') {
           this._cache.set(key, {
@@ -162,11 +162,6 @@ export default class TweekRepository {
         }
       }
     }
-
-    if (this._refreshInProgress) {
-      return this._refreshPromise;
-    }
-    return Promise.resolve();
   }
 
   public observe(key: string, policy: GetPolicy = {}) {
