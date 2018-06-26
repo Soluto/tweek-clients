@@ -140,7 +140,11 @@ export default class TweekRepository {
     return Promise.resolve();
   }
 
-  public refresh(keysToRefresh = Object.keys(this._cache.list())) {
+  public refresh(keysToRefresh?: string[]) {
+    this.expire(keysToRefresh);
+  }
+
+  public expire(keysToRefresh = Object.keys(this._cache.list())) {
     for (let key of keysToRefresh) {
       const node = this._cache.get(key);
       if (!node) {
@@ -172,7 +176,7 @@ export default class TweekRepository {
       function handleNotReady() {
         switch (policy.notReady) {
           case 'wait':
-            return self.refresh([key]);
+            return self.expire([key]);
           default:
             return observer.error('value not available yet for key: ' + key);
         }
@@ -230,7 +234,7 @@ export default class TweekRepository {
     if (this._refreshInProgress || !this._isDirty) return;
     this._refreshInProgress = true;
 
-    const promise = Promise.resolve()
+    const promise = (this._retryCount === 0 ? delay(this._refreshDelay) : Promise.resolve())
       .then(() => this._refreshKeys())
       .then(
         () => {
@@ -245,19 +249,16 @@ export default class TweekRepository {
 
     this._refreshPromise = promise.catch(ex => {});
 
-    promise
-      .then(() => delay(this._refreshDelay))
-      .then(() => this._rollRefresh())
-      .catch(ex => {
-        this._refreshInProgress = false;
-        this._refreshErrorPolicy(
-          once(() => {
-            this._dirtyRefresh();
-          }),
-          ++this._retryCount,
-          ex,
-        );
-      });
+    promise.then(() => this._rollRefresh()).catch(ex => {
+      this._refreshInProgress = false;
+      this._refreshErrorPolicy(
+        once(() => {
+          this._dirtyRefresh();
+        }),
+        ++this._retryCount,
+        ex,
+      );
+    });
   }
 
   private _refreshKeys() {
