@@ -31,7 +31,7 @@ describe('tweek repo test', () => {
   let _tweekRepo: TweekRepository;
 
   async function refreshAndWait(keys?: string[]) {
-    _tweekRepo.refresh(keys);
+    _tweekRepo.expire(keys);
     await (<any>_tweekRepo).waitRefreshCycle();
   }
 
