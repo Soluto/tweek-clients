@@ -8,6 +8,7 @@ import chaiAsPromise = require('chai-as-promised');
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
 import { ITweekStore, RefreshErrorPolicy } from '../../src/types';
+import waitPort = require('wait-port');
 
 chai.use(sinonChai);
 chai.use(chaiAsPromise);
@@ -64,10 +65,9 @@ describe('tweek repo test', () => {
     if (context) {
       _tweekRepo.context = context;
     }
-    await new Promise(r => setTimeout(r, 5));
   }
 
-  beforeEach(() => {
+  beforeEach(done => {
     TweekServer.start(1234);
 
     http
@@ -93,6 +93,7 @@ describe('tweek repo test', () => {
     };
 
     _defaultClient = createTweekClient({ baseServiceUrl: 'http://localhost:1234/' });
+    waitPort({ host: 'localhost', port: 1234, output: 'silent' }).then(() => done());
   });
 
   afterEach(() => {
@@ -458,7 +459,6 @@ describe('tweek repo test', () => {
       };
       let store = new MemoryStore(persistedNodes);
       await initRepository({ store });
-
       await refreshAndWait(['some_path/inner_path_1/first_value']);
 
       // Act

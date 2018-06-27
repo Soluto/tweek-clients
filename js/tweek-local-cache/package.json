@@ -34,7 +34,8 @@
     "sinon-chai": "^2.13.0",
     "ts-node": "^3.3.0",
     "tweek-client": "^0.1.9",
-    "typescript": "^2.5.2"
+    "typescript": "^2.5.2",
+    "wait-port": "^0.2.2"
   },
   "scripts": {
     "dev": "tsc -w",

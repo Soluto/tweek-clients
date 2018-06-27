@@ -134,10 +134,8 @@ export default class TweekRepository {
   }
 
   private waitRefreshCycle() {
-    if (this._refreshInProgress) {
-      return this._refreshPromise;
-    }
-    return Promise.resolve();
+    if (!this._refreshInProgress) return Promise.resolve();
+    return this._refreshPromise;
   }
 
   public refresh(keysToRefresh?: string[]) {
