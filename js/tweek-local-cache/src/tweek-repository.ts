@@ -4,10 +4,20 @@ import { createChangeEmitter } from 'change-emitter';
 import Observable = require('zen-observable');
 import $$observable from 'symbol-observable';
 import Trie from './trie';
-import { partitionByIndex, snakeToCamelCase, distinct, delay } from './utils';
+import { partitionByIndex, snakeToCamelCase, distinct, delay, once } from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
-import { FlatKeys, GetPolicy, ITweekStore, TweekRepositoryConfig, RepositoryKey, CachedKey, Expiration } from './types';
+import {
+  RefreshErrorPolicy,
+  FlatKeys,
+  GetPolicy,
+  ITweekStore,
+  TweekRepositoryConfig,
+  RepositoryKey,
+  CachedKey,
+  Expiration,
+} from './types';
+import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -40,18 +50,24 @@ export default class TweekRepository {
   private _getPolicy: GetPolicy;
   private _refreshDelay: number;
   private _isDirty = false;
+  private _retryCount = 0;
 
   private _refreshInProgress = false;
-  private _refreshPromise: Promise<void>;
-  private _nextRefreshPromise: Promise<void>;
+  private _refreshErrorPolicy: RefreshErrorPolicy;
+  private _refreshPromise = Promise.resolve();
 
-  constructor({ client, getPolicy, refreshInterval, refreshDelay }: TweekRepositoryConfig) {
+  constructor({
+    client,
+    getPolicy,
+    refreshInterval,
+    refreshDelay,
+    refreshErrorPolicy = exponentIntervalFailurePolicy(8),
+  }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
     this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
     this._refreshDelay = refreshDelay || refreshInterval || 30;
-    this._refreshPromise = Promise.resolve();
-    this._nextRefreshPromise = Promise.resolve();
+    this._refreshErrorPolicy = refreshErrorPolicy;
 
     if (refreshInterval) {
       console.warn("TweekRepository constructor argument 'refreshInterval' is deprecated.  Use 'refreshDelay' instead");
@@ -117,10 +133,16 @@ export default class TweekRepository {
     });
   }
 
-  public refresh(keysToRefresh = Object.keys(this._cache.list())) {
-    let isExpired = false;
-    let isRefreshing = false;
+  private waitRefreshCycle() {
+    if (!this._refreshInProgress) return Promise.resolve();
+    return this._refreshPromise;
+  }
 
+  public refresh(keysToRefresh?: string[]) {
+    this.expire(keysToRefresh);
+  }
+
+  public expire(keysToRefresh = Object.keys(this._cache.list())) {
     for (let key of keysToRefresh) {
       const node = this._cache.get(key);
       if (!node) {
@@ -128,15 +150,11 @@ export default class TweekRepository {
           throw `key ${key} not managed, use prepare to add it to cache`;
         } else {
           this.prepare(key);
-          isExpired = true;
           continue;
         }
       }
 
-      if (node.expiration === 'refreshing') {
-        isRefreshing = true;
-      } else {
-        isExpired = true;
+      if (node.expiration !== 'refreshing') {
         this._dirtyRefresh();
         if (node.expiration !== 'expired') {
           this._cache.set(key, {
@@ -146,10 +164,6 @@ export default class TweekRepository {
         }
       }
     }
-
-    if (isExpired) return this._nextRefreshPromise;
-    if (isRefreshing) return this._refreshPromise;
-    return Promise.resolve();
   }
 
   public observe(key: string, policy: GetPolicy = {}) {
@@ -160,7 +174,7 @@ export default class TweekRepository {
       function handleNotReady() {
         switch (policy.notReady) {
           case 'wait':
-            return self.refresh([key]);
+            return self.expire([key]);
           default:
             return observer.error('value not available yet for key: ' + key);
         }
@@ -214,25 +228,35 @@ export default class TweekRepository {
     this._rollRefresh();
   }
 
-  private _rollRefresh() {
-    if (this._refreshInProgress || !this._isDirty) return this._refreshPromise;
-
+  private _rollRefresh(): void {
+    if (this._refreshInProgress || !this._isDirty) return;
     this._refreshInProgress = true;
 
-    this._refreshPromise = delay(this._refreshDelay).then(() => this._refreshKeys());
+    const promise = (this._retryCount === 0 ? delay(this._refreshDelay) : Promise.resolve())
+      .then(() => this._refreshKeys())
+      .then(
+        () => {
+          this._refreshInProgress = false;
+          this._retryCount = 0;
+        },
+        ex => {
+          this._refreshInProgress = false;
+          throw ex;
+        },
+      );
 
-    this._nextRefreshPromise = this._refreshPromise
-      .then(() => {
-        this._refreshInProgress = false;
-        return this._rollRefresh();
-      })
-      .catch(err => {
-        this._refreshInProgress = false;
-        this._dirtyRefresh();
-        throw err;
-      });
+    this._refreshPromise = promise.catch(ex => {});
 
-    return this._refreshPromise;
+    promise.then(() => this._rollRefresh()).catch(ex => {
+      this._refreshInProgress = false;
+      this._refreshErrorPolicy(
+        once(() => {
+          this._dirtyRefresh();
+        }),
+        ++this._retryCount,
+        ex,
+      );
+    });
   }
 
   private _refreshKeys() {

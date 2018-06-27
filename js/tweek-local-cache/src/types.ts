@@ -46,9 +46,14 @@ export type TweekRepositoryConfig = {
   getPolicy?: GetPolicy;
   refreshInterval?: number;
   refreshDelay?: number;
+  refreshErrorPolicy?: RefreshErrorPolicy;
 };
 
 export type GetPolicy = {
   notReady?: 'throw' | 'wait';
   notPrepared?: 'throw' | 'prepare';
 };
+
+export interface RefreshErrorPolicy {
+  (next: () => void, retryCount: number, ex?: Error);
+}

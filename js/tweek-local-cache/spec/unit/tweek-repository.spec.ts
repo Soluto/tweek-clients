@@ -7,7 +7,8 @@ import sinonChai = require('sinon-chai');
 import chaiAsPromise = require('chai-as-promised');
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
-import { ITweekStore } from '../../src/types';
+import { ITweekStore, RefreshErrorPolicy } from '../../src/types';
+import waitPort = require('wait-port');
 
 chai.use(sinonChai);
 chai.use(chaiAsPromise);
@@ -28,7 +29,33 @@ type InitRepoConfig = {
 describe('tweek repo test', () => {
   let _defaultClient: ITweekClient;
   let _createClientThatFails: () => ITweekClient;
-  let _tweekRepo;
+  let _tweekRepo: TweekRepository;
+
+  async function refreshAndWait(keys?: string[]) {
+    _tweekRepo.expire(keys);
+    await (<any>_tweekRepo).waitRefreshCycle();
+  }
+
+  function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      let subscription;
+      const items: any[] = [];
+      _tweekRepo.observe(key, getPolicy).subscribe({
+        start: s => (subscription = s),
+        next: value => {
+          items.push(value);
+          if (items.length === count) {
+            subscription.unsubscribe();
+            resolve(items);
+          }
+        },
+        error: err => {
+          subscription.unsubscribe();
+          reject(err);
+        },
+      });
+    });
+  }
 
   async function initRepository({ store, client = _defaultClient, context }: InitRepoConfig = {}) {
     _tweekRepo = new TweekRepository({ client, refreshDelay: 2 });
@@ -40,7 +67,7 @@ describe('tweek repo test', () => {
     }
   }
 
-  beforeEach(() => {
+  beforeEach(done => {
     TweekServer.start(1234);
 
     http
@@ -66,6 +93,7 @@ describe('tweek repo test', () => {
     };
 
     _defaultClient = createTweekClient({ baseServiceUrl: 'http://localhost:1234/' });
+    waitPort({ host: 'localhost', port: 1234, output: 'silent' }).then(() => done());
   });
 
   afterEach(() => {
@@ -82,7 +110,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let key1 = await _tweekRepo.get('my_path/string_value');
@@ -102,7 +130,7 @@ describe('tweek repo test', () => {
       await initRepository();
 
       await _tweekRepo.prepare('some_path/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       const expectedKeysNode = {
         innerPath1: {
@@ -122,7 +150,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('some_path/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let config = await _tweekRepo.get('some_path/_');
@@ -136,7 +164,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('deeply_nested/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let config = await _tweekRepo.get('deeply_nested/a/b/_');
@@ -149,7 +177,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let config = await _tweekRepo.get('_');
@@ -163,7 +191,7 @@ describe('tweek repo test', () => {
       await initRepository();
       _tweekRepo.prepare('some_path/_');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let key = await _tweekRepo.get('some_path/inner_path_1/first_value');
@@ -181,7 +209,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_Positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_Value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let key1 = await _tweekRepo.get('My_path/string_value');
@@ -261,7 +289,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('some_path/inner_path_1/_');
 
       // Act
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Assert
       const persistedResult = await store.load();
@@ -317,7 +345,8 @@ describe('tweek repo test', () => {
       let old = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(old.value).to.eql('old_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
+      await new Promise(setImmediate);
 
       let _new = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(_new.value).to.eql('value_1');
@@ -335,7 +364,7 @@ describe('tweek repo test', () => {
       const result1 = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(result1.value).to.eql('default_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
       const result2 = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(result2.value).to.eql('value_1');
     });
@@ -354,7 +383,7 @@ describe('tweek repo test', () => {
       await initRepository({ client: clientMock });
 
       // Act
-      const refreshPromise = _tweekRepo.refresh();
+      const refreshPromise = refreshAndWait();
       await refreshPromise;
 
       // Assert
@@ -385,7 +414,7 @@ describe('tweek repo test', () => {
       };
 
       // Act
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Assert
       expect(fetchStub).to.have.been.calledOnce;
@@ -402,10 +431,10 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('some_path/key');
 
       // Act
-      const refreshPromise = _tweekRepo.refresh();
+      const refreshPromise = refreshAndWait();
 
       //Assert
-      await expect(refreshPromise).to.be.rejected;
+      await expect(refreshPromise).to.be.eventually.eql(undefined);
     });
 
     it('should remove key if missing after refresh', async () => {
@@ -414,7 +443,7 @@ describe('tweek repo test', () => {
       await initRepository({ store });
 
       //Act
-      await _tweekRepo.refresh();
+      await refreshAndWait();
       const key = await _tweekRepo.get('some_key/should_be_removed');
 
       //Assert
@@ -430,8 +459,7 @@ describe('tweek repo test', () => {
       };
       let store = new MemoryStore(persistedNodes);
       await initRepository({ store });
-
-      await _tweekRepo.refresh(['some_path/inner_path_1/first_value']);
+      await refreshAndWait(['some_path/inner_path_1/first_value']);
 
       // Act
       let key1 = await _tweekRepo.get('my_path/string_value');
@@ -452,12 +480,10 @@ describe('tweek repo test', () => {
       };
       let store = new MemoryStore(persistedNodes);
 
-      const initialDelay = delay(5);
-      const fetchPromise = initialDelay.then(() => delay(15)).then(() => ({}));
+      const fetchPromise = () => delay(15).then(() => ({}));
 
       const fetchStub = sinon.stub();
-      fetchStub.onCall(0).resolves(fetchPromise);
-      fetchStub.resolves({});
+      fetchStub.resolves(fetchPromise());
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
@@ -467,19 +493,12 @@ describe('tweek repo test', () => {
 
       await initRepository({ client: clientMock, store });
 
-      const promises = [_tweekRepo.refresh(['key1', 'key2'])];
-
-      await initialDelay;
-
-      const refreshPromise = _tweekRepo.refresh(['key1']);
-      promises.push(refreshPromise);
-      promises.push(_tweekRepo.refresh(['key2', 'key3']));
-
-      await refreshPromise;
+      await refreshAndWait(['key1', 'key2']);
 
       expect(fetchStub).to.have.been.calledOnce;
 
-      await Promise.all(promises);
+      _tweekRepo.refresh(['key1']);
+      await refreshAndWait(['key2', 'key3']);
 
       expect(fetchStub).to.have.been.calledTwice;
     });
@@ -503,9 +522,12 @@ describe('tweek repo test', () => {
       };
 
       await initRepository({ client: clientMock, store });
+      let recover;
+      (<any>_tweekRepo)._refreshErrorPolicy = (resume, retryCount, err) => {
+        recover = resume;
+      };
 
-      const refreshPromise = _tweekRepo.refresh();
-      await expect(refreshPromise).to.be.rejected;
+      await refreshAndWait();
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {
@@ -514,7 +536,8 @@ describe('tweek repo test', () => {
         }),
       );
 
-      await _tweekRepo.refresh();
+      recover();
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       await Promise.all(
         Object.keys(persistedNodes).map(async key => {
@@ -524,42 +547,68 @@ describe('tweek repo test', () => {
       );
     });
 
+    it('should pass the right arguments to error policy and behave correctly', async () => {
+      const store = new MemoryStore({});
+
+      const fetchStub = sinon.stub();
+      fetchStub.onCall(0).rejects('someError');
+      fetchStub.onCall(1).rejects();
+      fetchStub.onCall(2).resolves({ test1: 1 });
+      fetchStub.onCall(3).rejects();
+      fetchStub.onCall(4).resolves({ test1: 2 });
+
+      const clientMock: ITweekClient = {
+        fetch: <any>fetchStub,
+        appendContext: sinon.stub(),
+        deleteContext: sinon.stub(),
+      };
+
+      await initRepository({ client: clientMock, store });
+      _tweekRepo.addKeys({ test1: 0 });
+      const readValue = async () => (await _tweekRepo.get('test1')).value;
+
+      let recover;
+      let retryCounts: number[] = [];
+      let errors: Error[] = [];
+      let policy: RefreshErrorPolicy = (resume, retryCount, err) => {
+        recover = resume;
+        retryCounts.push(retryCount);
+        err && errors.push(err);
+      };
+
+      (<any>_tweekRepo)._refreshErrorPolicy = policy;
+
+      await refreshAndWait();
+      expect(await readValue()).to.eql(0);
+      recover();
+      await new Promise(setImmediate);
+      recover();
+      await new Promise(setImmediate);
+      await refreshAndWait();
+      expect(await readValue()).to.eql(1);
+      recover();
+      await new Promise(setImmediate);
+      expect(await readValue()).to.eql(2);
+
+      expect(retryCounts).to.eql([1, 2, 1]);
+      expect(errors[0].name).to.eql('someError');
+    });
+
     it('should not refresh if not dirty', async () => {
       await initRepository();
 
-      const spy = sinon.spy(_tweekRepo._cache, 'list');
+      const spy = sinon.spy((<any>_tweekRepo)._cache, 'list');
 
       try {
         await delay(10);
         expect(spy.notCalled).to.be.true;
       } finally {
-        _tweekRepo._cache.list.restore();
+        (<any>_tweekRepo)._cache.list.restore();
       }
     });
   });
 
   describe('observe', () => {
-    function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
-      return new Promise((resolve, reject) => {
-        let subscription;
-        const items: any[] = [];
-        _tweekRepo.observe(key, getPolicy).subscribe({
-          start: s => (subscription = s),
-          next: value => {
-            items.push(value);
-            if (items.length === count) {
-              subscription.unsubscribe();
-              resolve(items);
-            }
-          },
-          error: err => {
-            subscription.unsubscribe();
-            reject(err);
-          },
-        });
-      });
-    }
-
     it('should observe single key', async () => {
       // Arrange
       await initRepository();
@@ -569,7 +618,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let [key1] = await observeKey('my_path/string_value');
@@ -589,7 +638,7 @@ describe('tweek repo test', () => {
       await initRepository();
 
       await _tweekRepo.prepare('some_path/_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       const expectedKeysNode = {
         innerPath1: {
@@ -609,7 +658,7 @@ describe('tweek repo test', () => {
       // Arrange
       await initRepository();
       await _tweekRepo.prepare('_');
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let [config] = await observeKey('_');
@@ -629,7 +678,7 @@ describe('tweek repo test', () => {
       await _tweekRepo.prepare('my_path/inner_path_1/bool_Positive_value');
       await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_Value');
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       // Act
       let [key1] = await observeKey('My_path/string_value');
@@ -652,7 +701,7 @@ describe('tweek repo test', () => {
       await initRepository({ store });
       const keysPromise = observeKey('my_path/string_value', 2);
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       const keys = await keysPromise;
       expect(keys).to.have.lengthOf(2);
@@ -685,7 +734,7 @@ describe('tweek repo test', () => {
 
       subscription.unsubscribe();
 
-      await _tweekRepo.refresh();
+      await refreshAndWait();
 
       expect(items).to.have.lengthOf(1);
       expect(items).to.deep.equal(['old-value']);

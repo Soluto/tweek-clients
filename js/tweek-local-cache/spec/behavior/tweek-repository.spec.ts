@@ -103,7 +103,8 @@ describe('tweek repo behavior test', () => {
       test.pathsToPrepare.forEach(x => _tweekRepo.prepare(x));
 
       // Act
-      await _tweekRepo.refresh();
+      _tweekRepo.refresh();
+      await (<any>_tweekRepo).waitRefreshCycle();
 
       // Assert
       const getKeysValuesPromises: Promise<any>[] = test.expectedKeys.map(x => _tweekRepo.get(x.keyName));
