@@ -236,16 +236,10 @@ export default class TweekRepository {
 
     const promise = (this._retryCount === 0 ? delay(this._refreshDelay) : Promise.resolve())
       .then(() => this._refreshKeys())
-      .then(
-        () => {
-          this._refreshInProgress = false;
-          this._retryCount = 0;
-        },
-        ex => {
-          this._refreshInProgress = false;
-          throw ex;
-        },
-      );
+      .then(() => {
+        this._refreshInProgress = false;
+        this._retryCount = 0;
+      });
 
     promise.catch(ex => {
       this._refreshErrorPolicy(
