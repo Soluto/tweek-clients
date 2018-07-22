@@ -594,6 +594,47 @@ describe('tweek repo test', () => {
       expect(errors[0].name).to.eql('someError');
     });
 
+    it('there should be only one running instance of refresh policy', async () => {
+      const store = new MemoryStore({});
+
+      const fetchStub = sinon.stub();
+      fetchStub.onCall(0).rejects('someError');
+      fetchStub.onCall(1).resolves({ test1: 1 });
+
+      const clientMock: ITweekClient = {
+        fetch: <any>fetchStub,
+        appendContext: sinon.stub(),
+        deleteContext: sinon.stub(),
+      };
+
+      await initRepository({ client: clientMock, store });
+      _tweekRepo.addKeys({ test1: 0 });
+
+      let calls = 0;
+      let recover;
+      let policy: RefreshErrorPolicy = (resume, retryCount, err) => {
+        recover = resume;
+        calls++;
+      };
+
+      (<any>_tweekRepo)._refreshErrorPolicy = policy;
+      const readValue = async () => (await _tweekRepo.get('test1')).value;
+
+      expect(await readValue()).to.eql(0);
+      await refreshAndWait();
+      expect(await readValue()).to.eql(0);
+      await refreshAndWait();
+      await refreshAndWait();
+      await refreshAndWait();
+      await refreshAndWait();
+      await refreshAndWait();
+      await refreshAndWait();
+      expect(calls).to.eql(1);
+      recover();
+      await new Promise(setImmediate);
+      expect(await readValue()).to.eql(1);
+    });
+
     it('should not refresh if not dirty', async () => {
       await initRepository();
 

@@ -166,7 +166,9 @@ export default class TweekRepository {
 
   private checkRefresh() {
     this._refreshPromise = this._refreshInProgress
-      ? this._refreshPromise.then(x => this._rollRefresh())
+      ? this._refreshPromise.then(() => {
+          if (!this._refreshInProgress) return this._rollRefresh();
+        })
       : this._rollRefresh();
   }
 
