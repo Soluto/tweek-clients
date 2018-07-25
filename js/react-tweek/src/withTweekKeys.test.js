@@ -10,15 +10,23 @@ describe('withTweekKeys', () => {
   let subscribeMock;
   let unsubscribeMock;
 
-  const mockRepository = (result, isError) => {
+  const mockRepository = ({ result, secondResult, error }) => {
     unsubscribeMock = jest.fn();
     subscribeMock = jest.fn(observer => {
       const subscription = { unsubscribe: unsubscribeMock };
 
       observer.start(subscription);
 
-      if (isError) observer.error(result);
-      else observer.next(result);
+      if (error) {
+        observer.error(error);
+        return subscription;
+      }
+
+      observer.next(result);
+
+      if (!unsubscribeMock.mock.calls.length && secondResult) {
+        observer.next(secondResult);
+      }
 
       return subscription;
     });
@@ -28,19 +36,18 @@ describe('withTweekKeys', () => {
   const renderComponent = (path, config) => {
     const withTweekKeysHoc = withTweekKeys(path, config);
     const Component = withTweekKeysHoc('div');
-    const result = renderer.create(
+    return renderer.create(
       <Provider repo={{ observe: observeMock }}>
-        <Component />
+        <Component/>
       </Provider>,
     );
-    return result;
   };
 
   describe('get single key', () => {
     const path = 'path/someKey';
 
     beforeEach(() => {
-      mockRepository({ value });
+      mockRepository({ result: { value } });
     });
 
     test('default behavior', () => {
@@ -111,11 +118,47 @@ describe('withTweekKeys', () => {
     });
   });
 
+  describe('get key changes', () => {
+    const path = 'path/someKey';
+
+    test('with {once: true}', () => {
+      mockRepository({ result: { value }, secondResult: { value: 'newValue' } });
+
+      const component = renderComponent(path, { once: true });
+
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
+
+      let tree = component.toJSON();
+      expect(tree.props.someKey).toBeDefined();
+      expect(tree.props.someKey).toBe(value);
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
+    });
+
+    test('with {once: false}', () => {
+      mockRepository({ result: { value }, secondResult: { value: 'newValue' } });
+
+      const component = renderComponent(path, { once: false });
+
+      expect(observeMock).toBeCalledWith(path, undefined);
+      expect(subscribeMock).toBeCalled();
+
+      let tree = component.toJSON();
+      expect(tree.props.someKey).toBeDefined();
+      expect(tree.props.someKey).toBe('newValue');
+
+      component.unmount();
+      expect(unsubscribeMock).toBeCalled();
+    });
+  });
+
   describe('scan category', () => {
     const path = 'path/_';
 
     beforeEach(() => {
-      mockRepository({ someKey: value });
+      mockRepository({result: { someKey: value }});
     });
 
     test('default behavior', () => {
@@ -190,7 +233,7 @@ describe('withTweekKeys', () => {
     let error = null;
     let expectedError = 'test error';
     const path = 'path/someKey';
-    mockRepository(expectedError, true);
+    mockRepository({error: expectedError});
 
     renderComponent(path, { onError: e => (error = e) });
 
@@ -201,7 +244,7 @@ describe('withTweekKeys', () => {
   test('with getPolicy', () => {
     const path = 'path/someKey';
     const getPolicy = 'somePolicy';
-    mockRepository({ value });
+    mockRepository({result: { value }});
 
     renderComponent(path, { getPolicy });
 
