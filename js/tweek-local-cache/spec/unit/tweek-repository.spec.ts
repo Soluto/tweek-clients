@@ -100,6 +100,60 @@ describe('tweek repo test', () => {
     TweekServer.stop(1234);
   });
 
+  describe('context', () => {
+    describe('context setter', () => {
+      it('should replace context sucessfully', async () => {
+        // Arrange
+        const initialContext: Context = {
+          testEntity: { someProperty: 'old context' },
+        };
+
+        await initRepository({
+          context: initialContext,
+        });
+
+        const expectedContext: Context = {
+          testEntity: { someNewProperty: 'new context' },
+        };
+
+        // Act
+        _tweekRepo.context = expectedContext;
+
+        // Assert
+        expect(_tweekRepo.context).to.deep.equal(expectedContext, 'should replace context');
+      });
+    });
+
+    describe('appendContext', () => {
+      it('should append context sucessfully', async () => {
+        // Arrange
+        const initialContext: Context = {
+          testEntity: { someProperty: 'some value' },
+        };
+
+        await initRepository({
+          context: initialContext,
+        });
+
+        const contextToAppend: Context = {
+          testEntity: { someNewProperty: 'some new value' },
+          testEntity2: { someProperty: 'value' },
+        };
+
+        const expectedContext: Context = {
+          ...initialContext,
+          ...contextToAppend,
+        };
+
+        // Act
+        _tweekRepo.appendContext(contextToAppend);
+
+        // Assert
+        expect(_tweekRepo.context).to.deep.equal(expectedContext, 'should append context');
+      });
+    });
+  });
+
   describe('retrieve', () => {
     it('should get single key', async () => {
       // Arrange
