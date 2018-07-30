@@ -124,6 +124,26 @@ describe('tweek repo test', () => {
       });
     });
 
+    describe('context getter', () => {
+      it('should return cloned context', async () => {
+        // Arrange
+        const initialContext: Context = {
+          testEntity: { someProperty: 'some value' },
+        };
+
+        await initRepository({ context: initialContext });
+        const context = _tweekRepo.context;
+
+        // Act
+        context.testEntity.someProperty = 'some manipulated value';
+
+        const actualContext = _tweekRepo.context;
+
+        // Assert
+        expect(actualContext).to.deep.equal(initialContext, 'should not be able change the context');
+      });
+    });
+
     describe('appendContext', () => {
       it('should append context sucessfully', async () => {
         // Arrange

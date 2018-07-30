@@ -74,7 +74,7 @@ export default class TweekRepository {
   }
 
   get context(): Context {
-    return this._context;
+    return { ...this._context };
   }
 
   public appendContext(context: Context) {
