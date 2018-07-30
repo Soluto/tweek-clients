@@ -78,7 +78,7 @@ export default class TweekRepository {
   }
 
   public appendContext(context: Context) {
-    this._context = { ...this.context, ...context };
+    this._context = { ...this._context, ...context };
   }
 
   public addKeys(keys: FlatKeys) {
