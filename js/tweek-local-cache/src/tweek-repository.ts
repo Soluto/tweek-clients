@@ -72,6 +72,10 @@ export default class TweekRepository {
   set context(value: Context) {
     this._context = value;
   }
+  
+  get context(): Context {
+    return this._context; 
+  }
 
   public addKeys(keys: FlatKeys) {
     Object.entries(keys).forEach(([key, value]) =>
