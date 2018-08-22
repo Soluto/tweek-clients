@@ -13,7 +13,7 @@ export function requestTimeout(timeoutInMillis): Promise<Response> {
 }
 
 export function snakeToCamelCase(target) {
-  if (target === null || typeof target !== 'object') return target;
+  if (target === null || typeof target !== 'object' || Array.isArray(target)) return target;
   return Object.keys(target).reduce((o, key) => {
     let [firstKey, ...others] = key.split('_');
     let newKey = [firstKey, ...others.map(captialize)].join('');
