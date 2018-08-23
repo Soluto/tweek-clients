@@ -14,8 +14,10 @@
   "scripts": {
     "build": "lerna run build",
     "test": "lerna run test --stream",
-    "test:full-env": "docker-compose up -d tweek-blackbox && lerna run test --stream",
-    "test:docker": "docker-compose -p blackbox up --build js_tests"
+    "test:full-env": "docker-compose -p blackbox up -d tweek-blackbox && lerna run test --stream",
+    "test:docker": "docker-compose -p blackbox up --build --exit-code-from js_tests js_tests",
+    "teardown": "docker-compose -p blackbox down --remove-orphans",
+    "logs": "docker-compose -p blackbox logs"
   },
   "workspaces": [
     "js/*"

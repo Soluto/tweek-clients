@@ -1,14 +1,42 @@
 import { expect } from 'chai';
 import getenv = require('getenv');
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
+import axios from 'axios';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
+import { delay } from '../../src/utils';
 
 const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://127.0.0.1:1111');
 
-describe('tweek repo behavior test', () => {
+describe('tweek repo behavior test', function() {
+  this.timeout(180000);
+
   let _tweekRepo: TweekRepository;
   let _tweekClient: ITweekClient;
+
+  before(async () => {
+    const instance = axios.create({ baseURL: TWEEK_LOCAL_API, timeout: 2000 });
+
+    let error;
+    for (let i = 0; i < 20; i++) {
+      try {
+        await instance.get('/health');
+        const result = await instance.get('/api/v1/keys/@tweek_clients_tests/_');
+        expect(result.data).to.deep.include({
+          test_category: { test_key1: 'def value', test_key2: false },
+          test_category2: { user_fruit: 'apple' },
+        });
+        console.log('tweek api ready');
+        return;
+      } catch (err) {
+        error = err;
+        console.log('tweek api not ready yet:', err.message);
+        await delay(1000);
+      }
+    }
+
+    throw error;
+  });
 
   async function initTweekRepository(context: Context = {}) {
     _tweekClient = createTweekClient({ baseServiceUrl: TWEEK_LOCAL_API });
