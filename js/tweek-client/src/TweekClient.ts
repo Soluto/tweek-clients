@@ -23,7 +23,7 @@ export default class TweekClient implements ITweekClient {
     }
   }
 
-  private fetchChunk<T>(path: string, _config: TweekInitConfig): Promise<T> {
+  private fetchChunk<T>(path: string, _config: TweekInitConfig & FetchConfig): Promise<T> {
     const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes, onError } = _config;
 
     const queryParamsObject = this._contextToQueryParams(context);
