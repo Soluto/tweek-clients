@@ -23,20 +23,8 @@ export default class TweekClient implements ITweekClient {
     }
   }
 
-  private fetchChunk<T>(path: string, _config?: FetchConfig): Promise<T> {
-    const {
-      casing,
-      flatten,
-      baseServiceUrl,
-      convertTyping,
-      context,
-      include,
-      ignoreKeyTypes,
-      onError,
-    } = <TweekInitConfig & FetchConfig>{
-      ...this.config,
-      ..._config,
-    };
+  private fetchChunk<T>(path: string, _config: TweekInitConfig): Promise<T> {
+    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes, onError } = _config;
 
     const queryParamsObject = this._contextToQueryParams(context);
 
@@ -81,14 +69,18 @@ export default class TweekClient implements ITweekClient {
   }
 
   fetch<T>(path: string, _config: FetchConfig = {}): Promise<T> {
+    const cfg = <TweekInitConfig & FetchConfig>{
+      ...this.config,
+      ..._config,
+    };
     if (!_config.include) {
-      return this.fetchChunk(path, _config);
+      return this.fetchChunk(path, cfg);
     }
 
-    const { include, maxChunkSize = 100 } = _config;
+    const { include, maxChunkSize = 100 } = cfg;
 
     const includeChunks = chunk(include, maxChunkSize);
-    const fetchConfigChunks = includeChunks.map(ic => ({ ..._config, include: ic }));
+    const fetchConfigChunks = includeChunks.map(ic => ({ ...cfg, include: ic }));
     const fetchPromises = fetchConfigChunks.map(cc => this.fetchChunk(path, cc));
     const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
     return <Promise<T>>result;
