@@ -81,4 +81,20 @@ describe('create tweek client', () => {
 
     expect(fetchMock.lastOptions(matcherName)).to.deep.include({ headers: { 'X-Api-Client': 'test' } });
   });
+
+  it('should return arrays correctly', async () => {
+    const expectedResult = [1, 2, 3];
+    fetchMock.restore();
+    fetchMock.getOnce('*', expectedResult, {
+      name: matcherName,
+    });
+
+    const tweekClient = createTweekClient({
+      baseServiceUrl,
+      fetch: fetch,
+    });
+
+    const response = await tweekClient.fetch(url);
+    expect(response).to.deep.equal(expectedResult);
+  });
 });
