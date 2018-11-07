@@ -6,7 +6,7 @@ nuget install Tweek.Client
 
 ### Create a client:
 ```csharp
-ITweekApiClient configurationClient = new TweekApiClient("https://mydomain");
+ITweekApiClient configurationClient = new TweekApiClient(new Uri("https://mydomain"));
 ```
 
 ### Query your configuration key and get JToken
