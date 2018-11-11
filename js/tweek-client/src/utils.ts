@@ -15,8 +15,6 @@ export const createFetchWithTimeout = (timeoutInMillis, fetch) => (input, init):
         res(new Response(null, { status: 408 })),
         timeoutInMillis
       );
-
-      return timeout;
     })
   ])
     .then((response) => {
@@ -25,6 +23,13 @@ export const createFetchWithTimeout = (timeoutInMillis, fetch) => (input, init):
       }
 
       return response;
+    })
+    .catch((error) => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      throw error;
     });
 }
 
