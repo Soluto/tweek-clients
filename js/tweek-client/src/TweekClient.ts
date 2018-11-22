@@ -3,6 +3,13 @@ import { convertTypingFromJSON, snakeToCamelCase } from './utils';
 import { FetchConfig, ITweekClient, TweekInitConfig } from './types';
 import chunk = require('lodash.chunk');
 
+function trimUrl(url) {
+  if (url.endsWith('/')) {
+    url = url.substr(0, url.length - 1);
+  }
+  return url;
+}
+
 export default class TweekClient implements ITweekClient {
   config: TweekInitConfig;
 
@@ -15,12 +22,10 @@ export default class TweekClient implements ITweekClient {
       ...config,
     };
 
-    let { baseServiceUrl } = config;
+    let { baseServiceUrl, fallbackUrls } = config;
 
-    if (baseServiceUrl.endsWith('/')) {
-      baseServiceUrl = baseServiceUrl.substr(0, baseServiceUrl.length - 1);
-      this.config.baseServiceUrl = baseServiceUrl;
-    }
+    this.config.baseServiceUrl = trimUrl(baseServiceUrl);
+    this.config.fallbackUrls = fallbackUrls && fallbackUrls.map(trimUrl);
   }
 
   private fetchChunk<T>(path: string, _config: TweekInitConfig & FetchConfig): Promise<T> {
@@ -40,14 +45,15 @@ export default class TweekClient implements ITweekClient {
     const queryString = qs.stringify(queryParamsObject);
     const encodedQueryString = this.queryParamsEncoder(queryString);
 
-    const url =
-      baseServiceUrl +
-      '/api/v1/keys' +
-      (path.startsWith('/') ? '' : '/') +
-      path +
-      (!!encodedQueryString ? `?${encodedQueryString}` : '');
-
-    let result: Promise<any> = this.config.fetch(url).then(response => {
+    let result: Promise<any> = this._executeWithFallback(baseUrl => {
+      const url =
+        baseUrl +
+        '/api/v1/keys' +
+        (path.startsWith('/') ? '' : '/') +
+        path +
+        (!!encodedQueryString ? `?${encodedQueryString}` : '');
+      return this.config.fetch(url);
+    }).then(response => {
       if (response.ok) {
         return response.json();
       } else {
@@ -87,26 +93,33 @@ export default class TweekClient implements ITweekClient {
   }
 
   appendContext(identityType: string, identityId: string, context: object): Promise<void> {
-    const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
-    const result = this.config
-      .fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(context),
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Error appending context, code ${response.status}, message: '${response.statusText}'`);
-        }
-      });
+    const requestInit: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(context),
+    };
+
+    const result = this._executeWithFallback(baseUrl => {
+      const url = `${baseUrl}/api/v1/context/${identityType}/${identityId}`;
+      return this.config.fetch(url, requestInit);
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(`Error appending context, code ${response.status}, message: '${response.statusText}'`);
+      }
+    });
+
     return <Promise<void>>result;
   }
 
   deleteContext(identityType: string, identityId: string, property: string): Promise<void> {
-    const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}/${property}`;
-    const result = this.config.fetch(url, { method: 'DELETE' }).then(response => {
+    const requestInit: RequestInit = { method: 'DELETE' };
+
+    const result = this._executeWithFallback(baseUrl => {
+      const url = `${baseUrl}/api/v1/context/${identityType}/${identityId}/${property}`;
+      return this.config.fetch(url, requestInit);
+    }).then(response => {
       if (!response.ok) {
         throw new Error(`Error deleting context property, code ${response.status}, message: '${response.statusText}'`);
       }
@@ -126,4 +139,11 @@ export default class TweekClient implements ITweekClient {
       return pre;
     }, {});
   };
+
+  private _executeWithFallback(execute: (string) => Promise<Response>) {
+    const { baseServiceUrl, fallbackUrls = [] } = this.config;
+    return fallbackUrls.reduce((acc, url) => {
+      return acc.then(response => (response.ok ? response : execute(url)));
+    }, execute(baseServiceUrl));
+  }
 }
