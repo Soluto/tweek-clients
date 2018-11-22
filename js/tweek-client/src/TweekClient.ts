@@ -143,7 +143,13 @@ export default class TweekClient implements ITweekClient {
   private _executeWithFallback(execute: (string) => Promise<Response>) {
     const { baseServiceUrl, fallbackUrls = [] } = this.config;
     return fallbackUrls.reduce((acc, url) => {
-      return acc.then(response => (response.ok ? response : execute(url)));
+      return acc.then(response => {
+        if (response.ok || [400, 401, 403].some(n => n === response.status)) {
+          return response;
+        }
+
+        return execute(url);
+      });
     }, execute(baseServiceUrl));
   }
 }
