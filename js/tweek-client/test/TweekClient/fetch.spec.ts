@@ -10,7 +10,7 @@ describe('tweek-client fetch', () => {
     const onErrorStub = sinon.stub();
 
     const tweekClient = new TweekClient({
-      baseServiceUrl: url || defaultUrl,
+      urls: [url || defaultUrl],
       casing: 'snake',
       convertTyping: false,
       fetch: fetchStub,

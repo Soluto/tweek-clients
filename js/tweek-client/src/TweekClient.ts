@@ -22,14 +22,13 @@ export default class TweekClient implements ITweekClient {
       ...config,
     };
 
-    let { baseServiceUrl, fallbackUrls } = config;
+    let { urls } = config;
 
-    this.config.baseServiceUrl = trimUrl(baseServiceUrl);
-    this.config.fallbackUrls = fallbackUrls && fallbackUrls.map(trimUrl);
+    this.config.urls = urls.map(trimUrl);
   }
 
   private fetchChunk<T>(path: string, _config: TweekInitConfig & FetchConfig): Promise<T> {
-    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes, onError } = _config;
+    const { casing, flatten, convertTyping, context, include, ignoreKeyTypes, onError } = _config;
 
     const queryParamsObject = this._contextToQueryParams(context);
 
@@ -140,9 +139,9 @@ export default class TweekClient implements ITweekClient {
     }, {});
   };
 
-  private _executeWithFallback(execute: (string) => Promise<Response>) {
-    const { baseServiceUrl, fallbackUrls = [] } = this.config;
-    return fallbackUrls.reduce((acc, url) => {
+  private _executeWithFallback(execute: (string) => Promise<Response>): Promise<Response> {
+    const { urls } = this.config;
+    return urls.reduce((acc, url) => {
       return acc.then(response => {
         if (response.ok || [400, 401, 403].some(n => n === response.status)) {
           return response;
@@ -150,6 +149,6 @@ export default class TweekClient implements ITweekClient {
 
         return execute(url);
       });
-    }, execute(baseServiceUrl));
+    }, Promise.resolve({} as Response));
   }
 }

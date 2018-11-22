@@ -22,7 +22,7 @@ describe('tweek-client fetchChunks', () => {
     const fetchStub = sinon.stub();
 
     const tweekClient = new TweekClient({
-      baseServiceUrl: url || defaultUrl,
+      urls: [url || defaultUrl],
       casing: 'snake',
       convertTyping: false,
       fetch: fetchStub,

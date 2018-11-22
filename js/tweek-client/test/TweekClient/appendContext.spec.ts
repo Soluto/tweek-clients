@@ -8,7 +8,7 @@ describe('tweek-client appendContext', () => {
     const fetchStub = sinon.stub();
 
     const tweekClient = new TweekClient({
-      baseServiceUrl: url || defaultUrl,
+      urls: [url || defaultUrl],
       casing: 'snake',
       convertTyping: false,
       fetch: fetchStub,
@@ -72,13 +72,14 @@ describe('tweek-client appendContext', () => {
       let testPromise = tweekClient.appendContext(test.identityType, test.identityId, test.context);
 
       // Assert
-      expect(fetchStub).to.have.been.calledOnce;
-      expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
       if (!test.expectedSuccess) {
         await expect(testPromise).to.be.rejectedWith(error);
       } else {
         await expect(testPromise).to.be.fulfilled;
       }
+
+      expect(fetchStub).to.have.been.calledOnce;
+      expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
     });
   });
 });

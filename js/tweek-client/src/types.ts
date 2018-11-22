@@ -20,8 +20,7 @@ export type FetchConfig = {
 };
 
 export type TweekInitConfig = FetchConfig & {
-  baseServiceUrl: string;
-  fallbackUrls?: string[];
+  urls: string[];
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 };
 
