@@ -602,10 +602,6 @@ lodash._isiterateecall@^3.0.0:
   version "3.0.9"
   resolved "https://registry.yarnpkg.com/lodash._isiterateecall/-/lodash._isiterateecall-3.0.9.tgz#5203ad7ba425fae842460e696db9cf3e6aac057c"
 
-lodash.chunk@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/lodash.chunk/-/lodash.chunk-4.2.0.tgz#66e5ce1f76ed27b4303d8c6512e8d1216e8106bc"
-
 lodash.create@3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/lodash.create/-/lodash.create-3.1.1.tgz#d7f2849f0dbda7e04682bb8cd72ab022461debe7"
@@ -958,17 +954,6 @@ tsconfig@^6.0.0:
   dependencies:
     strip-bom "^3.0.0"
     strip-json-comments "^2.0.0"
-
-tweek-client@^0.1.9:
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/tweek-client/-/tweek-client-0.1.11.tgz#8677a330c023642e0cc4e931c932f0d02a4918ee"
-  dependencies:
-    change-emitter "^0.1.6"
-    cross-fetch "^1.1.1"
-    lodash.chunk "^4.2.0"
-    query-string "^5.0.0"
-    symbol-observable "^1.0.4"
-    zen-observable "^0.6.0"
 
 type-detect@^4.0.0:
   version "4.0.3"

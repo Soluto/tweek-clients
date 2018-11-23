@@ -11,7 +11,7 @@
     "prop-types": ">=15.0.0",
     "react": ">=15.0.0",
     "tweek-client": "^0.1.10",
-    "tweek-local-cache": "0.2.4"
+    "tweek-local-cache": "^0.3.0"
   },
   "dependencies": {
     "humps": "^2.0.1"
@@ -26,8 +26,8 @@
     "react": ">=15.0.0",
     "react-dom": ">=15.0.0",
     "react-test-renderer": ">=15.0.0",
-    "tweek-client": "^0.1.x",
-    "tweek-local-cache": "^0.2.x"
+    "tweek-client": "^0.1.10",
+    "tweek-local-cache": "^0.3.0"
   },
   "scripts": {
     "test": "jest",
