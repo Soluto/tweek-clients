@@ -3,14 +3,12 @@ import chai = require('chai');
 import { FetchConfig, createTweekClient, ITweekClient, Context } from 'tweek-client';
 import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
 import sinon = require('sinon');
-import sinonChai = require('sinon-chai');
 import chaiAsPromise = require('chai-as-promised');
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
 import { ITweekStore, RefreshErrorPolicy } from '../../src/types';
 import waitPort = require('wait-port');
 
-chai.use(sinonChai);
 chai.use(chaiAsPromise);
 const { expect } = chai;
 
@@ -387,7 +385,7 @@ describe('tweek repo test', () => {
       await refreshPromise;
 
       // Assert
-      expect(fetchStub).to.have.not.been.called;
+      sinon.assert.notCalled(fetchStub);
       await expect(refreshPromise).to.eventually.equal(undefined, 'should not return any keys');
     });
 
@@ -417,7 +415,7 @@ describe('tweek repo test', () => {
       await refreshAndWait();
 
       // Assert
-      expect(fetchStub).to.have.been.calledOnce;
+      sinon.assert.calledOnce(fetchStub);
 
       const fetchParameters = fetchStub.args[0];
       const [fetchUrl, fetchConfig] = fetchParameters;
@@ -495,12 +493,12 @@ describe('tweek repo test', () => {
 
       await refreshAndWait(['key1', 'key2']);
 
-      expect(fetchStub).to.have.been.calledOnce;
+      sinon.assert.calledOnce(fetchStub);
 
       _tweekRepo.refresh(['key1']);
       await refreshAndWait(['key2', 'key3']);
 
-      expect(fetchStub).to.have.been.calledTwice;
+      sinon.assert.calledTwice(fetchStub);
     });
 
     it('should refresh keys in next cycle if first one failed', async () => {

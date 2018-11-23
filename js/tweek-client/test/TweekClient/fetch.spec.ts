@@ -162,9 +162,9 @@ describe('tweek-client fetch', () => {
       const result = await tweekClient.fetch(test.pathToFetch, test.config);
 
       // Assert
-      expect(fetchStub).to.have.been.calledOnce;
-      expect(fetchStub).to.have.been.calledWithExactly(expectedUrl);
-      expect(onErrorStub).to.not.have.been.called;
+      sinon.assert.calledOnce(fetchStub);
+      sinon.assert.calledWithExactly(fetchStub, expectedUrl);
+      sinon.assert.notCalled(onErrorStub);
       if (!!test.expectedResult) expect(result).to.eql(test.expectedResult, 'should return corerct keys result');
     }),
   );
@@ -181,6 +181,6 @@ describe('tweek-client fetch', () => {
     const fetchPromise = tweekClient.fetch('/_');
     await expect(fetchPromise).to.be.rejectedWith(statusText);
     await new Promise(res => setImmediate(res));
-    expect(onErrorStub).to.have.been.calledOnce;
+    sinon.assert.calledOnce(onErrorStub);
   });
 });

@@ -72,8 +72,8 @@ describe('tweek-client appendContext', () => {
       let testPromise = tweekClient.appendContext(test.identityType, test.identityId, test.context);
 
       // Assert
-      expect(fetchStub).to.have.been.calledOnce;
-      expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
+      sinon.assert.calledOnce(fetchStub);
+      sinon.assert.calledWithExactly(fetchStub, ...expectedCallArgs);
       if (!test.expectedSuccess) {
         await expect(testPromise).to.be.rejectedWith(error);
       } else {
