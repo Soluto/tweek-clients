@@ -5,11 +5,32 @@ export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export const createFetchWithTimeout = (timeout, fetch) => (input, init) =>
-  Promise.race([fetch(input, init), requestTimeout(timeout)]);
+export const createFetchWithTimeout = (timeoutInMillis, fetch) => (input, init): Promise<Response> => {
+  let timeout;
 
-export function requestTimeout(timeoutInMillis): Promise<Response> {
-  return new Promise(res => setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis));
+  return Promise.race([
+    fetch(input, init),
+    new Promise(res => {
+      timeout = setTimeout(() =>
+        res(new Response(null, { status: 408 })),
+        timeoutInMillis
+      );
+    })
+  ])
+    .then((response) => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      return response;
+    })
+    .catch((error) => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      throw error;
+    });
 }
 
 export function snakeToCamelCase(target) {
