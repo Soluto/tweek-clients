@@ -1,7 +1,7 @@
 import 'mocha';
 import chai = require('chai');
 import { FetchConfig, createTweekClient, ITweekClient, Context } from 'tweek-client';
-import { fakeServer as TweekServer, httpFakeCalls as http } from 'simple-fake-server';
+import { FakeServer } from 'simple-fake-server';
 import sinon = require('sinon');
 import chaiAsPromise = require('chai-as-promised');
 import MemoryStore from '../../src/memory-store';
@@ -28,6 +28,7 @@ describe('tweek repo test', () => {
   let _defaultClient: ITweekClient;
   let _createClientThatFails: () => ITweekClient;
   let _tweekRepo: TweekRepository;
+  let _tweekServer: FakeServer;
 
   async function refreshAndWait(keys?: string[]) {
     _tweekRepo.expire(keys);
@@ -65,10 +66,17 @@ describe('tweek repo test', () => {
     }
   }
 
-  beforeEach(done => {
-    TweekServer.start(1234);
+  before(() => {
+    _tweekServer = new FakeServer(1234);
+    _tweekServer.start();
+  });
 
-    http
+  after(() => {
+    _tweekServer.stop();
+  });
+
+  beforeEach(done => {
+    _tweekServer.http
       .get()
       .to('/api/v1/keys/_/*')
       .willReturn({
@@ -83,7 +91,7 @@ describe('tweek repo test', () => {
       });
 
     _createClientThatFails = () => {
-      http
+      _tweekServer.http
         .get()
         .to('/api/v1/keys/_/*')
         .willFail(500);
@@ -92,10 +100,6 @@ describe('tweek repo test', () => {
 
     _defaultClient = createTweekClient({ baseServiceUrl: 'http://localhost:1234/' });
     waitPort({ host: 'localhost', port: 1234, output: 'silent' }).then(() => done());
-  });
-
-  afterEach(() => {
-    TweekServer.stop(1234);
   });
 
   describe('retrieve', () => {

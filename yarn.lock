@@ -2411,12 +2411,13 @@ convert-source-map@^1.4.0, convert-source-map@^1.5.0, convert-source-map@^1.5.1:
   dependencies:
     safe-buffer "~5.1.1"
 
-cookies@~0.5.0:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.5.1.tgz#2560c304fe8f8cbd002e08b9599d2e7479d37298"
-  integrity sha1-JWDDBP6PjL0ALgi5WZ0udHnTcpg=
+cookies@~0.7.0:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/cookies/-/cookies-0.7.3.tgz#7912ce21fbf2e8c2da70cf1c3f351aecf59dadfa"
+  integrity sha512-+gixgxYSgQLTaTIilDHAdlNPZDENDQernEMiIcZpYYP14zgHsCt4Ce1FEjFtcp6GefhozebB6orvhAAWx/IS0A==
   dependencies:
-    keygrip "~1.0.0"
+    depd "~1.1.2"
+    keygrip "~1.0.3"
 
 copy-concurrently@^1.0.0:
   version "1.0.5"
@@ -2694,11 +2695,6 @@ delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
   integrity sha1-3zrhmayt+31ECqrgsp4icrJOxhk=
-
-delegates@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/delegates/-/delegates-0.1.0.tgz#b4b57be11a1653517a04b27f0949bdc327dfe390"
-  integrity sha1-tLV74RoWU1F6BLJ/CUm9wyff45A=
 
 delegates@^1.0.0:
   version "1.0.0"
@@ -3254,10 +3250,10 @@ fragment-cache@^0.2.1:
   dependencies:
     map-cache "^0.2.2"
 
-fresh@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.3.0.tgz#651f838e22424e7566de161d8358caa199f83d4f"
-  integrity sha1-ZR+DjiJCTnVm3hYdg1jKoZn4PU8=
+fresh@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
+  integrity sha1-PYyt2Q2XZWn6g1qx+OSyOhBWBac=
 
 from2@^2.1.0:
   version "2.3.0"
@@ -4732,7 +4728,7 @@ just-extend@^3.0.0:
   resolved "https://registry.yarnpkg.com/just-extend/-/just-extend-3.0.0.tgz#cee004031eaabf6406da03a7b84e4fe9d78ef288"
   integrity sha512-Fu3T6pKBuxjWT/p4DkqGHFRsysc8OauWr4ZRTY9dIx07Y9O0RkoR5jcv28aeD1vuAwhm3nLkDurwLXoALp4DpQ==
 
-keygrip@~1.0.0:
+keygrip@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.3.tgz#399d709f0aed2bab0a059e0cdd3a5023a053e1dc"
   integrity sha512-/PpesirAIfaklxUzp4Yb7xBper9MwP6hNRA6BGGUFCgbJ+BM5CKBtsoxinNXkLHAr+GXS1/lSlF2rP7cv5Fl+g==
@@ -4790,23 +4786,23 @@ koa-is-json@^1.0.0:
   resolved "https://registry.yarnpkg.com/koa-is-json/-/koa-is-json-1.0.0.tgz#273c07edcdcb8df6a2c1ab7d59ee76491451ec14"
   integrity sha1-JzwH7c3Ljfaiwat9We52SRRR7BQ=
 
-koa@1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/koa/-/koa-1.1.2.tgz#926268f9affd1acf87f6be2d4b6ad46f8576c39f"
-  integrity sha1-kmJo+a/9Gs+H9r4tS2rUb4V2w58=
+koa@1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/koa/-/koa-1.5.1.tgz#11efdd107d0d5fa3d946fbc90ea1eaf2f6a370fe"
+  integrity sha512-Ikr6CbkdKapjsywZr7Ty/pt2rcmczsEF/kkbrUxkJKwimUEVjP0eTA8NKvcrgDOIutZHUFI0zJ5d9aoXJLy0Tg==
   dependencies:
     accepts "^1.2.2"
     co "^4.4.0"
     composition "^2.1.1"
     content-disposition "~0.5.0"
     content-type "^1.0.0"
-    cookies "~0.5.0"
+    cookies "~0.7.0"
     debug "*"
-    delegates "0.1.0"
+    delegates "^1.0.0"
     destroy "^1.0.3"
     error-inject "~1.0.0"
     escape-html "~1.0.1"
-    fresh "^0.3.0"
+    fresh "^0.5.2"
     http-assert "^1.1.0"
     http-errors "^1.2.8"
     koa-compose "^2.3.0"
@@ -6292,6 +6288,15 @@ qs@^6.5.2, qs@~6.5.2:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
   integrity sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
 
+query-string@5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-5.0.1.tgz#6e2b86fe0e08aef682ecbe86e85834765402bd88"
+  integrity sha512-aM+MkQClojlNiKkO09tiN2Fv8jM/L7GWIjG2liWeKljlOdOPNWr+bW3KQ+w5V/uKprpezC7fAsAMsJtJ+2rLKA==
+  dependencies:
+    decode-uri-component "^0.2.0"
+    object-assign "^4.1.0"
+    strict-uri-encode "^1.0.0"
+
 query-string@^5.0.0:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/query-string/-/query-string-5.1.1.tgz#a78c012b71c17e05f2e3fa2319dd330682efb3cb"
@@ -6835,18 +6840,18 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
   integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
 
-simple-fake-server@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/simple-fake-server/-/simple-fake-server-0.4.0.tgz#519f351d7c5d469b7943c59c913b1ec75fb88193"
-  integrity sha512-eD/m1yMWSC95CK1qPSQk4DlNnIoxKWGz7ay8aGAcENpT2qIFRxBlhYiaeTiL3Y5CyW1KIDdVCM7aWLVFO0/qFw==
+simple-fake-server@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/simple-fake-server/-/simple-fake-server-2.1.0.tgz#5f788af7f42e4fa44c58aef25ac3729d489cc3b6"
+  integrity sha512-QcwX+bxjAo68vHxbqrP+Z8UHkPGul4jFnSgmCvGN+LK763u6yvVhBCBb7O81qErkQDiS5G4g4bCVL3PKL6Cw0w==
   dependencies:
     deep-equal "1.0.1"
     is-subset "0.1.1"
-    koa "1.1.2"
+    koa "1.5.1"
     koa-body "1.4.0"
     koa-cors "0.0.16"
     lodash "4.17.4"
-    query-string "^5.0.0"
+    query-string "5.0.1"
 
 simple-git@^1.85.0:
   version "1.107.0"
