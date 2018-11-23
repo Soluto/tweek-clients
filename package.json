@@ -7,7 +7,7 @@
   "private": true,
   "devDependencies": {
     "husky": "^1.2.0",
-    "lerna": "^2.9.0",
+    "lerna": "^3.4.3",
     "lint-staged": "^8.1.0",
     "prettier": "^1.15.2"
   },
