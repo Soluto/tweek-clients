@@ -26,11 +26,12 @@
     "react": ">=15.0.0",
     "react-dom": ">=15.0.0",
     "react-test-renderer": ">=15.0.0",
+    "rimraf": "^2.6.2",
     "tweek-client": "^0.1.10",
     "tweek-local-cache": "^0.3.0"
   },
   "scripts": {
     "test": "jest",
-    "build": "rm -rf dist && babel src --out-dir dist --ignore spec.js,test.js"
+    "build": "rimraf dist && babel src --out-dir dist --ignore spec.js,test.js"
   }
 }

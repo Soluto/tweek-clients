@@ -28,6 +28,8 @@
     "cross-fetch": "^2.2.3",
     "getenv": "^0.7.0",
     "mocha": "^5.2.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^2.6.2",
     "simple-fake-server": "^2.1.0",
     "sinon": "^7.1.1",
     "ts-node": "^7.0.1",
@@ -37,10 +39,10 @@
   },
   "scripts": {
     "dev": "tsc -w",
-    "test": "yarn test:unit && yarn test:behavior",
-    "test:behavior": "mocha --compilers ts:ts-node/register spec/behavior/*.spec.ts",
-    "test:behavior-debug": "mocha --debug-brk --compilers ts:ts-node/register spec/behavior/*.spec.ts",
-    "test:unit": "mocha --compilers ts:ts-node/register spec/unit/*.spec.ts",
-    "build": "rm -rf dist && tsc"
+    "test": "run-s test:*",
+    "test:unit": "mocha -r ts-node/register spec/unit/*.spec.ts",
+    "test:behavior": "mocha --exit -r ts-node/register spec/behavior/*.spec.ts",
+    "test:behavior:debug": "mocha --debug-brk -r ts-node/register spec/behavior/*.spec.ts",
+    "build": "rimraf dist && tsc"
   }
 }
