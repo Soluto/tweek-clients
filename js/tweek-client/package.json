@@ -10,9 +10,9 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "change-emitter": "^0.1.6",
-    "cross-fetch": "^1.1.1",
+    "cross-fetch": "^2.2.3",
     "lodash.chunk": "^4.2.0",
-    "query-string": "^5.0.0",
+    "query-string": "^6.2.0",
     "symbol-observable": "^1.0.4",
     "zen-observable": "^0.6.0"
   },
