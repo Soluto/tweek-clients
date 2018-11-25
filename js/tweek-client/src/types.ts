@@ -29,3 +29,20 @@ export interface ITweekClient {
   appendContext(identityType: string, identityId: string, context: object): Promise<void>;
   deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
 }
+
+type CreateTweekClientBaseConfig = {
+  context?: any;
+  requestTimeoutInMillis?: number;
+  getAuthenticationToken?: () => Promise<string> | string;
+  clientName?: string;
+  fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  onError?(error: Error): void;
+};
+
+export type CreateTweekClientConfig = CreateTweekClientBaseConfig & {
+  baseServiceUrl: string;
+};
+
+export type CreateTweekClientWithFallbackConfig = CreateTweekClientBaseConfig & {
+  urls: string[];
+};
