@@ -24,6 +24,8 @@ describe('create tweek client', () => {
     );
   });
 
+  afterEach(fetchMock.restore);
+
   describe('authentication', () => {
     it('authentication token should be passed to fetch request', async () => {
       // Arrange

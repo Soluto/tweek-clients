@@ -78,7 +78,7 @@ describe('tweek-client fetchChunks', () => {
     const result = await tweekClient.fetch(test.pathToFetch, test.config);
 
     // Assert
-    expect(fetchStub).to.have.been.calledThrice;
+    sinon.assert.calledThrice(fetchStub);
     expect(result).to.deep.equal(test.expectedResult);
   });
 });

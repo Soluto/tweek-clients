@@ -20,7 +20,7 @@ export default class Optional<T> {
 
   orElse = (value: T | Fallback<T> | null) => {
     if (typeof value === 'function') {
-      return value();
+      return (<Fallback<T>>value)();
     } else {
       return value;
     }

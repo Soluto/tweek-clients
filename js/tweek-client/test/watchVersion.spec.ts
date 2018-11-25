@@ -74,7 +74,7 @@ describe('watchVersion', () => {
 
   it('should retry if fetch error', async () => {
     fetchMock.getOnce(matcher, 500);
-    fetchMock.get(matcher, 'someVersion');
+    fetchMock.get(matcher, 'someVersion', { overwriteRoutes: false });
 
     const watcher = watchVersion(baseServiceUrl, 2);
 

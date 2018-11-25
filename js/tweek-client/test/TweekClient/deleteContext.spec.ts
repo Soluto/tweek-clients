@@ -61,8 +61,8 @@ describe('tweek-client deleteContext', () => {
       let testPromise = tweekClient.deleteContext(test.identityType, test.identityId, test.property);
 
       // Assert
-      expect(fetchStub).to.have.been.calledOnce;
-      expect(fetchStub).to.have.been.calledWith(...expectedCallArgs);
+      sinon.assert.calledOnce(fetchStub);
+      sinon.assert.calledWithExactly(fetchStub, ...expectedCallArgs);
       if (!test.expectedSuccess) {
         await expect(testPromise).to.be.rejectedWith(error);
       } else {
