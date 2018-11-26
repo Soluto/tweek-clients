@@ -4,15 +4,13 @@ jobs:
     working_directory: ~/tweek-clients
     environment:
       NODE_ENV: development
-    
-    machine:
-      node:
-        version: 8.7.0
-        
+
+    machine: true
+
     steps:
       - checkout
 
-      - run: 
+      - run:
           name: Run environment
           command: |
             docker pull soluto/tweek-blackbox:latest
@@ -26,39 +24,24 @@ jobs:
             for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
             docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
 
-      - deploy: 
+      - deploy:
           name: npm
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              npm install -g yarn
-              yarn
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              if [[ $(node -p -e "require('./js/tweek-client/package.json').version") != $(npm show tweek-client version) ]]; then
-                echo "publish tweek-client"
-                cd js/tweek-client && yarn && npm run build && npm publish && cd ../..
-              fi
-              if [[ $(node -p -e "require('./js/tweek-local-cache/package.json').version") != $(npm show tweek-local-cache version) ]]; then
-                echo "publish tweek-local-cache"
-                cd js/tweek-client && yarn && npm run build && cd ../..
-                cd js/tweek-local-cache && yarn && npm run build && npm publish && cd ../..
-              fi
-              if [[ $(node -p -e "require('./js/react-tweek/package.json').version") != $(npm show react-tweek version) ]]; then
-                echo "publish react-tweek"
-                cd js/react-tweek && yarn && npm run build && npm publish && cd ../..
-              fi
-            else 
+              docker run -v $PWD:/usr/src -w /usr/src -e NPM_TOKEN node:10.13.0-slim bash ./.circleci/publish.sh
+            else
               echo "not deploying on non master branches"
             fi
 
   test_dotnet:
     working_directory: ~/tweek-clients
-    
+
     machine: true
 
     steps:
       - checkout
 
-      - run: 
+      - run:
           name: Run environment
           command: |
             docker pull soluto/tweek-blackbox:latest
@@ -73,8 +56,8 @@ jobs:
             for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
             docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/ && dotnet build -c release"
             docker exec -e "VersionSuffix=0.2.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
-      
-      - deploy: 
+
+      - deploy:
           name: nuget
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
