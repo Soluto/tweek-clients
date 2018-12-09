@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import { camelize } from 'humps';
 import PropTypes from 'prop-types';
+import isEqual from 'lodash.isequal';
 
-export default (path, { mergeProps = true, propName, onError, repoKey = 'tweekRepo', getPolicy, once } = {}) => EnhancedComponent =>
+export default (
+  path,
+  { mergeProps = true, propName, onError, repoKey = 'tweekRepo', getPolicy, once } = {},
+) => EnhancedComponent =>
   class extends Component {
     static displayName = `withTweekKeys(${EnhancedComponent.displayName || EnhancedComponent.name || 'Component'})`;
     static contextTypes = {
@@ -16,7 +20,7 @@ export default (path, { mergeProps = true, propName, onError, repoKey = 'tweekRe
         start: subscription => (this.subscription = subscription),
         next: result => {
           this.setTweekValue(result);
-          if(once) {
+          if (once) {
             this.unsubscribe();
           }
         },
@@ -48,10 +52,11 @@ export default (path, { mergeProps = true, propName, onError, repoKey = 'tweekRe
           ? { [propName || camelize(configName)]: result.value }
           : { [propName || 'tweek']: { [camelize(configName)]: result.value } };
       }
+      if (isEqual(this.state.tweekProps, tweekProps)) return;
       this.setState({ tweekProps });
     };
 
     render() {
       return this.state.tweekProps ? <EnhancedComponent {...this.props} {...this.state.tweekProps} /> : null;
     }
-  }
+  };
