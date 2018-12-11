@@ -56,7 +56,6 @@ export default (
     };
 
     shouldComponentUpdate(nextProps, nextState) {
-      if (!this.state || !nextState) return !isEqual(this.props, nextProps) || this.state != nextState;
       return !isEqual(this.props, nextProps) || !isEqual(this.state.tweekProps, nextState.tweekProps);
     }
 
