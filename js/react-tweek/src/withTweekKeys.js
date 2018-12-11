@@ -52,9 +52,12 @@ export default (
           ? { [propName || camelize(configName)]: result.value }
           : { [propName || 'tweek']: { [camelize(configName)]: result.value } };
       }
-      if (isEqual(this.state.tweekProps, tweekProps)) return;
       this.setState({ tweekProps });
     };
+
+    shouldComponentUpdate(nextProps, nextState) {
+      return !isEqual(this.props, nextProps) || !isEqual(this.state.tweekProps, nextState.tweekProps);
+    }
 
     render() {
       return this.state.tweekProps ? <EnhancedComponent {...this.props} {...this.state.tweekProps} /> : null;
