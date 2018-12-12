@@ -1,5 +1,4 @@
-import crossFetch = require('cross-fetch');
-const { Response } = crossFetch;
+import { Response } from 'cross-fetch';
 
 export function captialize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -11,27 +10,24 @@ export const createFetchWithTimeout = (timeoutInMillis, fetch) => (input, init):
   return Promise.race([
     fetch(input, init),
     new Promise(res => {
-      timeout = setTimeout(() =>
-        res(new Response(null, { status: 408 })),
-        timeoutInMillis
-      );
-    })
+      timeout = setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis);
+    }),
   ])
-    .then((response) => {
+    .then(response => {
       if (timeout) {
         clearTimeout(timeout);
       }
 
       return response;
     })
-    .catch((error) => {
+    .catch(error => {
       if (timeout) {
         clearTimeout(timeout);
       }
 
       throw error;
     });
-}
+};
 
 export function snakeToCamelCase(target) {
   if (target === null || typeof target !== 'object' || Array.isArray(target)) return target;
