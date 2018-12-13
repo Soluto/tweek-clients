@@ -1,6 +1,6 @@
 import TweekClient from './TweekClient';
 import { createFetchWithTimeout } from './utils';
-import { fetch as globalFetch } from 'cross-fetch';
+import { default as globalFetch } from 'cross-fetch';
 import { CreateTweekClientConfig } from './types';
 
 export default function({
