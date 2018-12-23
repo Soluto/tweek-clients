@@ -5,7 +5,7 @@ import isEqual from 'lodash.isequal';
 
 export default (
   path,
-  { mergeProps = true, propName, onError, repoKey = 'tweekRepo', getPolicy, once } = {},
+  { mergeProps = true, propName, onError, repoKey = 'tweekRepo', getPolicy, once, initialValue } = {},
 ) => EnhancedComponent =>
   class extends Component {
     static displayName = `withTweekKeys(${EnhancedComponent.displayName || EnhancedComponent.name || 'Component'})`;
@@ -16,6 +16,10 @@ export default (
     state = {};
 
     componentWillMount() {
+      if (initialValue !== undefined) {
+        this.setTweekValue({ value: initialValue });
+      }
+
       this.context[repoKey].observe(path, getPolicy).subscribe({
         start: subscription => (this.subscription = subscription),
         next: result => {

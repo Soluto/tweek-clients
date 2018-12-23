@@ -10,7 +10,7 @@ describe('withTweekKeys', () => {
   let subscribeMock;
   let unsubscribeMock;
 
-  const mockRepository = ({ result, secondResult, error }) => {
+  const mockRepository = ({ result, secondResult, error } = {}) => {
     unsubscribeMock = jest.fn();
     subscribeMock = jest.fn(observer => {
       const subscription = { unsubscribe: unsubscribeMock };
@@ -22,7 +22,9 @@ describe('withTweekKeys', () => {
         return subscription;
       }
 
-      observer.next(result);
+      if (result !== undefined) {
+        observer.next(result);
+      }
 
       if (!unsubscribeMock.mock.calls.length && secondResult) {
         observer.next(secondResult);
@@ -38,7 +40,7 @@ describe('withTweekKeys', () => {
     const Component = withTweekKeysHoc('div');
     return renderer.create(
       <Provider repo={{ observe: observeMock }}>
-        <Component/>
+        <Component />
       </Provider>,
     );
   };
@@ -158,7 +160,7 @@ describe('withTweekKeys', () => {
     const path = 'path/_';
 
     beforeEach(() => {
-      mockRepository({result: { someKey: value }});
+      mockRepository({ result: { someKey: value } });
     });
 
     test('default behavior', () => {
@@ -233,7 +235,7 @@ describe('withTweekKeys', () => {
     let error = null;
     let expectedError = 'test error';
     const path = 'path/someKey';
-    mockRepository({error: expectedError});
+    mockRepository({ error: expectedError });
 
     renderComponent(path, { onError: e => (error = e) });
 
@@ -244,10 +246,19 @@ describe('withTweekKeys', () => {
   test('with getPolicy', () => {
     const path = 'path/someKey';
     const getPolicy = 'somePolicy';
-    mockRepository({result: { value }});
+    mockRepository({ result: { value } });
 
     renderComponent(path, { getPolicy });
 
     expect(observeMock).toBeCalledWith(path, getPolicy);
+  });
+
+  test('with initialValue', () => {
+    const path = 'path/someKey';
+    const initialValue = 'someInitialValue';
+    mockRepository();
+    const component = renderComponent(path, { initialValue });
+    const tree = component.toJSON();
+    expect(tree.props.someKey).toBe(initialValue);
   });
 });
