@@ -6,8 +6,10 @@ import isEqual from 'lodash.isequal';
 export default (
   path,
   { mergeProps = true, propName, onError, repoKey = 'tweekRepo', getPolicy, once, initialValue } = {},
-) => EnhancedComponent =>
-  class extends Component {
+) => EnhancedComponent => {
+  const isScanKey = path.split('/').pop() === '_';
+
+  return class extends Component {
     static displayName = `withTweekKeys(${EnhancedComponent.displayName || EnhancedComponent.name || 'Component'})`;
     static contextTypes = {
       [repoKey]: PropTypes.object,
@@ -17,7 +19,7 @@ export default (
 
     componentWillMount() {
       if (initialValue !== undefined) {
-        this.setTweekValue({ value: initialValue });
+        this.setTweekValue(isScanKey ? initialValue : { value: initialValue });
       }
 
       this.context[repoKey].observe(path, getPolicy).subscribe({
@@ -48,7 +50,7 @@ export default (
     setTweekValue = (result = {}) => {
       let tweekProps;
 
-      if (path.split('/').pop() === '_') {
+      if (isScanKey) {
         tweekProps = mergeProps ? result : { [propName || 'tweek']: result };
       } else {
         const configName = path.split('/').pop();
@@ -67,3 +69,4 @@ export default (
       return this.state.tweekProps ? <EnhancedComponent {...this.props} {...this.state.tweekProps} /> : null;
     }
   };
+};

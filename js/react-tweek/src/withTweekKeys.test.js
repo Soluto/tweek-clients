@@ -154,6 +154,14 @@ describe('withTweekKeys', () => {
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
     });
+
+    test('with initialValue', () => {
+      const initialValue = 'someInitialValue';
+      mockRepository();
+      const component = renderComponent(path, { initialValue });
+      const tree = component.toJSON();
+      expect(tree.props.someKey).toBe(initialValue);
+    });
   });
 
   describe('scan category', () => {
@@ -229,6 +237,14 @@ describe('withTweekKeys', () => {
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
     });
+
+    test('with initialValue', () => {
+      const initialValue = 'someInitialValue';
+      mockRepository();
+      const component = renderComponent(path, { initialValue: { someKey: initialValue } });
+      const tree = component.toJSON();
+      expect(tree.props.someKey).toBe(initialValue);
+    });
   });
 
   test('with error handler', () => {
@@ -251,14 +267,5 @@ describe('withTweekKeys', () => {
     renderComponent(path, { getPolicy });
 
     expect(observeMock).toBeCalledWith(path, getPolicy);
-  });
-
-  test('with initialValue', () => {
-    const path = 'path/someKey';
-    const initialValue = 'someInitialValue';
-    mockRepository();
-    const component = renderComponent(path, { initialValue });
-    const tree = component.toJSON();
-    expect(tree.props.someKey).toBe(initialValue);
   });
 });
