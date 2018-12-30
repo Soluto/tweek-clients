@@ -10,24 +10,23 @@ describe('withTweekKeys', () => {
   let subscribeMock;
   let unsubscribeMock;
 
-  const mockRepository = ({ result, secondResult, error } = {}) => {
+  const mockRepository = ({ results, error } = {}) => {
     unsubscribeMock = jest.fn();
-    subscribeMock = jest.fn(observer => {
+    subscribeMock = jest.fn((onNext, onError) => {
       const subscription = { unsubscribe: unsubscribeMock };
 
-      observer.start(subscription);
-
       if (error) {
-        observer.error(error);
-        return subscription;
+        setImmediate(() => onError(error));
       }
 
-      if (result !== undefined) {
-        observer.next(result);
-      }
-
-      if (!unsubscribeMock.mock.calls.length && secondResult) {
-        observer.next(secondResult);
+      if (results) {
+        results.forEach(result => {
+          setImmediate(() => {
+            if (!unsubscribeMock.mock.calls.length) {
+              onNext(result);
+            }
+          });
+        });
       }
 
       return subscription;
@@ -35,25 +34,28 @@ describe('withTweekKeys', () => {
     observeMock = jest.fn().mockReturnValue({ subscribe: subscribeMock });
   };
 
-  const renderComponent = (path, config) => {
+  const renderComponent = async (path, config) => {
     const withTweekKeysHoc = withTweekKeys(path, config);
     const Component = withTweekKeysHoc('div');
-    return renderer.create(
+    const component = renderer.create(
       <Provider repo={{ observe: observeMock }}>
         <Component />
       </Provider>,
     );
+
+    await new Promise(res => setImmediate(res));
+    return component;
   };
 
   describe('get single key', () => {
     const path = 'path/someKey';
 
     beforeEach(() => {
-      mockRepository({ result: { value } });
+      mockRepository({ results: [{ value }] });
     });
 
-    test('default behavior', () => {
-      const component = renderComponent(path);
+    test('default behavior', async () => {
+      const component = await renderComponent(path);
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -65,8 +67,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true}', () => {
-      const component = renderComponent(path, { mergeProps: true, propName: undefined });
+    test('with {mergeProps: true}', async () => {
+      const component = await renderComponent(path, { mergeProps: true, propName: undefined });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -78,8 +80,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true, propName: someName}', () => {
-      const component = renderComponent(path, { mergeProps: true, propName: 'someName' });
+    test('with {mergeProps: true, propName: someName}', async () => {
+      const component = await renderComponent(path, { mergeProps: true, propName: 'someName' });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -91,8 +93,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false}', () => {
-      const component = renderComponent(path, { mergeProps: false, propName: undefined });
+    test('with {mergeProps: false}', async () => {
+      const component = await renderComponent(path, { mergeProps: false, propName: undefined });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -105,8 +107,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false, propName: someName}', () => {
-      const component = renderComponent(path, { mergeProps: false, propName: 'someName' });
+    test('with {mergeProps: false, propName: someName}', async () => {
+      const component = await renderComponent(path, { mergeProps: false, propName: 'someName' });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -123,10 +125,10 @@ describe('withTweekKeys', () => {
   describe('get key changes', () => {
     const path = 'path/someKey';
 
-    test('with {once: true}', () => {
-      mockRepository({ result: { value }, secondResult: { value: 'newValue' } });
+    test('with {once: true}', async () => {
+      mockRepository({ results: [{ value }, { value: 'newValue' }] });
 
-      const component = renderComponent(path, { once: true });
+      const component = await renderComponent(path, { once: true });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -139,10 +141,10 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {once: false}', () => {
-      mockRepository({ result: { value }, secondResult: { value: 'newValue' } });
+    test('with {once: false}', async () => {
+      mockRepository({ results: [{ value }, { value: 'newValue' }] });
 
-      const component = renderComponent(path, { once: false });
+      const component = await renderComponent(path, { once: false });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -155,10 +157,10 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with initialValue', () => {
+    test('with initialValue', async () => {
       const initialValue = 'someInitialValue';
       mockRepository();
-      const component = renderComponent(path, { initialValue });
+      const component = await renderComponent(path, { initialValue });
       const tree = component.toJSON();
       expect(tree.props.someKey).toBe(initialValue);
     });
@@ -168,11 +170,11 @@ describe('withTweekKeys', () => {
     const path = 'path/_';
 
     beforeEach(() => {
-      mockRepository({ result: { someKey: value } });
+      mockRepository({ results: [{ someKey: value }] });
     });
 
-    test('default behavior', () => {
-      const component = renderComponent(path);
+    test('default behavior', async () => {
+      const component = await renderComponent(path);
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -184,8 +186,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true}', () => {
-      const component = renderComponent(path, { mergeProps: true, propName: undefined });
+    test('with {mergeProps: true}', async () => {
+      const component = await renderComponent(path, { mergeProps: true, propName: undefined });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -197,8 +199,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: true, propName: someName} should ignore propName', () => {
-      const component = renderComponent(path, { mergeProps: true, propName: 'someName' });
+    test('with {mergeProps: true, propName: someName} should ignore propName', async () => {
+      const component = await renderComponent(path, { mergeProps: true, propName: 'someName' });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -210,8 +212,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false}', () => {
-      const component = renderComponent(path, { mergeProps: false, propName: undefined });
+    test('with {mergeProps: false}', async () => {
+      const component = await renderComponent(path, { mergeProps: false, propName: undefined });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -224,8 +226,8 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with {mergeProps: false, propName: someName}', () => {
-      const component = renderComponent(path, { mergeProps: false, propName: 'someName' });
+    test('with {mergeProps: false, propName: someName}', async () => {
+      const component = await renderComponent(path, { mergeProps: false, propName: 'someName' });
 
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
@@ -238,33 +240,33 @@ describe('withTweekKeys', () => {
       expect(unsubscribeMock).toBeCalled();
     });
 
-    test('with initialValue', () => {
+    test('with initialValue', async () => {
       const initialValue = 'someInitialValue';
       mockRepository();
-      const component = renderComponent(path, { initialValue: { someKey: initialValue } });
+      const component = await renderComponent(path, { initialValue: { someKey: initialValue } });
       const tree = component.toJSON();
       expect(tree.props.someKey).toBe(initialValue);
     });
   });
 
-  test('with error handler', () => {
+  test('with error handler', async () => {
     let error = null;
     let expectedError = 'test error';
     const path = 'path/someKey';
     mockRepository({ error: expectedError });
 
-    renderComponent(path, { onError: e => (error = e) });
+    await renderComponent(path, { onError: e => (error = e) });
 
     expect(error).toEqual(expectedError);
     expect(unsubscribeMock).toBeCalled();
   });
 
-  test('with getPolicy', () => {
+  test('with getPolicy', async () => {
     const path = 'path/someKey';
     const getPolicy = 'somePolicy';
-    mockRepository({ result: { value } });
+    mockRepository({ results: [{ value }] });
 
-    renderComponent(path, { getPolicy });
+    await renderComponent(path, { getPolicy });
 
     expect(observeMock).toBeCalledWith(path, getPolicy);
   });

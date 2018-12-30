@@ -115,18 +115,16 @@ export default class TweekRepository {
   public get(key: string, policy?: GetPolicy): Promise<never | Optional<any> | any> {
     return new Promise((resolve, reject) => {
       const observer = this.observe(key, policy);
-      let subscription;
-      observer.subscribe({
-        start: s => (subscription = s),
-        next: value => {
+      const subscription = observer.subscribe(
+        value => {
           subscription.unsubscribe();
           resolve(value);
         },
-        error: error => {
+        error => {
           subscription.unsubscribe();
           reject(error);
         },
-      });
+      );
     });
   }
 
@@ -176,7 +174,7 @@ export default class TweekRepository {
     policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
     const isScan = TweekRepository._isScan(key);
     const self = this;
-    const observable = new Observable<any>(observer => {
+    return new Observable<any>(observer => {
       function handleNotReady() {
         switch (policy.notReady) {
           case 'wait':
@@ -216,13 +214,6 @@ export default class TweekRepository {
 
       return self._emitter.listen(onKey);
     });
-
-    return {
-      subscribe: observable.subscribe.bind(observable),
-      [$$observable]() {
-        return this;
-      },
-    };
   }
 
   public [$$observable]() {

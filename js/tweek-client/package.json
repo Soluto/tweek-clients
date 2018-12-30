@@ -14,7 +14,7 @@
     "lodash.chunk": "^4.2.0",
     "query-string": "^6.2.0",
     "symbol-observable": "^1.0.4",
-    "zen-observable": "^0.6.0"
+    "zen-observable": "^0.8.11"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -22,7 +22,7 @@
     "@types/lodash.chunk": "^4.2.3",
     "@types/mocha": "^5.2.5",
     "@types/sinon": "7.0.2",
-    "@types/zen-observable": "^0.5.3",
+    "@types/zen-observable": "^0.8.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "fetch-mock": "^7.2.8",

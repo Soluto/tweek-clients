@@ -22,20 +22,19 @@ export default (
         this.setTweekValue(isScanKey ? initialValue : { value: initialValue });
       }
 
-      this.context[repoKey].observe(path, getPolicy).subscribe({
-        start: subscription => (this.subscription = subscription),
-        next: result => {
+      this.subscription = this.context[repoKey].observe(path, getPolicy).subscribe(
+        result => {
           this.setTweekValue(result);
           if (once) {
             this.unsubscribe();
           }
         },
-        error: error => {
+        error => {
           if (onError) onError(error);
           else console.error(error);
           this.unsubscribe();
         },
-      });
+      );
     }
 
     componentWillUnmount() {
