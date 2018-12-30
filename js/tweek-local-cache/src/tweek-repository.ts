@@ -1,4 +1,3 @@
-import { isNullOrUndefined, isObject } from 'util';
 import { ITweekClient, Context, FetchConfig } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
 import Observable = require('zen-observable');
@@ -18,6 +17,8 @@ import {
   Expiration,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
+
+const isNullOrUndefined = x => x === null || x === undefined;
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -378,7 +379,7 @@ export default class TweekRepository {
 
   private static _ensurePolicy(policy) {
     if (isNullOrUndefined(policy)) return policy;
-    if (!isObject(policy)) throw new TypeError('expected getPolicy to be an object');
+    if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
 
     if (policy.notReady === 'refresh') {
       policy = { ...policy, notReady: 'wait' };
