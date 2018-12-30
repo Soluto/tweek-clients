@@ -1,4 +1,3 @@
-import { isNullOrUndefined, isObject } from 'util';
 import { ITweekClient, Context, FetchConfig } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
 import Observable = require('zen-observable');
@@ -18,6 +17,8 @@ import {
   Expiration,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
+
+const isNullOrUndefined = x => x === null || x === undefined;
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -115,18 +116,16 @@ export default class TweekRepository {
   public get(key: string, policy?: GetPolicy): Promise<never | Optional<any> | any> {
     return new Promise((resolve, reject) => {
       const observer = this.observe(key, policy);
-      let subscription;
-      observer.subscribe({
-        start: s => (subscription = s),
-        next: value => {
+      const subscription = observer.subscribe(
+        value => {
           subscription.unsubscribe();
           resolve(value);
         },
-        error: error => {
+        error => {
           subscription.unsubscribe();
           reject(error);
         },
-      });
+      );
     });
   }
 
@@ -176,7 +175,7 @@ export default class TweekRepository {
     policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
     const isScan = TweekRepository._isScan(key);
     const self = this;
-    const observable = new Observable<any>(observer => {
+    return new Observable<any>(observer => {
       function handleNotReady() {
         switch (policy.notReady) {
           case 'wait':
@@ -216,13 +215,6 @@ export default class TweekRepository {
 
       return self._emitter.listen(onKey);
     });
-
-    return {
-      subscribe: observable.subscribe.bind(observable),
-      [$$observable]() {
-        return this;
-      },
-    };
   }
 
   public [$$observable]() {
@@ -387,7 +379,7 @@ export default class TweekRepository {
 
   private static _ensurePolicy(policy) {
     if (isNullOrUndefined(policy)) return policy;
-    if (!isObject(policy)) throw new TypeError('expected getPolicy to be an object');
+    if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
 
     if (policy.notReady === 'refresh') {
       policy = { ...policy, notReady: 'wait' };

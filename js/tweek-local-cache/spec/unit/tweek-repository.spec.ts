@@ -37,10 +37,8 @@ describe('tweek repo test', () => {
 
   function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      let subscription;
       const items: any[] = [];
-      _tweekRepo.observe(key, getPolicy).subscribe({
-        start: s => (subscription = s),
+      const subscription = _tweekRepo.observe(key, getPolicy).subscribe({
         next: value => {
           items.push(value);
           if (items.length === count) {
@@ -770,12 +768,13 @@ describe('tweek repo test', () => {
       await initRepository({ store });
 
       const items: any[] = [];
-      const subscription = _tweekRepo.observe('my_path/string_value').subscribe({
-        next: x => items.push(x.value),
-        error: () => subscription.unsubscribe(),
-      });
-
-      subscription.unsubscribe();
+      const subscription = _tweekRepo.observe('my_path/string_value').subscribe(
+        x => {
+          items.push(x.value);
+          subscription.unsubscribe();
+        },
+        () => subscription.unsubscribe(),
+      );
 
       await refreshAndWait();
 
