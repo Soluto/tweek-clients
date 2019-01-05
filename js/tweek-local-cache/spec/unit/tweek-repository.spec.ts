@@ -3,7 +3,7 @@ import chai from 'chai';
 import sinon from 'sinon';
 import chaiAsPromise from 'chai-as-promised';
 import { FakeServer } from 'simple-fake-server';
-import { Context, createTweekClient, FetchConfig, ITweekClient } from 'tweek-client';
+import { Context, createTweekClient, FetchConfig, ITweekClient, TweekCasing } from 'tweek-client';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
 import {
@@ -15,6 +15,7 @@ import {
   RefreshErrorPolicy,
   RepositoryKeyState,
 } from '../../src';
+
 const waitPort: any = require('wait-port');
 
 chai.use(chaiAsPromise);
@@ -421,7 +422,7 @@ describe('tweek repo test', () => {
 
       const expectedFetchConfig: FetchConfig = {
         flatten: true,
-        casing: 'snake',
+        casing: TweekCasing.snake,
         context: <any>expectedContext,
         include: expectedKeys,
       };

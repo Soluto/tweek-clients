@@ -1,4 +1,4 @@
-import { Context, FetchConfig, ITweekClient } from 'tweek-client';
+import { Context, FetchConfig, ITweekClient, TweekCasing } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
 import $$observable from 'symbol-observable';
 import Observable from 'zen-observable';
@@ -267,7 +267,7 @@ export default class TweekRepository {
 
     const fetchConfig: FetchConfig = {
       flatten: true,
-      casing: 'snake',
+      casing: TweekCasing.snake,
       context: this._context,
       include: keysToRefresh,
     };

@@ -1,6 +1,6 @@
-import sinon = require('sinon');
+import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig } from '../../src/index';
+import { FetchConfig, TweekCasing } from '../../src';
 import TweekClient from '../../src/TweekClient';
 
 describe('tweek-client fetchChunks', () => {
@@ -15,15 +15,14 @@ describe('tweek-client fetchChunks', () => {
     context?: object;
   };
 
-  const maxChuckSize = 3;
   const defaultUrl = 'http://test/';
 
-  const prepare = url => {
+  const prepare = (url?: string) => {
     const fetchStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: 'snake',
+      casing: TweekCasing.snake,
       convertTyping: false,
       fetch: fetchStub,
     });
