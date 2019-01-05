@@ -1,20 +1,33 @@
 import 'mocha';
-import chai = require('chai');
-import { FetchConfig, createTweekClient, ITweekClient, Context } from 'tweek-client';
+import chai from 'chai';
+import sinon from 'sinon';
+import chaiAsPromise from 'chai-as-promised';
 import { FakeServer } from 'simple-fake-server';
-import sinon = require('sinon');
-import chaiAsPromise = require('chai-as-promised');
+import { Context, createTweekClient, FetchConfig, ITweekClient } from 'tweek-client';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
-import { ITweekStore, RefreshErrorPolicy } from '../../src/types';
-import waitPort = require('wait-port');
+import {
+  Expiration,
+  GetPolicy,
+  ITweekStore,
+  NotPreparedPolicy,
+  NotReadyPolicy,
+  RefreshErrorPolicy,
+  RepositoryKeyState,
+} from '../../src';
+const waitPort: any = require('wait-port');
 
 chai.use(chaiAsPromise);
 const { expect } = chai;
 
-const cachedItem = (value?: any) => ({ value, state: 'cached', isScan: value === undefined });
+const cachedItem = (value?: any, expiration?: Expiration) => ({
+  value,
+  state: RepositoryKeyState.cached,
+  isScan: value === undefined,
+  expiration,
+});
 
-function delay(timeout) {
+function delay(timeout: number) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
@@ -35,7 +48,7 @@ describe('tweek repo test', () => {
     await (<any>_tweekRepo).waitRefreshCycle();
   }
 
-  function observeKey(key, count = 1, getPolicy?): Promise<any[]> {
+  function observeKey(key: string, count = 1, getPolicy?: GetPolicy): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const items: any[] = [];
       const subscription = _tweekRepo.observe(key, getPolicy).subscribe({
@@ -233,7 +246,7 @@ describe('tweek repo test', () => {
         await _tweekRepo.prepare('path/that/was/not_ready');
 
         // Act
-        const getPromise = _tweekRepo.get('path/that/was/not_ready', { notReady: 'throw' });
+        const getPromise = _tweekRepo.get('path/that/was/not_ready', { notReady: NotReadyPolicy.throw });
 
         // Assert
         await expect(getPromise).to.be.rejectedWith('value not available yet');
@@ -246,8 +259,8 @@ describe('tweek repo test', () => {
         await _tweekRepo.prepare('my_path/string_value');
 
         // Act
-        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: 'wait' });
-        let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value', { notReady: 'throw' });
+        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: NotReadyPolicy.wait });
+        let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value', { notReady: NotReadyPolicy.throw });
 
         // Assert
         expect(key1.value).to.equal('my-string');
@@ -262,7 +275,7 @@ describe('tweek repo test', () => {
         const keyPath = 'my_path/string_value';
 
         // Act
-        const getPromise = _tweekRepo.get(keyPath, { notPrepared: 'throw' });
+        const getPromise = _tweekRepo.get(keyPath, { notPrepared: NotPreparedPolicy.throw });
 
         // Assert
         await expect(getPromise).to.be.rejectedWith(`key ${keyPath} not managed, use prepare to add it to cache`);
@@ -273,7 +286,7 @@ describe('tweek repo test', () => {
         await initRepository();
 
         //Act
-        let key1 = await _tweekRepo.get('my_path/string_value', { notPrepared: 'prepare' });
+        let key1 = await _tweekRepo.get('my_path/string_value', { notPrepared: NotPreparedPolicy.prepare });
 
         //Assert
         expect(key1.value).to.equal('my-string');
@@ -453,8 +466,8 @@ describe('tweek repo test', () => {
     it('should refresh expired keys when using store', async () => {
       // Arrange
       const persistedNodes = {
-        'my_path/string_value': { state: 'cached', value: 'old-value', expiration: 'expired' },
-        'my_path/inner_path_1/int_value': { state: 'cached', value: 10, expiration: 'refreshing' },
+        'my_path/string_value': cachedItem('old-value', Expiration.expired),
+        'my_path/inner_path_1/int_value': cachedItem(10, Expiration.refreshing),
         'some_path/inner_path_1/first_value': cachedItem(''),
       };
       let store = new MemoryStore(persistedNodes);
@@ -522,8 +535,8 @@ describe('tweek repo test', () => {
       };
 
       await initRepository({ client: clientMock, store });
-      let recover;
-      (<any>_tweekRepo)._refreshErrorPolicy = (resume, retryCount, err) => {
+      let recover: Function;
+      (<any>_tweekRepo)._refreshErrorPolicy = (resume: Function) => {
         recover = resume;
       };
 
@@ -536,7 +549,7 @@ describe('tweek repo test', () => {
         }),
       );
 
-      recover();
+      recover!();
       await new Promise(resolve => setTimeout(resolve, 10));
 
       await Promise.all(
@@ -567,7 +580,7 @@ describe('tweek repo test', () => {
       _tweekRepo.addKeys({ test1: 0 });
       const readValue = async () => (await _tweekRepo.get('test1')).value;
 
-      let recover;
+      let recover: Function;
       let retryCounts: number[] = [];
       let errors: Error[] = [];
       let policy: RefreshErrorPolicy = (resume, retryCount, err) => {
@@ -580,13 +593,13 @@ describe('tweek repo test', () => {
 
       await refreshAndWait();
       expect(await readValue()).to.eql(0);
-      recover();
+      recover!();
       await new Promise(setImmediate);
-      recover();
+      recover!();
       await new Promise(setImmediate);
       await refreshAndWait();
       expect(await readValue()).to.eql(1);
-      recover();
+      recover!();
       await new Promise(setImmediate);
       expect(await readValue()).to.eql(2);
 
@@ -611,8 +624,8 @@ describe('tweek repo test', () => {
       _tweekRepo.addKeys({ test1: 0 });
 
       let calls = 0;
-      let recover;
-      let policy: RefreshErrorPolicy = (resume, retryCount, err) => {
+      let recover: Function;
+      let policy: RefreshErrorPolicy = resume => {
         recover = resume;
         calls++;
       };
@@ -630,7 +643,7 @@ describe('tweek repo test', () => {
       await refreshAndWait();
       await refreshAndWait();
       expect(calls).to.eql(1);
-      recover();
+      recover!();
       await new Promise(setImmediate);
       expect(await readValue()).to.eql(1);
     });
@@ -754,7 +767,7 @@ describe('tweek repo test', () => {
       await initRepository({ client: _createClientThatFails() });
 
       // Act
-      const keysPromise = observeKey('some_path/key', 1, { notPrepared: 'throw' });
+      const keysPromise = observeKey('some_path/key', 1, { notPrepared: NotPreparedPolicy.throw });
 
       //Assert
       await expect(keysPromise).to.be.rejected;
@@ -768,7 +781,7 @@ describe('tweek repo test', () => {
       await initRepository({ store });
 
       const items: any[] = [];
-      const subscription = _tweekRepo.observe('my_path/string_value').subscribe(
+      const subscription: ZenObservable.Subscription = _tweekRepo.observe('my_path/string_value').subscribe(
         x => {
           items.push(x.value);
           subscription.unsubscribe();

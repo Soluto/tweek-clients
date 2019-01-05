@@ -1,7 +1,8 @@
 import { ITweekClient } from 'tweek-client';
+import { IRepositoryKey } from './repository-key';
 
 export type TweekRepositoryKeys = {
-  [key: string]: RepositoryKey<any>;
+  [key: string]: IRepositoryKey<any>;
 };
 
 export type FlatKeys = {
@@ -13,34 +14,6 @@ export interface ITweekStore {
   load: () => Promise<TweekRepositoryKeys>;
 }
 
-export type Expiration = 'expired' | 'refreshing';
-
-export type RequestedKey = {
-  state: 'requested';
-  isScan: boolean;
-  expiration?: Expiration;
-};
-
-export type MissingKey = {
-  state: 'missing';
-  expiration?: Expiration;
-};
-
-export type CachedKey<T> = {
-  state: 'cached';
-  value: T;
-  isScan: false;
-  expiration?: Expiration;
-};
-
-export type ScanNode = {
-  state: 'cached' | 'requested';
-  isScan: true;
-  expiration?: Expiration;
-};
-
-export type RepositoryKey<T> = CachedKey<T> | RequestedKey | ScanNode | MissingKey;
-
 export type TweekRepositoryConfig = {
   client: ITweekClient;
   getPolicy?: GetPolicy;
@@ -49,11 +22,21 @@ export type TweekRepositoryConfig = {
   refreshErrorPolicy?: RefreshErrorPolicy;
 };
 
+export const enum NotReadyPolicy {
+  throw = 'throw',
+  wait = 'wait',
+}
+
+export const enum NotPreparedPolicy {
+  throw = 'throw',
+  prepare = 'prepare',
+}
+
 export type GetPolicy = {
-  notReady?: 'throw' | 'wait';
-  notPrepared?: 'throw' | 'prepare';
+  notReady?: NotReadyPolicy;
+  notPrepared?: NotPreparedPolicy;
 };
 
 export interface RefreshErrorPolicy {
-  (next: () => void, retryCount: number, ex?: Error);
+  (next: () => void, retryCount: number, ex?: Error): void;
 }

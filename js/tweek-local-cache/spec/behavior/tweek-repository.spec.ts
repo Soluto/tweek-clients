@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import getenv = require('getenv');
+const getenv: any = require('getenv');
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
 import axios from 'axios';
 import MemoryStore from '../../src/memory-store';

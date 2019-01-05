@@ -679,6 +679,11 @@
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.1.7.tgz#1b8e33b61a8c09cbe1f85133071baa0dbf9fa71a"
   integrity sha512-2Y8uPt0/jwjhQ6EiluT0XCri1Dbplr0ZxfFXUz+ye13gaqE8u5gL5ppao1JrUYr9cIip5S6MvQzBS7Kke7U9VA==
 
+"@types/change-emitter@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@types/change-emitter/-/change-emitter-0.1.2.tgz#54213066a693f0d10f7a5eebda413ef1fd3ece3c"
+  integrity sha1-VCEwZqaT8NEPel7r2kE+8f0+zjw=
+
 "@types/lodash.chunk@^4.2.3":
   version "4.2.4"
   resolved "https://registry.yarnpkg.com/@types/lodash.chunk/-/lodash.chunk-4.2.4.tgz#d0301e7ed435f7eb60c570e715fb05047256d536"
