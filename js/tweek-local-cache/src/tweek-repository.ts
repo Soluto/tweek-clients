@@ -169,6 +169,7 @@ export default class TweekRepository {
     this._refreshPromise = this._refreshInProgress
       ? this._refreshPromise.then(() => {
           if (!this._refreshInProgress) return this._rollRefresh();
+          return;
         })
       : this._rollRefresh();
   }
@@ -374,7 +375,7 @@ export default class TweekRepository {
     if (isNullOrUndefined(policy)) return policy;
     if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
 
-    // @ts-ignore TS2367
+    // @ts-ignore TS2367 (legacy support)
     if (policy.notReady === 'refresh') {
       policy = { ...policy, notReady: NotReadyPolicy.wait };
     }

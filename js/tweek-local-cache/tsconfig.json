@@ -1,31 +1,9 @@
 {
-  "compileOnSave": true,
+  "extends": "../../tsconfig",
   "compilerOptions": {
     /* Basic Options */
-    "target": "es5",
-    "module": "commonjs",
     "lib": ["dom", "esnext"],
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "removeComments": true,
-
-    /* Strict Type-Checking Options */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-
-    /* Additional Checks */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    /* Module Resolution Options */
-    "moduleResolution": "node",
-    "esModuleInterop": true
+    "outDir": "./dist"
   },
   "files": ["src/index.ts"]
 }
