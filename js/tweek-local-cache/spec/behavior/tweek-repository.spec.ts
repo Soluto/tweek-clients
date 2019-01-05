@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import getenv = require('getenv');
+const getenv: any = require('getenv');
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
 import axios from 'axios';
 import MemoryStore from '../../src/memory-store';
@@ -132,7 +132,7 @@ describe('tweek repo behavior test', function() {
 
       // Act
       _tweekRepo.refresh();
-      await (<any>_tweekRepo).waitRefreshCycle();
+      await (<any>_tweekRepo)._waitRefreshCycle();
 
       // Assert
       const getKeysValuesPromises: Promise<any>[] = test.expectedKeys.map(x => _tweekRepo.get(x.keyName));
