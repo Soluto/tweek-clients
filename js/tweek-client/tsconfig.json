@@ -1,14 +1,31 @@
 {
   "compileOnSave": true,
-  "include": ["src"],
   "compilerOptions": {
-    "lib": ["dom", "es2015"],
+    /* Basic Options */
     "target": "es5",
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "strictNullChecks": true,
+    "module": "commonjs",
+    "lib": ["dom", "esnext"],
     "declaration": true,
     "sourceMap": true,
-    "outDir": "./dist"
-  }
+    "outDir": "./dist",
+    "removeComments": true,
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "files": ["src/index.ts"]
 }

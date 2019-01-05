@@ -1,17 +1,17 @@
-import sinon = require('sinon');
+import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig } from '../../src/index';
+import { FetchConfig, TweekCasing } from '../../src';
 import TweekClient from '../../src/TweekClient';
 
 describe('tweek-client fetch', () => {
   const defaultUrl = 'http://test/';
-  let prepare = url => {
+  let prepare = (url?: string) => {
     const fetchStub = sinon.stub();
     const onErrorStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: 'snake',
+      casing: TweekCasing.snake,
       convertTyping: false,
       fetch: fetchStub,
       onError: onErrorStub,
@@ -70,7 +70,7 @@ describe('tweek-client fetch', () => {
   testsDefenitions.push({
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
-    config: { casing: 'camelCase' },
+    config: { casing: TweekCasing.camelCase },
     resultsToResolve: { some_path: { some_key: 'abc' } },
     expectedResult: { somePath: { someKey: 'abc' } },
   });
@@ -78,7 +78,7 @@ describe('tweek-client fetch', () => {
   testsDefenitions.push({
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
-    config: { casing: 'snake' },
+    config: { casing: TweekCasing.snake },
     resultsToResolve: { some_path: { some_key: 'abc' } },
     expectedResult: { some_path: { some_key: 'abc' } },
   });
@@ -95,7 +95,7 @@ describe('tweek-client fetch', () => {
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: 'camelCase', convertTyping: true, flatten: true },
+    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': true },
   });
@@ -104,7 +104,7 @@ describe('tweek-client fetch', () => {
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: 'camelCase', convertTyping: true, flatten: true },
+    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': true },
   });
@@ -113,7 +113,7 @@ describe('tweek-client fetch', () => {
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: 'camelCase', convertTyping: true, flatten: true },
+    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': true },
     baseUrl: defaultUrl.substr(0, defaultUrl.length - 1),
@@ -123,7 +123,7 @@ describe('tweek-client fetch', () => {
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: 'camelCase', convertTyping: true, flatten: true },
+    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': true },
     baseUrl: defaultUrl.substr(0, defaultUrl.length - 1),
@@ -133,7 +133,7 @@ describe('tweek-client fetch', () => {
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true&$ignoreKeyTypes=true`,
-    config: { casing: 'camelCase', convertTyping: true, flatten: true, ignoreKeyTypes: true },
+    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true, ignoreKeyTypes: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': true },
   });
@@ -142,7 +142,7 @@ describe('tweek-client fetch', () => {
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: 'camelCase', convertTyping: true, flatten: true, ignoreKeyTypes: false },
+    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true, ignoreKeyTypes: false },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': true },
   });

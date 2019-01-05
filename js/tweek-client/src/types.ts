@@ -6,7 +6,10 @@ export type Context = {
   [identityType: string]: IdentityContext;
 };
 
-export type TweekCasing = 'snake' | 'camelCase';
+export const enum TweekCasing {
+  snake = 'snake',
+  camelCase = 'camelCase',
+}
 
 export type FetchConfig = {
   include?: string[];
@@ -35,7 +38,7 @@ type CreateTweekClientBaseConfig = {
   requestTimeoutInMillis?: number;
   getAuthenticationToken?: () => Promise<string> | string;
   clientName?: string;
-  fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  fetch?: typeof fetch;
   onError?(error: Error): void;
 };
 

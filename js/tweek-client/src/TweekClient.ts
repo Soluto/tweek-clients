@@ -1,7 +1,7 @@
 import * as qs from 'query-string';
+import chunk from 'lodash.chunk';
 import { convertTypingFromJSON, snakeToCamelCase } from './utils';
-import { FetchConfig, ITweekClient, TweekInitConfig } from './types';
-import chunk = require('lodash.chunk');
+import { Context, FetchConfig, ITweekClient, TweekCasing, TweekInitConfig } from './types';
 
 export default class TweekClient implements ITweekClient {
   config: TweekInitConfig;
@@ -10,8 +10,8 @@ export default class TweekClient implements ITweekClient {
   private static ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
 
   constructor(config: TweekInitConfig) {
-    this.config = <TweekInitConfig & FetchConfig>{
-      ...{ casing: 'snake', flatten: false, convertTyping: false, context: {}, ignoreKeyTypes: false },
+    this.config = {
+      ...{ casing: TweekCasing.snake, flatten: false, convertTyping: false, context: {}, ignoreKeyTypes: false },
       ...config,
     };
 
@@ -117,11 +117,15 @@ export default class TweekClient implements ITweekClient {
   public queryParamsEncoder = (queryParams: string) =>
     queryParams.replace(/\$/g, TweekClient.ENCODE_$_CHARACTER).replace(/\//g, TweekClient.ENCODE_SLASH_CHARACTER);
 
-  private _contextToQueryParams = context => {
-    return Object.keys(context).reduce((pre, cur) => {
+  private _contextToQueryParams = (context: Context | undefined): qs.InputParams => {
+    if (!context) {
+      return {};
+    }
+
+    return Object.keys(context).reduce((pre: qs.InputParams, cur) => {
       const identityContext = context[cur];
-      Object.keys(identityContext).forEach(
-        x => (x === 'id' ? (pre[`${cur}`] = identityContext[x]) : (pre[`${cur}.${x}`] = identityContext[x])),
+      Object.keys(identityContext).forEach(x =>
+        x === 'id' ? (pre[`${cur}`] = identityContext[x]) : (pre[`${cur}.${x}`] = identityContext[x]),
       );
       return pre;
     }, {});

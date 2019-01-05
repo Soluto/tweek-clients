@@ -1,6 +1,6 @@
 import 'mocha';
 import 'cross-fetch/polyfill';
-import chai = require('chai');
-import chaiAsProised = require('chai-as-promised');
+import chai from 'chai';
+import chaiAsProised from 'chai-as-promised';
 
 chai.use(chaiAsProised);

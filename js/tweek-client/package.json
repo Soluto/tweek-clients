@@ -13,14 +13,15 @@
     "cross-fetch": "^3.0.0",
     "lodash.chunk": "^4.2.0",
     "query-string": "^6.2.0",
-    "symbol-observable": "^1.0.4",
     "zen-observable": "^0.8.11"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/chai-as-promised": "^7.1.0",
+    "@types/fetch-mock": "^7.2.1",
     "@types/lodash.chunk": "^4.2.3",
     "@types/mocha": "^5.2.5",
+    "@types/query-string": "^6.2.0",
     "@types/sinon": "7.0.3",
     "@types/zen-observable": "^0.8.0",
     "chai": "^4.1.2",
