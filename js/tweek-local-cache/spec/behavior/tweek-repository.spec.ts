@@ -8,7 +8,7 @@ import { delay } from '../../src/utils';
 
 const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://127.0.0.1:1111');
 
-describe('tweek repo behavior test', function() {
+describe('tweek repo behavior test', function(this: Mocha.Suite) {
   this.timeout(180000);
 
   let _tweekRepo: TweekRepository;
