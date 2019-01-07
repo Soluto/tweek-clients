@@ -1,6 +1,6 @@
 {
   "name": "react-tweek",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "react bindings for tweek",
   "main": "./dist/index.js",
   "author": "Soluto",
@@ -10,7 +10,7 @@
   "peerDependencies": {
     "prop-types": "^15.0.0",
     "react": "^16.3.0",
-    "tweek-local-cache": "^0.3.0"
+    "tweek-local-cache": "^0.4.0"
   },
   "dependencies": {
     "humps": "^2.0.1",
@@ -29,7 +29,7 @@
     "react-test-renderer": "^16.3.0",
     "rimraf": "^2.6.3",
     "ts-jest": "^23.10.5",
-    "tweek-local-cache": "^0.3.0",
+    "tweek-local-cache": "^0.4.0",
     "typescript": "^3.2.2"
   },
   "scripts": {
