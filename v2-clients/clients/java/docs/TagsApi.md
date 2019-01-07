@@ -1,6 +1,6 @@
 # TagsApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="saveTag"></a>
 # **saveTag**
-> saveTag(tagsToSave)
+> saveTag(body)
 
 
 
@@ -19,14 +19,14 @@ Save tags
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.TagsApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.TagsApi;
 
 
 TagsApi apiInstance = new TagsApi();
-Object tagsToSave = null; // Object | The tags that need saving
+Object body = null; // Object | The tags that need saving
 try {
-    apiInstance.saveTag(tagsToSave);
+    apiInstance.saveTag(body);
 } catch (ApiException e) {
     System.err.println("Exception when calling TagsApi#saveTag");
     e.printStackTrace();
@@ -37,7 +37,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **tagsToSave** | **Object**| The tags that need saving |
+ **body** | **Object**| The tags that need saving |
 
 ### Return type
 
@@ -50,7 +50,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: text/html
+ - **Accept**: Not defined
 
 <a name="tagsGet"></a>
 # **tagsGet**
@@ -63,8 +63,8 @@ Get all tags
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.TagsApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.TagsApi;
 
 
 TagsApi apiInstance = new TagsApi();
@@ -90,6 +90,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 

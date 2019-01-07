@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **op** | **String** |  |  [optional]
 **path** | **String** |  |  [optional]
-**value** | **Object** |  |  [optional]
+**value** | [**Object**](.md) |  |  [optional]
 
 
 

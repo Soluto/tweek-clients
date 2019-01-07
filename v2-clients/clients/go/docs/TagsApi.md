@@ -1,6 +1,6 @@
 # \TagsApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -9,7 +9,7 @@ Method | HTTP request | Description
 
 
 # **SaveTag**
-> SaveTag(ctx, tagsToSave)
+> SaveTag(ctx, body)
 
 
 Save tags
@@ -19,7 +19,7 @@ Save tags
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **tagsToSave** | [**interface{}**](interface{}.md)| The tags that need saving | 
+  **body** | **map[string]interface{}**| The tags that need saving | 
 
 ### Return type
 
@@ -32,7 +32,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: text/html
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -55,7 +55,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

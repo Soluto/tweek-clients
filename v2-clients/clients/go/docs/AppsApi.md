@@ -1,6 +1,6 @@
 # \AppsApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -8,9 +8,7 @@ Method | HTTP request | Description
 
 
 # **AppsCreateApp**
-> AppCreationResponseModel AppsCreateApp(ctx, authorName, authorEmail, newAppModel)
-
-
+> AppCreationResponseModel AppsCreateApp(ctx, authorName, authorEmail, appCreationRequestModel)
 
 
 ### Required Parameters
@@ -20,7 +18,7 @@ Name | Type | Description  | Notes
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **authorName** | **string**|  | 
   **authorEmail** | **string**|  | 
-  **newAppModel** | [**AppCreationRequestModel**](AppCreationRequestModel.md)|  | 
+  **appCreationRequestModel** | [**AppCreationRequestModel**](AppCreationRequestModel.md)|  | 
 
 ### Return type
 

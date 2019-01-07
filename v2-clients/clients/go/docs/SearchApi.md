@@ -1,6 +1,6 @@
 # \SearchApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 
 # **Search**
-> []interface{} Search(ctx, )
+> []map[string]interface{} Search(ctx, )
 
 
 Search
@@ -18,7 +18,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**[]interface{}**](interface{}.md)
+[**[]map[string]interface{}**](map[string]interface{}.md)
 
 ### Authorization
 
@@ -26,7 +26,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

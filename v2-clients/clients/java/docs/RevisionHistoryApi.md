@@ -1,6 +1,6 @@
 # RevisionHistoryApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -18,8 +18,8 @@ Get Revision History
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.RevisionHistoryApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.RevisionHistoryApi;
 
 
 RevisionHistoryApi apiInstance = new RevisionHistoryApi();
@@ -51,6 +51,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 

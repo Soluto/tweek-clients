@@ -1,6 +1,6 @@
 # ManifestApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -18,8 +18,8 @@ Get Manifests
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.ManifestApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.ManifestApi;
 
 
 ManifestApi apiInstance = new ManifestApi();
@@ -45,6 +45,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 

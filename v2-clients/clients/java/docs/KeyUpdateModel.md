@@ -4,8 +4,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**implementation** | **Object** |  | 
-**manifest** | **Object** |  | 
+**implementation** | [**Object**](.md) |  | 
+**manifest** | [**Object**](.md) |  | 
 
 
 

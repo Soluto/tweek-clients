@@ -1,6 +1,6 @@
 # \KeysApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 
 # **CreateKey**
-> string CreateKey(ctx, keyPath, authorName, authorEmail, newKeyModel)
+> string CreateKey(ctx, keyPath, authorName, authorEmail, keyUpdateModel)
 
 
 Save Key
@@ -23,7 +23,7 @@ Name | Type | Description  | Notes
   **keyPath** | **string**|  | 
   **authorName** | **string**|  | 
   **authorEmail** | **string**|  | 
-  **newKeyModel** | [**KeyUpdateModel**](KeyUpdateModel.md)|  | 
+  **keyUpdateModel** | [**KeyUpdateModel**](KeyUpdateModel.md)|  | 
 
 ### Return type
 
@@ -44,8 +44,6 @@ No authorization required
 > string KeysDeleteKey(ctx, keyPath, authorName, authorEmail, optional)
 
 
-
-
 ### Required Parameters
 
 Name | Type | Description  | Notes
@@ -64,7 +62,7 @@ Name | Type | Description  | Notes
 
 
 
- **additionalKeys** | **optional.[]string**|  | 
+ **requestBody** | [**optional.Interface of []string**](array.md)|  | 
 
 ### Return type
 
@@ -82,9 +80,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **KeysGetKey**
-> interface{} KeysGetKey(ctx, keyPath, optional)
-
-
+> map[string]interface{} KeysGetKey(ctx, keyPath, optional)
 
 
 ### Required Parameters
@@ -105,7 +101,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**map[string]interface{}**](map[string]interface{}.md)
 
 ### Authorization
 
@@ -113,7 +109,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -1,6 +1,6 @@
 # \RevisionHistoryApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 
 # **GetRevisionHistory**
-> []interface{} GetRevisionHistory(ctx, keyPath, since)
+> []map[string]interface{} GetRevisionHistory(ctx, keyPath, since)
 
 
 Get Revision History
@@ -23,7 +23,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]interface{}**](interface{}.md)
+[**[]map[string]interface{}**](map[string]interface{}.md)
 
 ### Authorization
 
@@ -31,7 +31,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

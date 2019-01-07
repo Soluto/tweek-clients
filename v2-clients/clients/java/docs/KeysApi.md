@@ -1,6 +1,6 @@
 # KeysApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 <a name="createKey"></a>
 # **createKey**
-> String createKey(keyPath, authorName, authorEmail, newKeyModel)
+> String createKey(keyPath, authorName, authorEmail, keyUpdateModel)
 
 
 
@@ -20,17 +20,17 @@ Save Key
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.KeysApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.KeysApi;
 
 
 KeysApi apiInstance = new KeysApi();
 String keyPath = "keyPath_example"; // String | 
 String authorName = "authorName_example"; // String | 
 String authorEmail = "authorEmail_example"; // String | 
-KeyUpdateModel newKeyModel = new KeyUpdateModel(); // KeyUpdateModel | 
+KeyUpdateModel keyUpdateModel = new KeyUpdateModel(); // KeyUpdateModel | 
 try {
-    String result = apiInstance.createKey(keyPath, authorName, authorEmail, newKeyModel);
+    String result = apiInstance.createKey(keyPath, authorName, authorEmail, keyUpdateModel);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling KeysApi#createKey");
@@ -45,7 +45,7 @@ Name | Type | Description  | Notes
  **keyPath** | **String**|  |
  **authorName** | **String**|  |
  **authorEmail** | **String**|  |
- **newKeyModel** | [**KeyUpdateModel**](KeyUpdateModel.md)|  |
+ **keyUpdateModel** | [**KeyUpdateModel**](KeyUpdateModel.md)|  |
 
 ### Return type
 
@@ -62,26 +62,24 @@ No authorization required
 
 <a name="keysDeleteKey"></a>
 # **keysDeleteKey**
-> String keysDeleteKey(keyPath, authorName, authorEmail, additionalKeys)
-
-
+> String keysDeleteKey(keyPath, authorName, authorEmail, requestBody)
 
 
 
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.KeysApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.KeysApi;
 
 
 KeysApi apiInstance = new KeysApi();
 String keyPath = "keyPath_example"; // String | 
 String authorName = "authorName_example"; // String | 
 String authorEmail = "authorEmail_example"; // String | 
-List<String> additionalKeys = Arrays.asList(new List<String>()); // List<String> | 
+List<String> requestBody = Arrays.asList(); // List<String> | 
 try {
-    String result = apiInstance.keysDeleteKey(keyPath, authorName, authorEmail, additionalKeys);
+    String result = apiInstance.keysDeleteKey(keyPath, authorName, authorEmail, requestBody);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling KeysApi#keysDeleteKey");
@@ -96,7 +94,7 @@ Name | Type | Description  | Notes
  **keyPath** | **String**|  |
  **authorName** | **String**|  |
  **authorEmail** | **String**|  |
- **additionalKeys** | **List&lt;String&gt;**|  | [optional]
+ **requestBody** | [**List&lt;String&gt;**](List.md)|  | [optional]
 
 ### Return type
 
@@ -117,13 +115,11 @@ No authorization required
 
 
 
-
-
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.KeysApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.KeysApi;
 
 
 KeysApi apiInstance = new KeysApi();
@@ -155,6 +151,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 

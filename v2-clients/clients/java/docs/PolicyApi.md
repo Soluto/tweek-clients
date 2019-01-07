@@ -1,6 +1,6 @@
 # PolicyApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -20,8 +20,8 @@ Get Policies
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.PolicyApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.PolicyApi;
 
 
 PolicyApi apiInstance = new PolicyApi();
@@ -47,7 +47,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 <a name="replacePolicy"></a>
@@ -61,8 +61,8 @@ Replace Policy
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.PolicyApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.PolicyApi;
 
 
 PolicyApi apiInstance = new PolicyApi();
@@ -87,12 +87,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 <a name="updatePolicy"></a>
 # **updatePolicy**
-> updatePolicy(policyPatch)
+> updatePolicy(patchOperation)
 
 
 
@@ -101,14 +101,14 @@ Update Policy
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.PolicyApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.PolicyApi;
 
 
 PolicyApi apiInstance = new PolicyApi();
-Patch policyPatch = new Patch(); // Patch | 
+List<PatchOperation> patchOperation = Arrays.asList(null); // List<PatchOperation> | 
 try {
-    apiInstance.updatePolicy(policyPatch);
+    apiInstance.updatePolicy(patchOperation);
 } catch (ApiException e) {
     System.err.println("Exception when calling PolicyApi#updatePolicy");
     e.printStackTrace();
@@ -119,7 +119,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **policyPatch** | [**Patch**](Patch.md)|  |
+ **patchOperation** | [**List&lt;PatchOperation&gt;**](List.md)|  |
 
 ### Return type
 
@@ -132,5 +132,5 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: Not defined
 

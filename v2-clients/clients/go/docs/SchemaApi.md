@@ -1,6 +1,6 @@
 # \SchemaApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -35,13 +35,13 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: text/html
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetSchemas**
-> []interface{} GetSchemas(ctx, )
+> []map[string]interface{} GetSchemas(ctx, )
 
 
 Get query
@@ -51,7 +51,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**[]interface{}**](interface{}.md)
+[**[]map[string]interface{}**](map[string]interface{}.md)
 
 ### Authorization
 
@@ -59,13 +59,13 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SchemaAddIdentity**
-> string SchemaAddIdentity(ctx, identityType, authorName, authorEmail, value)
+> string SchemaAddIdentity(ctx, identityType, authorName, authorEmail, body)
 
 
 Add identity
@@ -78,7 +78,7 @@ Name | Type | Description  | Notes
   **identityType** | **string**|  | 
   **authorName** | **string**|  | 
   **authorEmail** | **string**|  | 
-  **value** | [**interface{}**](interface{}.md)|  | 
+  **body** | **map[string]interface{}**|  | 
 
 ### Return type
 
@@ -96,7 +96,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SchemaPatchIdentity**
-> string SchemaPatchIdentity(ctx, identityType, authorName, authorEmail, patch)
+> string SchemaPatchIdentity(ctx, identityType, authorName, authorEmail, patchOperation)
 
 
 Update identity
@@ -109,7 +109,7 @@ Name | Type | Description  | Notes
   **identityType** | **string**|  | 
   **authorName** | **string**|  | 
   **authorEmail** | **string**|  | 
-  **patch** | [**Patch**](Patch.md)|  | 
+  **patchOperation** | [**[]PatchOperation**](array.md)|  | 
 
 ### Return type
 

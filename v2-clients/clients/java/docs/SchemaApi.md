@@ -1,6 +1,6 @@
 # SchemaApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -21,8 +21,8 @@ Delete Schema
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.SchemaApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.SchemaApi;
 
 
 SchemaApi apiInstance = new SchemaApi();
@@ -56,7 +56,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: text/html
 
 <a name="getSchemas"></a>
@@ -70,8 +70,8 @@ Get query
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.SchemaApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.SchemaApi;
 
 
 SchemaApi apiInstance = new SchemaApi();
@@ -97,12 +97,12 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 <a name="schemaAddIdentity"></a>
 # **schemaAddIdentity**
-> String schemaAddIdentity(identityType, authorName, authorEmail, value)
+> String schemaAddIdentity(identityType, authorName, authorEmail, body)
 
 
 
@@ -111,17 +111,17 @@ Add identity
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.SchemaApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.SchemaApi;
 
 
 SchemaApi apiInstance = new SchemaApi();
 String identityType = "identityType_example"; // String | 
 String authorName = "authorName_example"; // String | 
 String authorEmail = "authorEmail_example"; // String | 
-Object value = null; // Object | 
+Object body = null; // Object | 
 try {
-    String result = apiInstance.schemaAddIdentity(identityType, authorName, authorEmail, value);
+    String result = apiInstance.schemaAddIdentity(identityType, authorName, authorEmail, body);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SchemaApi#schemaAddIdentity");
@@ -136,7 +136,7 @@ Name | Type | Description  | Notes
  **identityType** | **String**|  |
  **authorName** | **String**|  |
  **authorEmail** | **String**|  |
- **value** | **Object**|  |
+ **body** | **Object**|  |
 
 ### Return type
 
@@ -153,7 +153,7 @@ No authorization required
 
 <a name="schemaPatchIdentity"></a>
 # **schemaPatchIdentity**
-> String schemaPatchIdentity(identityType, authorName, authorEmail, patch)
+> String schemaPatchIdentity(identityType, authorName, authorEmail, patchOperation)
 
 
 
@@ -162,17 +162,17 @@ Update identity
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.SchemaApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.SchemaApi;
 
 
 SchemaApi apiInstance = new SchemaApi();
 String identityType = "identityType_example"; // String | 
 String authorName = "authorName_example"; // String | 
 String authorEmail = "authorEmail_example"; // String | 
-Patch patch = new Patch(); // Patch | 
+List<PatchOperation> patchOperation = Arrays.asList(null); // List<PatchOperation> | 
 try {
-    String result = apiInstance.schemaPatchIdentity(identityType, authorName, authorEmail, patch);
+    String result = apiInstance.schemaPatchIdentity(identityType, authorName, authorEmail, patchOperation);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling SchemaApi#schemaPatchIdentity");
@@ -187,7 +187,7 @@ Name | Type | Description  | Notes
  **identityType** | **String**|  |
  **authorName** | **String**|  |
  **authorEmail** | **String**|  |
- **patch** | [**Patch**](Patch.md)|  |
+ **patchOperation** | [**List&lt;PatchOperation&gt;**](List.md)|  |
 
 ### Return type
 

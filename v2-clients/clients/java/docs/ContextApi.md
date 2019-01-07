@@ -1,6 +1,6 @@
 # ContextApi
 
-All URIs are relative to *http://localhost/api/v2/*
+All URIs are relative to *http://localhost/api/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -20,8 +20,8 @@ Delete identity context property
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.ContextApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.ContextApi;
 
 
 ContextApi apiInstance = new ContextApi();
@@ -54,8 +54,8 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 <a name="getContext"></a>
 # **getContext**
@@ -68,8 +68,8 @@ Get identity context
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.ContextApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.ContextApi;
 
 
 ContextApi apiInstance = new ContextApi();
@@ -100,8 +100,8 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 <a name="saveContext"></a>
 # **saveContext**
@@ -114,8 +114,8 @@ Save identity context
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiException;
-//import io.swagger.client.api.ContextApi;
+//import org.openapitools.client.ApiException;
+//import org.openapitools.client.api.ContextApi;
 
 
 ContextApi apiInstance = new ContextApi();
@@ -146,6 +146,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
