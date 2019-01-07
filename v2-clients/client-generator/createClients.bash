@@ -17,4 +17,4 @@ sed -i -e 's/ClientResponse/IncomingMessage/g' ${outputPath}/clients/typescript-
 
 createClient java
 createClient go
-createClient aspnetcore
+createClient csharp
