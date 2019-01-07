@@ -381,7 +381,7 @@ export class AppsApi {
      * @param authorEmail 
      * @param newAppModel 
      */
-    public appsCreateApp (authorName: string, authorEmail: string, newAppModel: AppCreationRequestModel) : Promise<{ response: http.ClientResponse; body: AppCreationResponseModel;  }> {
+    public appsCreateApp (authorName: string, authorEmail: string, newAppModel: AppCreationRequestModel) : Promise<{ response: http.IncomingMessage; body: AppCreationResponseModel;  }> {
         const localVarPath = this.basePath + '/apps';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -432,7 +432,7 @@ export class AppsApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: AppCreationResponseModel;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: AppCreationResponseModel;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -498,7 +498,7 @@ export class ConfiguraitonApi {
      * @param include Include additional keys
      * @param flatten Return flat key/value JSON (no nesting)
      */
-    public getValue (keyName: string, include?: Array<string>, flatten?: boolean) : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public getValue (keyName: string, include?: Array<string>, flatten?: boolean) : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/values';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -542,7 +542,7 @@ export class ConfiguraitonApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -607,7 +607,7 @@ export class ContextApi {
      * @param identityId the identifier of the identity - for example jaime
      * @param prop the property to delete, for example age
      */
-    public deleteContextProp (identityType: string, identityId: string, prop: string) : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public deleteContextProp (identityType: string, identityId: string, prop: string) : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/context/{identityType}/{identityId}/{prop}'
             .replace('{' + 'identityType' + '}', encodeURIComponent(String(identityType)))
             .replace('{' + 'identityId' + '}', encodeURIComponent(String(identityId)))
@@ -652,7 +652,7 @@ export class ContextApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -671,7 +671,7 @@ export class ContextApi {
      * @param identityType the type of the identity - for example user
      * @param identityId the identifier of the identity - for example jaime
      */
-    public getContext (identityType: string, identityId: string) : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public getContext (identityType: string, identityId: string) : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/context/{identityType}/{identityId}'
             .replace('{' + 'identityType' + '}', encodeURIComponent(String(identityType)))
             .replace('{' + 'identityId' + '}', encodeURIComponent(String(identityId)));
@@ -710,7 +710,7 @@ export class ContextApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -729,7 +729,7 @@ export class ContextApi {
      * @param identityType the type of the identity - for example user
      * @param identityId the identifier of the identity - for example jaime
      */
-    public saveContext (identityType: string, identityId: string) : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public saveContext (identityType: string, identityId: string) : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/context/{identityType}/{identityId}'
             .replace('{' + 'identityType' + '}', encodeURIComponent(String(identityType)))
             .replace('{' + 'identityId' + '}', encodeURIComponent(String(identityId)));
@@ -768,7 +768,7 @@ export class ContextApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -830,7 +830,7 @@ export class DependentApi {
     /**
      * Get Dependents
      */
-    public getDependents () : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public getDependents () : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/dependents';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -857,7 +857,7 @@ export class DependentApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -924,7 +924,7 @@ export class KeysApi {
      * @param authorEmail 
      * @param newKeyModel 
      */
-    public createKey (keyPath: string, authorName: string, authorEmail: string, newKeyModel: KeyUpdateModel) : Promise<{ response: http.ClientResponse; body: string;  }> {
+    public createKey (keyPath: string, authorName: string, authorEmail: string, newKeyModel: KeyUpdateModel) : Promise<{ response: http.IncomingMessage; body: string;  }> {
         const localVarPath = this.basePath + '/keys';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -984,7 +984,7 @@ export class KeysApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: string;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: string;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1006,7 +1006,7 @@ export class KeysApi {
      * @param authorEmail 
      * @param additionalKeys 
      */
-    public keysDeleteKey (keyPath: string, authorName: string, authorEmail: string, additionalKeys?: Array<string>) : Promise<{ response: http.ClientResponse; body: string;  }> {
+    public keysDeleteKey (keyPath: string, authorName: string, authorEmail: string, additionalKeys?: Array<string>) : Promise<{ response: http.IncomingMessage; body: string;  }> {
         const localVarPath = this.basePath + '/keys';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1061,7 +1061,7 @@ export class KeysApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: string;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: string;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1081,7 +1081,7 @@ export class KeysApi {
      * @param keyPath 
      * @param revision 
      */
-    public keysGetKey (keyPath: string, revision?: string) : Promise<{ response: http.ClientResponse; body: any;  }> {
+    public keysGetKey (keyPath: string, revision?: string) : Promise<{ response: http.IncomingMessage; body: any;  }> {
         const localVarPath = this.basePath + '/keys';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1121,7 +1121,7 @@ export class KeysApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1184,7 +1184,7 @@ export class ManifestApi {
     /**
      * Get Manifests
      */
-    public getManifests () : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public getManifests () : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/manifests';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1211,7 +1211,7 @@ export class ManifestApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1274,7 +1274,7 @@ export class PolicyApi {
     /**
      * Get Policies
      */
-    public getPolicies () : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public getPolicies () : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/policies';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1301,7 +1301,7 @@ export class PolicyApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1319,7 +1319,7 @@ export class PolicyApi {
     /**
      * Replace Policy
      */
-    public replacePolicy () : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public replacePolicy () : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/policies';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1346,7 +1346,7 @@ export class PolicyApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1364,7 +1364,7 @@ export class PolicyApi {
      * Update Policy
      * @param policyPatch 
      */
-    public updatePolicy (policyPatch: Patch) : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public updatePolicy (policyPatch: Patch) : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/policies';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1397,7 +1397,7 @@ export class PolicyApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1461,7 +1461,7 @@ export class RevisionHistoryApi {
      * @param keyPath 
      * @param since 
      */
-    public getRevisionHistory (keyPath: string, since: string) : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public getRevisionHistory (keyPath: string, since: string) : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/revision-history';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1506,7 +1506,7 @@ export class RevisionHistoryApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1572,7 +1572,7 @@ export class SchemaApi {
      * @param authorName 
      * @param authorEmail 
      */
-    public deleteIdentity (identityType: string, authorName: string, authorEmail: string) : Promise<{ response: http.ClientResponse; body: string;  }> {
+    public deleteIdentity (identityType: string, authorName: string, authorEmail: string) : Promise<{ response: http.IncomingMessage; body: string;  }> {
         const localVarPath = this.basePath + '/schemas/{identityType}'
             .replace('{' + 'identityType' + '}', encodeURIComponent(String(identityType)));
         let localVarQueryParameters: any = {};
@@ -1623,7 +1623,7 @@ export class SchemaApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: string;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: string;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1641,7 +1641,7 @@ export class SchemaApi {
     /**
      * Get query
      */
-    public getSchemas () : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public getSchemas () : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/schemas';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1668,7 +1668,7 @@ export class SchemaApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1690,7 +1690,7 @@ export class SchemaApi {
      * @param authorEmail 
      * @param value 
      */
-    public schemaAddIdentity (identityType: string, authorName: string, authorEmail: string, value: any) : Promise<{ response: http.ClientResponse; body: string;  }> {
+    public schemaAddIdentity (identityType: string, authorName: string, authorEmail: string, value: any) : Promise<{ response: http.IncomingMessage; body: string;  }> {
         const localVarPath = this.basePath + '/schemas/{identityType}'
             .replace('{' + 'identityType' + '}', encodeURIComponent(String(identityType)));
         let localVarQueryParameters: any = {};
@@ -1747,7 +1747,7 @@ export class SchemaApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: string;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: string;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1769,7 +1769,7 @@ export class SchemaApi {
      * @param authorEmail 
      * @param patch 
      */
-    public schemaPatchIdentity (identityType: string, authorName: string, authorEmail: string, patch: Patch) : Promise<{ response: http.ClientResponse; body: string;  }> {
+    public schemaPatchIdentity (identityType: string, authorName: string, authorEmail: string, patch: Patch) : Promise<{ response: http.IncomingMessage; body: string;  }> {
         const localVarPath = this.basePath + '/schemas/{identityType}'
             .replace('{' + 'identityType' + '}', encodeURIComponent(String(identityType)));
         let localVarQueryParameters: any = {};
@@ -1826,7 +1826,7 @@ export class SchemaApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: string;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: string;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1889,7 +1889,7 @@ export class SearchApi {
     /**
      * Search
      */
-    public search () : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public search () : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/search';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1916,7 +1916,7 @@ export class SearchApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -1979,7 +1979,7 @@ export class SuggestionsApi {
     /**
      * Get Suggestions
      */
-    public getSuggestions () : Promise<{ response: http.ClientResponse; body: Array<any>;  }> {
+    public getSuggestions () : Promise<{ response: http.IncomingMessage; body: Array<any>;  }> {
         const localVarPath = this.basePath + '/suggestions';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2006,7 +2006,7 @@ export class SuggestionsApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<any>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<any>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -2070,7 +2070,7 @@ export class TagsApi {
      * Save tags
      * @param tagsToSave The tags that need saving
      */
-    public saveTag (tagsToSave: any) : Promise<{ response: http.ClientResponse; body?: any;  }> {
+    public saveTag (tagsToSave: any) : Promise<{ response: http.IncomingMessage; body?: any;  }> {
         const localVarPath = this.basePath + '/tags';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2103,7 +2103,7 @@ export class TagsApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body?: any;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body?: any;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);
@@ -2120,7 +2120,7 @@ export class TagsApi {
     /**
      * Get all tags
      */
-    public tagsGet () : Promise<{ response: http.ClientResponse; body: Array<string>;  }> {
+    public tagsGet () : Promise<{ response: http.IncomingMessage; body: Array<string>;  }> {
         const localVarPath = this.basePath + '/tags';
         let localVarQueryParameters: any = {};
         let localVarHeaderParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2147,7 +2147,7 @@ export class TagsApi {
                 localVarRequestOptions.form = localVarFormParams;
             }
         }
-        return new Promise<{ response: http.ClientResponse; body: Array<string>;  }>((resolve, reject) => {
+        return new Promise<{ response: http.IncomingMessage; body: Array<string>;  }>((resolve, reject) => {
             localVarRequest(localVarRequestOptions, (error, response, body) => {
                 if (error) {
                     reject(error);

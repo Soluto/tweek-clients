@@ -9,9 +9,12 @@ swaggerFilePath=$(realpath $1)
 swaggerDirectory=$(dirname $swaggerFilePath)
 swaggerFilename=$(basename $swaggerFilePath)
 outputPath=$(realpath $2)
-echo $outputPath
 docker pull swaggerapi/swagger-codegen-cli:2.4.0
 createClient typescript-node
+
+# In typescript client: replace wrong type 'ClientResponse' with 'IncomingMessage' for http response
+sed -i -e 's/ClientResponse/IncomingMessage/g' ${outputPath}/clients/typescript-node/api.ts
+
 createClient java
 createClient go
 createClient csharp
