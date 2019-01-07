@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using RestSharp;
+using RestSharp.Portable;
 using Org.OpenAPITools.Client;
 
 namespace Org.OpenAPITools.Api
@@ -311,7 +311,7 @@ namespace Org.OpenAPITools.Api
             if (prop == null)
                 throw new ApiException(400, "Missing required parameter 'prop' when calling ContextApi->DeleteContextProp");
 
-            var localVarPath = "/context/{identityType}/{identityId}/{prop}";
+            var localVarPath = "./context/{identityType}/{identityId}/{prop}";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -350,7 +350,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<Object>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 null);
         }
 
@@ -388,7 +388,7 @@ namespace Org.OpenAPITools.Api
             if (prop == null)
                 throw new ApiException(400, "Missing required parameter 'prop' when calling ContextApi->DeleteContextProp");
 
-            var localVarPath = "/context/{identityType}/{identityId}/{prop}";
+            var localVarPath = "./context/{identityType}/{identityId}/{prop}";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -427,7 +427,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<Object>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 null);
         }
 
@@ -459,7 +459,7 @@ namespace Org.OpenAPITools.Api
             if (identityId == null)
                 throw new ApiException(400, "Missing required parameter 'identityId' when calling ContextApi->GetContext");
 
-            var localVarPath = "/context/{identityType}/{identityId}";
+            var localVarPath = "./context/{identityType}/{identityId}";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -497,7 +497,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<Object>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 null);
         }
 
@@ -530,7 +530,7 @@ namespace Org.OpenAPITools.Api
             if (identityId == null)
                 throw new ApiException(400, "Missing required parameter 'identityId' when calling ContextApi->GetContext");
 
-            var localVarPath = "/context/{identityType}/{identityId}";
+            var localVarPath = "./context/{identityType}/{identityId}";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -568,7 +568,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<Object>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 null);
         }
 
@@ -600,7 +600,7 @@ namespace Org.OpenAPITools.Api
             if (identityId == null)
                 throw new ApiException(400, "Missing required parameter 'identityId' when calling ContextApi->SaveContext");
 
-            var localVarPath = "/context/{identityType}/{identityId}";
+            var localVarPath = "./context/{identityType}/{identityId}";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -638,7 +638,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<Object>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 null);
         }
 
@@ -671,7 +671,7 @@ namespace Org.OpenAPITools.Api
             if (identityId == null)
                 throw new ApiException(400, "Missing required parameter 'identityId' when calling ContextApi->SaveContext");
 
-            var localVarPath = "/context/{identityType}/{identityId}";
+            var localVarPath = "./context/{identityType}/{identityId}";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -709,7 +709,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<Object>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 null);
         }
 

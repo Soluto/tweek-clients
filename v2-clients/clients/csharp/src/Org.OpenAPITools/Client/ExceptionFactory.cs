@@ -10,7 +10,7 @@
 
 
 using System;
-using RestSharp;
+using RestSharp.Portable;
 
 namespace Org.OpenAPITools.Client
 {

@@ -9,11 +9,16 @@ swaggerFilePath=$(realpath $1)
 swaggerDirectory=$(dirname $swaggerFilePath)
 swaggerFilename=$(basename $swaggerFilePath)
 outputPath=$(realpath $2)
-createClient typescript-node
+thisPath=$(realpath ./)
 
-# In typescript client: replace wrong type 'ClientResponse' with 'IncomingMessage' for http response
-sed -i -e 's/ClientResponse/IncomingMessage/g' ${outputPath}/clients/typescript-node/api.ts
 
+# generate clients
+
+createClient typescript-axios
 createClient java
 createClient go
-createClient csharp
+
+# csharp
+docker run --rm -v ${swaggerDirectory}:/swaggerDirectory -v ${outputPath}:/outputPath -v ${thisPath}:/configPath openapitools/openapi-generator-cli:v4.0.0-beta generate -i /swaggerDirectory/$swaggerFilename -g csharp -o outputPath/clients/csharp -c /configPath/csharp-configuration.yaml	
+
+createClient swift

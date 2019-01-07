@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using RestSharp;
+using RestSharp.Portable;
 using Org.OpenAPITools.Client;
 using Org.OpenAPITools.Model;
 
@@ -221,7 +221,7 @@ namespace Org.OpenAPITools.Api
             if (appCreationRequestModel == null)
                 throw new ApiException(400, "Missing required parameter 'appCreationRequestModel' when calling AppsApi->AppsCreateApp");
 
-            var localVarPath = "/apps";
+            var localVarPath = "./apps";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -269,7 +269,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<AppCreationResponseModel>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 (AppCreationResponseModel) this.Configuration.ApiClient.Deserialize(localVarResponse, typeof(AppCreationResponseModel)));
         }
 
@@ -308,7 +308,7 @@ namespace Org.OpenAPITools.Api
             if (appCreationRequestModel == null)
                 throw new ApiException(400, "Missing required parameter 'appCreationRequestModel' when calling AppsApi->AppsCreateApp");
 
-            var localVarPath = "/apps";
+            var localVarPath = "./apps";
             var localVarPathParams = new Dictionary<String, String>();
             var localVarQueryParams = new List<KeyValuePair<String, String>>();
             var localVarHeaderParams = new Dictionary<String, String>(this.Configuration.DefaultHeader);
@@ -356,7 +356,7 @@ namespace Org.OpenAPITools.Api
             }
 
             return new ApiResponse<AppCreationResponseModel>(localVarStatusCode,
-                localVarResponse.Headers.ToDictionary(x => x.Name, x => x.Value.ToString()),
+                localVarResponse.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 (AppCreationResponseModel) this.Configuration.ApiClient.Deserialize(localVarResponse, typeof(AppCreationResponseModel)));
         }
 
