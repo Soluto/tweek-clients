@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    /* Basic Options */
+    "lib": ["esnext"],
+    "jsx": "react",
+    "outDir": "./dist"
+  },
+  "files": ["src/index.ts"]
+}
