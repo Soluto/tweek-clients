@@ -9,7 +9,6 @@ swaggerFilePath=$(realpath $1)
 swaggerDirectory=$(dirname $swaggerFilePath)
 swaggerFilename=$(basename $swaggerFilePath)
 outputPath=$(realpath $2)
-docker pull openapitools/openapi-generator-cli:v4.0.0-beta
 createClient typescript-node
 
 # In typescript client: replace wrong type 'ClientResponse' with 'IncomingMessage' for http response
