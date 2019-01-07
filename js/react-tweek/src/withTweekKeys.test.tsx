@@ -1,16 +1,26 @@
-/* global describe, beforeEach, test, expect, jest */
-import React from 'react';
+import React, { Component } from 'react';
 import renderer from 'react-test-renderer';
 import Provider from './Provider';
-import withTweekKeys from './withTweekKeys';
+import withTweekKeys, { WithTweekKeysOptions } from './withTweekKeys';
+
+type MockRepositoryOptions = {
+  results?: any[];
+  error?: any;
+}
+
+class Child extends Component {
+  render() {
+    return null;
+  }
+}
 
 describe('withTweekKeys', () => {
   const value = 'someValue';
-  let observeMock;
-  let subscribeMock;
-  let unsubscribeMock;
+  let observeMock: jest.Mock;
+  let subscribeMock: jest.Mock;
+  let unsubscribeMock: jest.Mock;
 
-  const mockRepository = ({ results, error } = {}) => {
+  const mockRepository = ({ results, error }: MockRepositoryOptions = {}) => {
     unsubscribeMock = jest.fn();
     subscribeMock = jest.fn((onNext, onError) => {
       const subscription = { unsubscribe: unsubscribeMock };
@@ -34,11 +44,11 @@ describe('withTweekKeys', () => {
     observeMock = jest.fn().mockReturnValue({ subscribe: subscribeMock });
   };
 
-  const renderComponent = async (path, config) => {
+  const renderComponent = async (path: string, config?: WithTweekKeysOptions) => {
     const withTweekKeysHoc = withTweekKeys(path, config);
-    const Component = withTweekKeysHoc('div');
+    const Component = withTweekKeysHoc(Child);
     const component = renderer.create(
-      <Provider repo={{ observe: observeMock }}>
+      <Provider repo={{ observe: observeMock } as any}>
         <Component />
       </Provider>,
     );
@@ -60,8 +70,8 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -73,8 +83,8 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -86,8 +96,8 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someName).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someName).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -99,9 +109,9 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.tweek).toBeDefined();
-      expect(tree.props.tweek.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.tweek).toBeDefined();
+      expect(child.props.tweek.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -113,9 +123,9 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someName).toBeDefined();
-      expect(tree.props.someName.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someName).toBeDefined();
+      expect(child.props.someName.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -133,9 +143,9 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBeDefined();
-      expect(tree.props.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBeDefined();
+      expect(child.props.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -149,9 +159,9 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBeDefined();
-      expect(tree.props.someKey).toBe('newValue');
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBeDefined();
+      expect(child.props.someKey).toBe('newValue');
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -161,8 +171,8 @@ describe('withTweekKeys', () => {
       const initialValue = 'someInitialValue';
       mockRepository();
       const component = await renderComponent(path, { initialValue });
-      const tree = component.toJSON();
-      expect(tree.props.someKey).toBe(initialValue);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(initialValue);
     });
   });
 
@@ -179,8 +189,8 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -192,8 +202,8 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -205,8 +215,8 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -218,9 +228,9 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.tweek).toBeDefined();
-      expect(tree.props.tweek.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.tweek).toBeDefined();
+      expect(child.props.tweek.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -232,9 +242,9 @@ describe('withTweekKeys', () => {
       expect(observeMock).toBeCalledWith(path, undefined);
       expect(subscribeMock).toBeCalled();
 
-      let tree = component.toJSON();
-      expect(tree.props.someName).toBeDefined();
-      expect(tree.props.someName.someKey).toBe(value);
+      const child = component.root.findByType(Child);
+      expect(child.props.someName).toBeDefined();
+      expect(child.props.someName.someKey).toBe(value);
 
       component.unmount();
       expect(unsubscribeMock).toBeCalled();
@@ -244,8 +254,8 @@ describe('withTweekKeys', () => {
       const initialValue = 'someInitialValue';
       mockRepository();
       const component = await renderComponent(path, { initialValue: { someKey: initialValue } });
-      const tree = component.toJSON();
-      expect(tree.props.someKey).toBe(initialValue);
+      const child = component.root.findByType(Child);
+      expect(child.props.someKey).toBe(initialValue);
     });
   });
 
@@ -263,7 +273,7 @@ describe('withTweekKeys', () => {
 
   test('with getPolicy', async () => {
     const path = 'path/someKey';
-    const getPolicy = 'somePolicy';
+    const getPolicy: any = 'somePolicy';
     mockRepository({ results: [{ value }] });
 
     await renderComponent(path, { getPolicy });

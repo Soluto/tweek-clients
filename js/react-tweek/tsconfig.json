@@ -3,9 +3,7 @@
   "compilerOptions": {
     /* Basic Options */
     "lib": ["esnext"],
-    "allowJs": true,
     "jsx": "react",
-    "declaration": false,
     "outDir": "./dist"
   },
   "files": ["src/index.ts"]

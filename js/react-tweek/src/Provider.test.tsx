@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import TestUtils from 'react-dom/test-utils';
+import renderer from 'react-test-renderer';
 import Provider, { createProvider } from './Provider';
 
 const repositoryMock = {
@@ -40,13 +40,14 @@ describe('Provider', () => {
   const { default: tweekLocalCacheMock } = require('tweek-local-cache');
 
   it('should add the store to the child context', () => {
-    const tree = TestUtils.renderIntoDocument(
-      <Provider repo={repositoryMock}>
+    const component = renderer.create(
+      <Provider repo={repositoryMock as any}>
         <Child />
       </Provider>,
     );
-    const child = TestUtils.findRenderedComponentWithType(tree, Child);
-    expect(child.context.tweekRepo).toBe(repositoryMock);
+
+    const child = component.root.findByType(Child);
+    expect(child.instance.context.tweekRepo).toBe(repositoryMock);
   });
 
   it('should add the store to the child context using a custom store key', () => {
@@ -54,19 +55,19 @@ describe('Provider', () => {
     const CustomProvider = createProvider({ repoKey });
     const CustomChild = createChild(repoKey);
 
-    const tree = TestUtils.renderIntoDocument(
-      <CustomProvider repo={repositoryMock}>
+    const component = renderer.create(
+      <CustomProvider repo={repositoryMock as any}>
         <CustomChild />
       </CustomProvider>,
     );
 
-    const child = TestUtils.findRenderedComponentWithType(tree, CustomChild);
-    expect(child.context.customRepoKey).toBe(repositoryMock);
+    const child = component.root.findByType(CustomChild);
+    expect(child.instance.context.customRepoKey).toBe(repositoryMock);
   });
 
   it('should create a repository if client is passed', () => {
-    TestUtils.renderIntoDocument(
-      <Provider client={repositoryMock}>
+    renderer.create(
+      <Provider client={repositoryMock as any}>
         <Child />
       </Provider>,
     );
@@ -76,7 +77,7 @@ describe('Provider', () => {
 
   it('should create client and repository if baseServiceUrl is passed', () => {
     const baseServiceUrl = 'someUrl';
-    TestUtils.renderIntoDocument(
+    renderer.create(
       <Provider baseServiceUrl={baseServiceUrl}>
         <Child />
       </Provider>,
