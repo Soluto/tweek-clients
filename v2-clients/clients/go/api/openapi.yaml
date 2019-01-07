@@ -1,0 +1,631 @@
+openapi: 3.0.0
+info:
+  license:
+    name: MIT
+    url: https://github.com/Soluto/tweek/blob/master/LICENSE
+  title: Tweek
+  version: 0.1.0
+servers:
+- url: /api/v2/
+paths:
+  /values:
+    get:
+      description: Get tweek key value
+      operationId: GetValue
+      parameters:
+      - explode: true
+        in: query
+        name: params
+        required: false
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+        style: form
+      - description: Context ids
+        explode: true
+        in: query
+        name: keyName
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Include additional keys
+        explode: true
+        in: query
+        name: $include
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      - description: Return flat key/value JSON (no nesting)
+        explode: true
+        in: query
+        name: $flatten
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        200:
+          description: Success
+        400:
+          description: Invalid Request
+        403:
+          description: Unauthorized
+        404:
+          description: Key not found
+      tags:
+      - configuraiton
+  /context/{identityType}/{identityId}:
+    get:
+      description: Get identity context
+      operationId: GetContext
+      parameters:
+      - description: the type of the identity - for example user
+        explode: false
+        in: path
+        name: identityType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: the identifier of the identity - for example jaime
+        explode: false
+        in: path
+        name: identityId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        200:
+          description: Ok
+      tags:
+      - context
+    post:
+      description: Save identity context
+      operationId: SaveContext
+      parameters:
+      - description: the type of the identity - for example user
+        explode: false
+        in: path
+        name: identityType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: the identifier of the identity - for example jaime
+        explode: false
+        in: path
+        name: identityId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        200:
+          description: Ok
+      tags:
+      - context
+  /context/{identityType}/{identityId}/{prop}:
+    delete:
+      description: Delete identity context property
+      operationId: DeleteContextProp
+      parameters:
+      - description: the type of the identity - for example user
+        explode: false
+        in: path
+        name: identityType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: the identifier of the identity - for example jaime
+        explode: false
+        in: path
+        name: identityId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: the property to delete, for example age
+        explode: false
+        in: path
+        name: prop
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        200:
+          description: OK
+      tags:
+      - context
+  /keys:
+    delete:
+      operationId: KeysDeleteKey
+      parameters:
+      - explode: true
+        in: query
+        name: keyPath
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.email
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                type: string
+              type: array
+      responses:
+        200:
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Ok
+      tags:
+      - keys
+    get:
+      operationId: KeysGetKey
+      parameters:
+      - explode: true
+        in: query
+        name: keyPath
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: revision
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Ok
+      tags:
+      - keys
+    put:
+      description: Save Key
+      operationId: CreateKey
+      parameters:
+      - explode: true
+        in: query
+        name: keyPath
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.email
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyUpdateModel'
+        required: true
+      responses:
+        200:
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Ok
+      tags:
+      - keys
+  /tags:
+    get:
+      description: Get all tags
+      operationId: TagsGet
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Ok
+      tags:
+      - tags
+    put:
+      description: Save tags
+      operationId: SaveTag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: The tags that need saving
+        required: true
+      responses:
+        204:
+          description: No content
+      tags:
+      - tags
+  /schemas:
+    get:
+      description: Get query
+      operationId: GetSchemas
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - schema
+  /schemas/{identityType}:
+    delete:
+      description: Delete Schema
+      operationId: DeleteIdentity
+      parameters:
+      - description: The type of the identity
+        explode: false
+        in: path
+        name: identityType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: author.name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.email
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Ok
+      tags:
+      - schema
+    patch:
+      description: Update identity
+      operationId: SchemaPatchIdentity
+      parameters:
+      - explode: false
+        in: path
+        name: identityType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: author.name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.email
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        $ref: '#/components/requestBodies/Patch'
+      responses:
+        200:
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Ok
+      tags:
+      - schema
+    post:
+      description: Add identity
+      operationId: SchemaAddIdentity
+      parameters:
+      - explode: false
+        in: path
+        name: identityType
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: author.name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.email
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        200:
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Ok
+      tags:
+      - schema
+  /manifests:
+    get:
+      description: Get Manifests
+      operationId: GetManifests
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - manifest
+  /suggestions:
+    get:
+      description: Get Suggestions
+      operationId: GetSuggestions
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - suggestions
+  /search:
+    get:
+      description: Search
+      operationId: Search
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - search
+  /dependents:
+    get:
+      description: Get Dependents
+      operationId: GetDependents
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - dependent
+  /revision-history:
+    get:
+      description: Get Revision History
+      operationId: GetRevisionHistory
+      parameters:
+      - explode: true
+        in: query
+        name: keyPath
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: since
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - revision-history
+  /policies:
+    get:
+      description: Get Policies
+      operationId: GetPolicies
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+          description: Ok
+      tags:
+      - policy
+    patch:
+      description: Update Policy
+      operationId: UpdatePolicy
+      requestBody:
+        $ref: '#/components/requestBodies/Patch'
+      responses:
+        200:
+          description: OK
+      tags:
+      - policy
+    put:
+      description: Replace Policy
+      operationId: ReplacePolicy
+      responses:
+        200:
+          description: OK
+      tags:
+      - policy
+  /apps:
+    post:
+      operationId: AppsCreateApp
+      parameters:
+      - explode: true
+        in: query
+        name: author.name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: author.email
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppCreationRequestModel'
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppCreationResponseModel'
+          description: Ok
+      tags:
+      - apps
+components:
+  requestBodies:
+    Patch:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Patch'
+      required: true
+  schemas:
+    PatchOperation:
+      properties:
+        op:
+          type: string
+        path:
+          type: string
+        value:
+          type: object
+      type: object
+    Patch:
+      items:
+        $ref: '#/components/schemas/PatchOperation'
+      type: array
+    KeyUpdateModel:
+      example:
+        manifest: '{}'
+        implementation: '{}'
+      properties:
+        implementation:
+          type: object
+        manifest:
+          type: object
+      required:
+      - implementation
+      - manifest
+      type: object
+    AppCreationResponseModel:
+      example:
+        appId: appId
+        appSecret: appSecret
+      properties:
+        appId:
+          type: string
+        appSecret:
+          type: string
+      required:
+      - appId
+      - appSecret
+      type: object
+    AppCreationRequestModel:
+      example:
+        permissions:
+        - permissions
+        - permissions
+        name: name
+      properties:
+        name:
+          type: string
+        permissions:
+          items:
+            type: string
+          type: array
+      required:
+      - name
+      - permissions
+      type: object

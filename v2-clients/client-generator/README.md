@@ -1,0 +1,1 @@
+- ./createClients.bash swagger/file/path/swagger.yml out/put/path

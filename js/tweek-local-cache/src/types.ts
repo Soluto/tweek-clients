@@ -1,4 +1,4 @@
-import { ITweekClient } from 'tweek-client';
+import { KeysApi } from '../../../v2-clients/clients/typescript';
 
 export type TweekRepositoryKeys = {
   [key: string]: RepositoryKey<any>;
@@ -42,7 +42,7 @@ export type ScanNode = {
 export type RepositoryKey<T> = CachedKey<T> | RequestedKey | ScanNode | MissingKey;
 
 export type TweekRepositoryConfig = {
-  client: ITweekClient;
+  client: KeysApi;
   getPolicy?: GetPolicy;
   refreshInterval?: number;
   refreshDelay?: number;

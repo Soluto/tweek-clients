@@ -1,4 +1,4 @@
-import { ITweekClient, Context, FetchConfig } from 'tweek-client';
+import { ConfiguraitonApi } from '../../../v2-clients/clients/typescript';
 import { createChangeEmitter } from 'change-emitter';
 import Observable = require('zen-observable');
 import $$observable from 'symbol-observable';
@@ -46,7 +46,7 @@ export default class TweekRepository {
   private _emitter = createChangeEmitter();
   private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
-  private _client: ITweekClient;
+  private _client: ConfiguraitonApi;
   private _context: Context = {};
   private _getPolicy: GetPolicy;
   private _refreshDelay: number;
@@ -275,7 +275,7 @@ export default class TweekRepository {
     };
 
     return this._client
-      .fetch<any>('_', fetchConfig)
+      .getValue('_', keysToRefresh, true)
       .catch(err => {
         expiredKeys.forEach(([key, valueNode]) =>
           this._cache.set(key, {
