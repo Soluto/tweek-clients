@@ -1,5 +1,22 @@
 import { ITweekClient } from 'tweek-client';
-import { IRepositoryKey } from './repository-key';
+
+export const enum Expiration {
+  expired = 'expired',
+  refreshing = 'refreshing',
+}
+
+export const enum RepositoryKeyState {
+  requested = 'requested',
+  missing = 'missing',
+  cached = 'cached',
+}
+
+export interface IRepositoryKey<T> {
+  state: RepositoryKeyState;
+  isScan?: boolean;
+  value?: T;
+  expiration?: Expiration;
+}
 
 export type TweekRepositoryKeys = {
   [key: string]: IRepositoryKey<any>;

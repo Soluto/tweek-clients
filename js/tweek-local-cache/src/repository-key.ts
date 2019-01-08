@@ -1,52 +1,38 @@
-export const enum Expiration {
-  expired = 'expired',
-  refreshing = 'refreshing',
+import { Expiration, IRepositoryKey, RepositoryKeyState } from './types';
+
+export function request<T = any>(isScan: boolean): IRepositoryKey<T> {
+  return {
+    state: RepositoryKeyState.requested,
+    isScan: isScan,
+  };
 }
 
-export const enum RepositoryKeyState {
-  requested = 'requested',
-  missing = 'missing',
-  cached = 'cached',
+export function missing<T = any>(): IRepositoryKey<T> {
+  return {
+    state: RepositoryKeyState.missing,
+  };
 }
 
-export interface IRepositoryKey<T> {
-  state: RepositoryKeyState;
-  isScan?: boolean;
-  value?: T;
-  expiration?: Expiration;
+export function cached<T>(isScan: true): IRepositoryKey<T>;
+export function cached<T>(isScan: false, value: T): IRepositoryKey<T>;
+export function cached<T>(isScan: boolean, value?: T): IRepositoryKey<T> {
+  return {
+    state: RepositoryKeyState.cached,
+    isScan,
+    value,
+  };
 }
 
-export class RepositoryKey<T> implements IRepositoryKey<T> {
-  constructor(
-    readonly state: RepositoryKeyState,
-    readonly isScan?: boolean,
-    readonly value?: T,
-    readonly expiration?: Expiration,
-  ) {}
+export function refresh<T>(key: IRepositoryKey<T>): IRepositoryKey<T> {
+  return {
+    ...key,
+    expiration: Expiration.refreshing,
+  };
+}
 
-  static from<T>(other: IRepositoryKey<T>) {
-    return new RepositoryKey(other.state, other.isScan, other.value, other.expiration);
-  }
-
-  static request(isScan: boolean) {
-    return new RepositoryKey(RepositoryKeyState.requested, isScan);
-  }
-
-  static missing() {
-    return new RepositoryKey(RepositoryKeyState.missing);
-  }
-
-  static cached<T>(isScan: true): RepositoryKey<T>;
-  static cached<T>(isScan: false, value: T): RepositoryKey<T>;
-  static cached<T>(isScan: boolean, value?: T) {
-    return new RepositoryKey(RepositoryKeyState.cached, isScan, value);
-  }
-
-  refresh() {
-    return new RepositoryKey(this.state, this.isScan, this.value, Expiration.refreshing);
-  }
-
-  expire() {
-    return new RepositoryKey(this.state, this.isScan, this.value, Expiration.expired);
-  }
+export function expire<T>(key: IRepositoryKey<T>): IRepositoryKey<T> {
+  return {
+    ...key,
+    expiration: Expiration.expired,
+  };
 }

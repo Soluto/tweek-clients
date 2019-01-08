@@ -7,16 +7,19 @@ import { delay, distinct, once, partitionByIndex, snakeToCamelCase } from './uti
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
+  Expiration,
   FlatKeys,
   GetPolicy,
+  IRepositoryKey,
   ITweekStore,
   NotPreparedPolicy,
   NotReadyPolicy,
   RefreshErrorPolicy,
+  RepositoryKeyState,
   TweekRepositoryConfig,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
-import { Expiration, RepositoryKey, RepositoryKeyState } from './repository-key';
+import * as RepositoryKey from './repository-key';
 
 function isNullOrUndefined(x: unknown): x is null | undefined {
   return x === null || x === undefined;
@@ -48,7 +51,7 @@ type KeyValues = { [key: string]: any };
 
 export default class TweekRepository {
   private _emitter = createChangeEmitter();
-  private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
+  private _cache = new Trie<IRepositoryKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
   private _context: Context = {};
@@ -94,16 +97,14 @@ export default class TweekRepository {
       .load()
       .then(keys => {
         keys = keys || {};
-        Object.entries(keys)
-          .map(([key, value]) => [key, RepositoryKey.from(value)] as [string, RepositoryKey<any>])
-          .forEach(([key, value]) => {
-            if (value.expiration) {
-              this._isDirty = true;
-              this._checkRefresh();
-              value = value.expire();
-            }
-            this._cache.set(key, value);
-          });
+        Object.entries(keys).forEach(([key, value]: [string, IRepositoryKey<any>]) => {
+          if (value.expiration) {
+            this._isDirty = true;
+            this._checkRefresh();
+            value = RepositoryKey.expire(value);
+          }
+          this._cache.set(key, value);
+        });
       })
       .then(() => this._emitter.emit());
   }
@@ -155,7 +156,7 @@ export default class TweekRepository {
       if (node.expiration !== Expiration.refreshing) {
         this._isDirty = true;
         if (node.expiration !== Expiration.expired) {
-          this._cache.set(key, node.expire());
+          this._cache.set(key, RepositoryKey.expire(node));
         }
       }
     }
@@ -266,7 +267,7 @@ export default class TweekRepository {
 
     if (expiredKeys.length === 0) return Promise.resolve();
 
-    expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, valueNode.refresh()));
+    expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.refresh(valueNode)));
 
     const keysToRefresh = expiredKeys.map(([key]) => key);
 
@@ -280,7 +281,7 @@ export default class TweekRepository {
     return this._client
       .fetch<any>('_', fetchConfig)
       .catch(err => {
-        expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, valueNode.expire()));
+        expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.expire(valueNode)));
         this._isDirty = true;
         throw err;
       })
