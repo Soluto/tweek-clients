@@ -7,7 +7,7 @@ describe('createTweekContext', () => {
     const prepare = jest.fn();
     const key = 'some_key_path';
 
-    const context = createTweekContext({prepare} as any);
+    const context = createTweekContext({ prepare } as any);
 
     context.prepare(key);
 
@@ -18,9 +18,9 @@ describe('createTweekContext', () => {
     const prepare = jest.fn();
     const key = 'some_key_path';
 
-    const Context = createTweekContext({prepare: jest.fn()} as any);
+    const Context = createTweekContext({ prepare: jest.fn() } as any);
     Context.prepare(key);
-    renderer.create(<Context.Provider value={{prepare} as any} />);
+    renderer.create(<Context.Provider value={{ prepare } as any} />);
 
     expect(prepare).toHaveBeenCalledWith(key);
   });
@@ -29,10 +29,10 @@ describe('createTweekContext', () => {
     const prepare = jest.fn();
     const key = 'some_key_path';
 
-    const Context = createTweekContext({prepare: jest.fn()} as any);
-    renderer.create(<Context.Provider value={{prepare} as any} />);
+    const Context = createTweekContext({ prepare: jest.fn() } as any);
+    renderer.create(<Context.Provider value={{ prepare } as any} />);
     Context.prepare(key);
 
     expect(prepare).toHaveBeenCalledWith(key);
-  })
+  });
 });
