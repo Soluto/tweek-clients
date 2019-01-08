@@ -1,11 +1,10 @@
-src/
-spec/
-node_modules/
-
 .git
 .gitignore
+.vscode
+.idea
+
+test/
+node_modules/
 
 yarn.lock
 package-lock.json
-
-.vscode
