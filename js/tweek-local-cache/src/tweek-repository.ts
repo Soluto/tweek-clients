@@ -54,7 +54,7 @@ export default class TweekRepository {
   private _cache = new Trie<IRepositoryKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
-  private _context: Context = {};
+  private _context: Context;
   private _getPolicy: GetPolicy;
   private _refreshDelay: number;
   private _isDirty = false;
@@ -69,6 +69,7 @@ export default class TweekRepository {
     getPolicy,
     refreshDelay,
     refreshErrorPolicy = exponentIntervalFailurePolicy(),
+    context = {},
   }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
@@ -79,10 +80,19 @@ export default class TweekRepository {
     };
     this._refreshDelay = refreshDelay || 30;
     this._refreshErrorPolicy = refreshErrorPolicy;
+    this._context = context;
   }
 
-  set context(value: Context) {
-    this._context = value;
+  public updateContext(valueOrMapper: Context | ((context: Context) => Context | null)) {
+    if (typeof valueOrMapper === 'function') {
+      const newContext = valueOrMapper(this._context);
+      if (!newContext) {
+        return;
+      }
+      this._context = newContext;
+    } else {
+      this._context = valueOrMapper;
+    }
     this.expire();
   }
 

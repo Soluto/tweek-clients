@@ -1,4 +1,4 @@
-import { ITweekClient } from 'tweek-client';
+import { Context, ITweekClient } from 'tweek-client';
 
 export const enum Expiration {
   expired = 'expired',
@@ -37,6 +37,7 @@ export type TweekRepositoryConfig = {
   refreshInterval?: number;
   refreshDelay?: number;
   refreshErrorPolicy?: RefreshErrorPolicy;
+  context?: Context;
 };
 
 export const enum NotReadyPolicy {

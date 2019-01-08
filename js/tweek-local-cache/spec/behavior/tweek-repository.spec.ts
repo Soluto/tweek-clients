@@ -42,8 +42,7 @@ describe('tweek repo behavior test', function(this: Mocha.Suite) {
     _tweekClient = createTweekClient({ baseServiceUrl: TWEEK_LOCAL_API });
 
     const store = new MemoryStore();
-    _tweekRepo = new TweekRepository({ client: _tweekClient });
-    _tweekRepo.context = context;
+    _tweekRepo = new TweekRepository({ client: _tweekClient, context });
     await _tweekRepo.useStore(store);
   }
 
