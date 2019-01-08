@@ -1,4 +1,4 @@
-export function partitionByIndex(arr, index) {
+export function partitionByIndex<T>(arr: T[], index: number): [T[], T[]] {
   if (index >= 0) {
     return [arr.slice(0, index), arr.slice(index)];
   } else {
@@ -6,27 +6,28 @@ export function partitionByIndex(arr, index) {
   }
 }
 
-export function distinct(arr) {
+export function distinct<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
 
-function captialize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function snakeToCamelCase(keyName) {
+export function snakeToCamelCase(keyName: string) {
   let [[first], others] = partitionByIndex(keyName.split('_'), 1);
-  return [first, ...others.map(captialize)].join('');
+  return [first, ...others.map(capitalize)].join('');
 }
 
-export function delay(timeout): Promise<void> {
+export function delay(timeout: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
-export function once(fn) {
-  let p = fn;
-  return function() {
-    let result = p && p.apply(this, arguments);
+export function once<T extends Function>(fn: T): T;
+export function once(fn: Function): Function {
+  let p: Function | undefined = fn;
+  return function(this: Function) {
+    const result = p && p.apply(this, arguments);
     p = undefined;
     return result;
   };

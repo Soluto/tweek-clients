@@ -2,8 +2,6 @@ src/
 spec/
 node_modules/
 
-.babelrc
-
 .git
 .gitignore
 

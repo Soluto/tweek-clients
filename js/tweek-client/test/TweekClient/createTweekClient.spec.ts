@@ -1,4 +1,4 @@
-import fetchMock = require('fetch-mock');
+import fetchMock from 'fetch-mock';
 import { expect } from 'chai';
 import createTweekClient from '../../src/createTweekClient';
 

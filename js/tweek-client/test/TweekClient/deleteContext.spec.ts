@@ -1,15 +1,16 @@
-import sinon = require('sinon');
+import sinon from 'sinon';
 import { expect } from 'chai';
 import TweekClient from '../../src/TweekClient';
+import { TweekCasing } from '../../src';
 
 describe('tweek-client deleteContext', () => {
   const defaultUrl = 'http://test';
-  let prepare = url => {
+  let prepare = (url?: string) => {
     const fetchStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: 'snake',
+      casing: TweekCasing.snake,
       convertTyping: false,
       fetch: fetchStub,
     });

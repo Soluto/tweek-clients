@@ -1,8 +1,8 @@
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import TweekClientWithFallback from '../src/TweekClientWithFallback';
 
-function createStub(shouldFail) {
+function createStub(shouldFail: boolean) {
   const stub = sinon.stub();
   if (shouldFail) {
     stub.rejects();
@@ -26,12 +26,12 @@ describe('TweekClientWithFallback', () => {
     const identityId = 'someIdentityId';
     const context = { a: 'a', b: 'b' };
 
-    function assertCalled(client) {
+    function assertCalled(client: any) {
       sinon.assert.calledOnce(client.appendContext);
       sinon.assert.calledWithExactly(client.appendContext, identityType, identityId, context);
     }
 
-    function assertNotCalled(client) {
+    function assertNotCalled(client: any) {
       sinon.assert.notCalled(client.appendContext);
     }
 
@@ -80,12 +80,12 @@ describe('TweekClientWithFallback', () => {
     const identityId = 'someIdentityId';
     const property = 'someProperty';
 
-    function assertCalled(client) {
+    function assertCalled(client: any) {
       sinon.assert.calledOnce(client.deleteContext);
       sinon.assert.calledWithExactly(client.deleteContext, identityType, identityId, property);
     }
 
-    function assertNotCalled(client) {
+    function assertNotCalled(client: any) {
       sinon.assert.notCalled(client.deleteContext);
     }
 
@@ -133,12 +133,12 @@ describe('TweekClientWithFallback', () => {
     const path = 'somePath';
     const config = {};
 
-    function assertCalled(client) {
+    function assertCalled(client: any) {
       sinon.assert.calledOnce(client.fetch);
       sinon.assert.calledWithExactly(client.fetch, path, config);
     }
 
-    function assertNotCalled(client) {
+    function assertNotCalled(client: any) {
       sinon.assert.notCalled(client.deleteContext);
     }
 

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import getenv = require('getenv');
+const getenv: any = require('getenv');
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
 import axios from 'axios';
 import MemoryStore from '../../src/memory-store';
@@ -8,7 +8,7 @@ import { delay } from '../../src/utils';
 
 const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://127.0.0.1:1111');
 
-describe('tweek repo behavior test', function() {
+describe('tweek repo behavior test', function(this: Mocha.Suite) {
   this.timeout(180000);
 
   let _tweekRepo: TweekRepository;
@@ -42,8 +42,7 @@ describe('tweek repo behavior test', function() {
     _tweekClient = createTweekClient({ baseServiceUrl: TWEEK_LOCAL_API });
 
     const store = new MemoryStore();
-    _tweekRepo = new TweekRepository({ client: _tweekClient });
-    _tweekRepo.context = context;
+    _tweekRepo = new TweekRepository({ client: _tweekClient, context });
     await _tweekRepo.useStore(store);
   }
 
@@ -132,7 +131,7 @@ describe('tweek repo behavior test', function() {
 
       // Act
       _tweekRepo.refresh();
-      await (<any>_tweekRepo).waitRefreshCycle();
+      await (<any>_tweekRepo)._waitRefreshCycle();
 
       // Assert
       const getKeysValuesPromises: Promise<any>[] = test.expectedKeys.map(x => _tweekRepo.get(x.keyName));

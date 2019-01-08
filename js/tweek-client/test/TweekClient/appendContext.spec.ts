@@ -1,15 +1,16 @@
-import sinon = require('sinon');
+import sinon from 'sinon';
 import { expect } from 'chai';
 import TweekClient from '../../src/TweekClient';
+import { TweekCasing } from '../../src';
 
 describe('tweek-client appendContext', () => {
   const defaultUrl = 'http://test';
-  let prepare = url => {
+  let prepare = (url?: string) => {
     const fetchStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: 'snake',
+      casing: TweekCasing.snake,
       convertTyping: false,
       fetch: fetchStub,
     });
@@ -20,7 +21,7 @@ describe('tweek-client appendContext', () => {
     };
   };
 
-  const testsDefenitions: {
+  const testsDefinitions: {
     identityType: string;
     identityId: string;
     expectedUrl: string;
@@ -29,7 +30,7 @@ describe('tweek-client appendContext', () => {
     context: object;
   }[] = [];
 
-  testsDefenitions.push({
+  testsDefinitions.push({
     identityId: 'abcd1234',
     identityType: 'user',
     expectedUrl: `${defaultUrl}/api/v1/context/user/abcd1234`,
@@ -41,7 +42,7 @@ describe('tweek-client appendContext', () => {
     },
   });
 
-  testsDefenitions.push({
+  testsDefinitions.push({
     identityId: 'a1b2c3d4',
     identityType: 'device',
     expectedUrl: `${defaultUrl}/api/v1/context/device/a1b2c3d4`,
@@ -53,7 +54,7 @@ describe('tweek-client appendContext', () => {
     },
   });
 
-  testsDefenitions.forEach(test => {
+  testsDefinitions.forEach(test => {
     it('should execute appendContext correctly', async () => {
       // Arrange
       const { tweekClient, fetchStub } = prepare(test.baseUrl);

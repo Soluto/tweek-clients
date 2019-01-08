@@ -1,24 +1,29 @@
-import { ITweekClient, Context, FetchConfig } from 'tweek-client';
+import { Context, FetchConfig, ITweekClient, TweekCasing } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
-import Observable = require('zen-observable');
 import $$observable from 'symbol-observable';
+import Observable from 'zen-observable';
 import Trie from './trie';
-import { partitionByIndex, snakeToCamelCase, distinct, delay, once } from './utils';
+import { delay, distinct, once, partitionByIndex, snakeToCamelCase } from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
-  RefreshErrorPolicy,
+  Expiration,
   FlatKeys,
   GetPolicy,
+  IRepositoryKey,
   ITweekStore,
+  NotPreparedPolicy,
+  NotReadyPolicy,
+  RefreshErrorPolicy,
+  RepositoryKeyState,
   TweekRepositoryConfig,
-  RepositoryKey,
-  CachedKey,
-  Expiration,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
+import * as RepositoryKey from './repository-key';
 
-const isNullOrUndefined = x => x === null || x === undefined;
+function isNullOrUndefined(x: unknown): x is null | undefined {
+  return x === null || x === undefined;
+}
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -27,27 +32,29 @@ export const TweekKeySplitJoin = {
   join: (fragments: string[]) => fragments.join('/'),
 };
 
-let getAllPrefixes = key => {
+const getAllPrefixes = (key: string) => {
   return key
     .split('/')
     .slice(0, -1)
-    .reduce((acc, next) => [...acc, [...acc.slice(-1), next].join('/')], []);
+    .reduce((acc: string[], next) => [...acc, [...acc.slice(-1), next].join('/')], []);
 };
 
-let getKeyPrefix = key =>
+const getKeyPrefix = (key: string) =>
   key
     .split('/')
     .slice(0, -1)
     .join('/');
 
-let flatMap = (arr, fn) => Array.prototype.concat.apply([], arr.map(fn));
+const flatMap = <T, U>(arr: T[], fn: (t: T) => U[]) => Array.prototype.concat.apply([], arr.map(fn));
+
+type KeyValues = { [key: string]: any };
 
 export default class TweekRepository {
   private _emitter = createChangeEmitter();
-  private _cache = new Trie<RepositoryKey<any>>(TweekKeySplitJoin);
+  private _cache = new Trie<IRepositoryKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
-  private _context: Context = {};
+  private _context: Context;
   private _getPolicy: GetPolicy;
   private _refreshDelay: number;
   private _isDirty = false;
@@ -61,58 +68,68 @@ export default class TweekRepository {
     client,
     getPolicy,
     refreshDelay,
-    refreshErrorPolicy = exponentIntervalFailurePolicy(8),
+    refreshErrorPolicy = exponentIntervalFailurePolicy(),
+    context = {},
   }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
-    this._getPolicy = { notReady: 'wait', notPrepared: 'prepare', ...TweekRepository._ensurePolicy(getPolicy) };
+    this._getPolicy = {
+      notReady: NotReadyPolicy.wait,
+      notPrepared: NotPreparedPolicy.prepare,
+      ...TweekRepository._ensurePolicy(getPolicy),
+    };
     this._refreshDelay = refreshDelay || 30;
     this._refreshErrorPolicy = refreshErrorPolicy;
+    this._context = context;
   }
 
-  set context(value: Context) {
-    this._context = value;
+  public updateContext(valueOrMapper: Context | ((context: Context) => Context | null)) {
+    if (typeof valueOrMapper === 'function') {
+      const newContext = valueOrMapper(this._context);
+      if (!newContext) {
+        return;
+      }
+      this._context = newContext;
+    } else {
+      this._context = valueOrMapper;
+    }
+    this.expire();
   }
 
   public addKeys(keys: FlatKeys) {
-    Object.entries(keys).forEach(([key, value]) =>
-      this._cache.set(key, {
-        state: 'cached',
-        value: TweekRepository._tryParse(value),
-        isScan: false,
-      }),
-    );
+    Object.entries(keys).forEach(([key, value]) => this._cache.set(key, RepositoryKey.cached(false, value)));
+    this._emitter.emit();
   }
 
-  public useStore(store) {
+  public useStore(store: ITweekStore) {
     this._store = store;
-    return this._store.load().then(keys => {
-      keys = keys || {};
-      Object.entries(keys).forEach(([key, value]) => {
-        if (value.expiration) {
-          this._isDirty = true;
-          this.checkRefresh();
-          this._cache.set(key, {
-            ...value,
-            expiration: 'expired',
-          });
-        } else {
+    return this._store
+      .load()
+      .then(keys => {
+        keys = keys || {};
+        Object.entries(keys).forEach(([key, value]: [string, IRepositoryKey<any>]) => {
+          if (value.expiration) {
+            this._isDirty = true;
+            this._checkRefresh();
+            value = RepositoryKey.expire(value);
+          }
           this._cache.set(key, value);
-        }
-      });
-    });
+        });
+      })
+      .then(() => this._emitter.emit());
   }
 
   public prepare(key: string) {
-    let node = this._cache.get(key);
+    const node = this._cache.get(key);
     if (!node) {
-      let isScan = TweekRepository._isScan(key);
-      this._cache.set(key, { state: 'requested', isScan });
+      const isScan = TweekRepository._isScan(key);
+      this._cache.set(key, RepositoryKey.request(isScan));
       this._isDirty = true;
-      this.checkRefresh();
+      this._checkRefresh();
     }
   }
 
+  public get<T = any>(key: string, policy?: GetPolicy): Promise<never | Optional<T> | T>;
   public get(key: string, policy?: GetPolicy): Promise<never | Optional<any> | any> {
     return new Promise((resolve, reject) => {
       const observer = this.observe(key, policy);
@@ -129,48 +146,34 @@ export default class TweekRepository {
     });
   }
 
-  private waitRefreshCycle() {
-    if (!this._refreshInProgress) return Promise.resolve();
-    return this._refreshPromise;
-  }
-
   public refresh(keysToRefresh?: string[]) {
     this.expire(keysToRefresh);
   }
 
   public expire(keysToRefresh = Object.keys(this._cache.list())) {
-    for (let key of keysToRefresh) {
+    for (const key of keysToRefresh) {
       const node = this._cache.get(key);
+
       if (!node) {
-        if (this._getPolicy.notPrepared === 'throw') {
-          throw `key ${key} not managed, use prepare to add it to cache`;
-        } else {
-          this.prepare(key);
-          continue;
+        if (this._getPolicy.notPrepared === NotPreparedPolicy.throw) {
+          throw new Error(`key ${key} not managed, use prepare to add it to cache`);
         }
+
+        this.prepare(key);
+        continue;
       }
 
-      if (node.expiration !== 'refreshing') {
+      if (node.expiration !== Expiration.refreshing) {
         this._isDirty = true;
-        if (node.expiration !== 'expired') {
-          this._cache.set(key, {
-            ...node,
-            expiration: 'expired',
-          });
+        if (node.expiration !== Expiration.expired) {
+          this._cache.set(key, RepositoryKey.expire(node));
         }
       }
     }
-    this.checkRefresh();
+    this._checkRefresh();
   }
 
-  private checkRefresh() {
-    this._refreshPromise = this._refreshInProgress
-      ? this._refreshPromise.then(() => {
-          if (!this._refreshInProgress) return this._rollRefresh();
-        })
-      : this._rollRefresh();
-  }
-
+  public observe<T = any>(key: string, policy?: GetPolicy): Observable<T>;
   public observe(key: string, policy: GetPolicy = {}) {
     policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
     const isScan = TweekRepository._isScan(key);
@@ -178,10 +181,10 @@ export default class TweekRepository {
     return new Observable<any>(observer => {
       function handleNotReady() {
         switch (policy.notReady) {
-          case 'wait':
+          case NotReadyPolicy.wait:
             return self.expire([key]);
           default:
-            return observer.error('value not available yet for key: ' + key);
+            return observer.error(new Error(`value not available yet for key: ${key}`));
         }
       }
 
@@ -189,25 +192,25 @@ export default class TweekRepository {
         const node = self._cache.get(key);
 
         if (!node) {
-          if (policy.notPrepared === 'prepare') return self.prepare(key);
-          return observer.error(`key ${key} not managed, use prepare to add it to cache`);
+          if (policy.notPrepared === NotPreparedPolicy.prepare) return self.prepare(key);
+          return observer.error(new Error(`key ${key} not managed, use prepare to add it to cache`));
         }
 
         if (isScan) {
           const prefix = getKeyPrefix(key);
           const relative = Object.entries(self._cache.listRelative(prefix));
           if (
-            node.state === 'requested' ||
-            relative.some(([key, value]) => value.state === 'requested' && !value.isScan)
+            node.state === RepositoryKeyState.requested ||
+            relative.some(([_, value]) => value.state === RepositoryKeyState.requested && !value.isScan)
           ) {
             return handleNotReady();
           }
           return observer.next(self._extractScanResult(key));
         }
 
-        if (node.state === 'requested') return handleNotReady();
-        if (node.state === 'missing') return observer.next(Optional.none());
-        if (node.isScan) return observer.error('corrupted cache');
+        if (node.state === RepositoryKeyState.requested) return handleNotReady();
+        if (node.state === RepositoryKeyState.missing) return observer.next(Optional.none());
+        if (node.isScan) return observer.error(new Error('corrupted cache'));
         return observer.next(Optional.some(node.value));
       }
 
@@ -219,6 +222,21 @@ export default class TweekRepository {
 
   public [$$observable]() {
     return this.observe('_');
+  }
+
+  // @ts-ignore TS6133 (for testing purposes)
+  private _waitRefreshCycle() {
+    if (!this._refreshInProgress) return Promise.resolve();
+    return this._refreshPromise;
+  }
+
+  private _checkRefresh() {
+    this._refreshPromise = this._refreshInProgress
+      ? this._refreshPromise.then(() => {
+          if (!this._refreshInProgress) return this._rollRefresh();
+          return;
+        })
+      : this._rollRefresh();
   }
 
   private _rollRefresh(): Promise<void> {
@@ -245,31 +263,27 @@ export default class TweekRepository {
       );
     });
 
-    return promise.catch(ex => {});
+    return promise.catch(_ => {});
   }
 
   private _refreshKeys() {
     if (!this._isDirty) return Promise.resolve();
     this._isDirty = false;
 
-    let expiredKeys = Object.entries(this._cache.list()).filter(
-      ([key, valueNode]) => valueNode.state === 'requested' || valueNode.expiration === 'expired',
+    const expiredKeys = Object.entries(this._cache.list()).filter(
+      ([_, valueNode]) =>
+        valueNode.state === RepositoryKeyState.requested || valueNode.expiration === Expiration.expired,
     );
 
     if (expiredKeys.length === 0) return Promise.resolve();
 
-    expiredKeys.forEach(([key, valueNode]) =>
-      this._cache.set(key, {
-        ...valueNode,
-        expiration: 'refreshing',
-      }),
-    );
+    expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.refresh(valueNode)));
 
-    let keysToRefresh = expiredKeys.map(([key]) => key);
+    const keysToRefresh = expiredKeys.map(([key]) => key);
 
     const fetchConfig: FetchConfig = {
       flatten: true,
-      casing: 'snake',
+      casing: TweekCasing.snake,
       context: this._context,
       include: keysToRefresh,
     };
@@ -277,12 +291,7 @@ export default class TweekRepository {
     return this._client
       .fetch<any>('_', fetchConfig)
       .catch(err => {
-        expiredKeys.forEach(([key, valueNode]) =>
-          this._cache.set(key, {
-            ...valueNode,
-            expiration: 'expired',
-          }),
-        );
+        expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.expire(valueNode)));
         this._isDirty = true;
         throw err;
       })
@@ -291,16 +300,13 @@ export default class TweekRepository {
       .then(() => this._emitter.emit());
   }
 
-  private _updateTrieKeys(keys, keyValues) {
-    let valuesTrie;
-    for (let keyToUpdate of keys) {
+  private _updateTrieKeys(keys: string[], keyValues: KeyValues) {
+    let valuesTrie: Trie<any> | undefined;
+    for (const keyToUpdate of keys) {
       const isScan = TweekRepository._isScan(keyToUpdate);
       if (isScan) {
         if (!valuesTrie) {
-          valuesTrie = new Trie(TweekKeySplitJoin);
-          Object.entries(keyValues).forEach(([k, v]) => {
-            valuesTrie.set(k, v);
-          });
+          valuesTrie = Trie.from(TweekKeySplitJoin, keyValues);
         }
         this._updateTrieScanKey(keyToUpdate, keyValues, valuesTrie);
       } else {
@@ -309,34 +315,37 @@ export default class TweekRepository {
     }
   }
 
-  private _updateTrieScanKey(key, keyValues, valuesTrie) {
-    let prefix = getKeyPrefix(key);
+  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<any>) {
+    const prefix = getKeyPrefix(key);
 
-    let entries = Object.entries(this._cache.list(prefix));
+    const entries = Object.entries(this._cache.list(prefix));
     entries.forEach(([subKey, valueNode]) => {
-      this._updateNode(subKey, keyValues[subKey]);
-      if (valueNode.state === 'missing' || !valueNode.isScan) {
+      if (valueNode.state === RepositoryKeyState.missing || !valueNode.isScan) {
+        this._updateNode(subKey, keyValues[subKey]);
         return;
       }
 
-      this._cache.set(subKey, { state: 'cached', isScan: true });
-      let fullPrefix = getKeyPrefix(subKey);
-      let nodes = fullPrefix === '' ? valuesTrie.list() : valuesTrie.listRelative(fullPrefix);
-      this._setScanNodes(fullPrefix, Object.keys(nodes), 'cached');
+      this._cache.set(subKey, RepositoryKey.cached(true));
+
+      const fullPrefix = getKeyPrefix(subKey);
+      const nodes = fullPrefix === '' ? valuesTrie.list() : valuesTrie.listRelative(fullPrefix);
+
+      this._setScanNodes(fullPrefix, Object.keys(nodes));
+
       Object.entries(nodes).forEach(([n, value]) => {
-        let fullKey = [...(fullPrefix === '' ? [] : [fullPrefix]), n].join('/');
-        this._cache.set(fullKey, { state: 'cached', value, isScan: false });
+        const fullKey = [...(fullPrefix === '' ? [] : [fullPrefix]), n].join('/');
+        this._cache.set(fullKey, RepositoryKey.cached(false, value));
       });
     });
   }
 
-  private _extractScanResult(key) {
-    let prefix = getKeyPrefix(key);
+  private _extractScanResult(key: string) {
+    const prefix = getKeyPrefix(key);
     return Object.entries(this._cache.listRelative(prefix))
-      .filter(([key, valueNode]) => valueNode.state === 'cached' && !valueNode.isScan)
-      .reduce((acc, [key, valueNode]: [string, CachedKey<any>]) => {
-        let [fragments, [name]] = partitionByIndex(key.split('/').map(snakeToCamelCase), -1);
-        let node = fragments.reduce((x, fragment) => {
+      .filter(([_, valueNode]) => valueNode.state === RepositoryKeyState.cached && !valueNode.isScan)
+      .reduce((acc, [key, valueNode]) => {
+        const [fragments, [name]] = partitionByIndex(key.split('/').map(snakeToCamelCase), -1);
+        const node = fragments.reduce((x: KeyValues, fragment) => {
           if (!x[fragment]) {
             x[fragment] = {};
           }
@@ -347,49 +356,41 @@ export default class TweekRepository {
       }, {});
   }
 
-  private _setScanNodes(prefix, keys, state, expiration?: Expiration) {
+  private _setScanNodes(prefix: string, keys: string[]) {
     distinct(flatMap(keys, key => getAllPrefixes(key)))
       .map(path => [...(prefix === '' ? [] : [prefix]), path, '_'].join('/'))
-      .forEach(key => this._cache.set(key, { state: state, isScan: true, expiration }));
+      .forEach(key => this._cache.set(key, RepositoryKey.cached(true)));
   }
 
-  private _updateNode(key, value) {
+  private _updateNode(key: string, value: any) {
     if (value === undefined) {
-      this._cache.set(key, { state: 'missing' });
+      this._cache.set(key, RepositoryKey.missing());
     } else {
-      this._cache.set(key, {
-        state: 'cached',
-        isScan: false,
-        value: value,
-      });
+      this._cache.set(key, RepositoryKey.cached(false, value));
     }
   }
 
-  private static _tryParse(value) {
-    try {
-      return JSON.parse(value);
-    } catch (e) {
-      return value;
-    }
-  }
-
-  private static _isScan(key) {
+  private static _isScan(key: string) {
     return key === '_' || key.endsWith('/_');
   }
 
-  private static _ensurePolicy(policy) {
+  private static _ensurePolicy(policy: GetPolicy | null | undefined) {
     if (isNullOrUndefined(policy)) return policy;
     if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
 
+    // @ts-ignore TS2367 (legacy support)
     if (policy.notReady === 'refresh') {
-      policy = { ...policy, notReady: 'wait' };
+      policy = { ...policy, notReady: NotReadyPolicy.wait };
     }
 
-    if (!isNullOrUndefined(policy.notReady) && !['wait', 'throw'].includes(policy.notReady)) {
+    if (!isNullOrUndefined(policy.notReady) && ![NotReadyPolicy.wait, NotReadyPolicy.throw].includes(policy.notReady)) {
       throw new TypeError(`expected notReady policy to be one of ['wait', 'throw'], instead got '${policy.notReady}'`);
     }
 
-    if (!isNullOrUndefined(policy.notPrepared) && !['prepare', 'throw'].includes(policy.notPrepared)) {
+    if (
+      !isNullOrUndefined(policy.notPrepared) &&
+      ![NotPreparedPolicy.prepare, NotPreparedPolicy.throw].includes(policy.notPrepared)
+    ) {
       throw new TypeError(
         `expected notPrepared policy to be one of ['prepare', 'throw'], instead got '${policy.notPrepared}'`,
       );

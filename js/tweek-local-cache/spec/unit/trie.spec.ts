@@ -2,10 +2,10 @@ import { expect } from 'chai';
 import Trie from '../../src/trie';
 
 let splitJoin = {
-  split(key) {
+  split(key: string) {
     return key.split('');
   },
-  join(fragment) {
+  join(fragment: string[]) {
     return fragment.join('');
   },
 };
