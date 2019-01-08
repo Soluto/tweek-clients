@@ -47,6 +47,33 @@ const getKeyPrefix = (key: string) =>
 
 const flatMap = <T, U>(arr: T[], fn: (t: T) => U[]) => Array.prototype.concat.apply([], arr.map(fn));
 
+const ensurePolicy = (policy: GetPolicy | null | undefined) => {
+  if (isNullOrUndefined(policy)) return policy;
+  if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
+
+  // @ts-ignore TS2367 (legacy support)
+  if (policy.notReady === 'refresh') {
+    policy = { ...policy, notReady: NotReadyPolicy.wait };
+  }
+
+  if (!isNullOrUndefined(policy.notReady) && ![NotReadyPolicy.wait, NotReadyPolicy.throw].includes(policy.notReady)) {
+    throw new TypeError(`expected notReady policy to be one of ['wait', 'throw'], instead got '${policy.notReady}'`);
+  }
+
+  if (
+    !isNullOrUndefined(policy.notPrepared) &&
+    ![NotPreparedPolicy.prepare, NotPreparedPolicy.throw].includes(policy.notPrepared)
+  ) {
+    throw new TypeError(
+      `expected notPrepared policy to be one of ['prepare', 'throw'], instead got '${policy.notPrepared}'`,
+    );
+  }
+
+  return policy;
+};
+
+const isScanKey = (key: string) => key === '_' || key.endsWith('/_');
+
 type KeyValues = { [key: string]: any };
 
 export default class TweekRepository {
@@ -76,7 +103,7 @@ export default class TweekRepository {
     this._getPolicy = {
       notReady: NotReadyPolicy.wait,
       notPrepared: NotPreparedPolicy.prepare,
-      ...TweekRepository._ensurePolicy(getPolicy),
+      ...ensurePolicy(getPolicy),
     };
     this._refreshDelay = refreshDelay || 30;
     this._refreshErrorPolicy = refreshErrorPolicy;
@@ -96,8 +123,18 @@ export default class TweekRepository {
     this.expire();
   }
 
-  public addKeys(keys: FlatKeys) {
-    Object.entries(keys).forEach(([key, value]) => this._cache.set(key, RepositoryKey.cached(false, value)));
+  public addKeys(flatKeys: FlatKeys) {
+    Object.entries(flatKeys).forEach(([key, value]) => {
+      if (!isScanKey(key)) {
+        this._cache.set(key, RepositoryKey.cached(false, value));
+        return;
+      }
+
+      const prefix = getKeyPrefix(key);
+      this._cache.set(key, RepositoryKey.cached(true));
+
+      Object.entries(value).forEach(([k, v]) => this._cache.set(`${prefix}/${k}`, RepositoryKey.cached(false, v)));
+    });
     this._emitter.emit();
   }
 
@@ -122,7 +159,7 @@ export default class TweekRepository {
   public prepare(key: string) {
     const node = this._cache.get(key);
     if (!node) {
-      const isScan = TweekRepository._isScan(key);
+      const isScan = isScanKey(key);
       this._cache.set(key, RepositoryKey.request(isScan));
       this._isDirty = true;
       this._checkRefresh();
@@ -146,6 +183,9 @@ export default class TweekRepository {
     });
   }
 
+  /**
+   * @deprecated use `expire` instead
+   */
   public refresh(keysToRefresh?: string[]) {
     this.expire(keysToRefresh);
   }
@@ -175,8 +215,8 @@ export default class TweekRepository {
 
   public observe<T = any>(key: string, policy?: GetPolicy): Observable<T>;
   public observe(key: string, policy: GetPolicy = {}) {
-    policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
-    const isScan = TweekRepository._isScan(key);
+    policy = { ...this._getPolicy, ...ensurePolicy(policy) };
+    const isScan = isScanKey(key);
     const self = this;
     return new Observable<any>(observer => {
       function handleNotReady() {
@@ -303,7 +343,7 @@ export default class TweekRepository {
   private _updateTrieKeys(keys: string[], keyValues: KeyValues) {
     let valuesTrie: Trie<any> | undefined;
     for (const keyToUpdate of keys) {
-      const isScan = TweekRepository._isScan(keyToUpdate);
+      const isScan = isScanKey(keyToUpdate);
       if (isScan) {
         if (!valuesTrie) {
           valuesTrie = Trie.from(TweekKeySplitJoin, keyValues);
@@ -368,34 +408,5 @@ export default class TweekRepository {
     } else {
       this._cache.set(key, RepositoryKey.cached(false, value));
     }
-  }
-
-  private static _isScan(key: string) {
-    return key === '_' || key.endsWith('/_');
-  }
-
-  private static _ensurePolicy(policy: GetPolicy | null | undefined) {
-    if (isNullOrUndefined(policy)) return policy;
-    if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
-
-    // @ts-ignore TS2367 (legacy support)
-    if (policy.notReady === 'refresh') {
-      policy = { ...policy, notReady: NotReadyPolicy.wait };
-    }
-
-    if (!isNullOrUndefined(policy.notReady) && ![NotReadyPolicy.wait, NotReadyPolicy.throw].includes(policy.notReady)) {
-      throw new TypeError(`expected notReady policy to be one of ['wait', 'throw'], instead got '${policy.notReady}'`);
-    }
-
-    if (
-      !isNullOrUndefined(policy.notPrepared) &&
-      ![NotPreparedPolicy.prepare, NotPreparedPolicy.throw].includes(policy.notPrepared)
-    ) {
-      throw new TypeError(
-        `expected notPrepared policy to be one of ['prepare', 'throw'], instead got '${policy.notPrepared}'`,
-      );
-    }
-
-    return policy;
   }
 }

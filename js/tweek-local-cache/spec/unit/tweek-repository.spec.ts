@@ -379,6 +379,25 @@ describe('tweek repo test', () => {
       const result2 = await _tweekRepo.get('some_path/inner_path_1/first_value');
       expect(result2.value).to.eql('value_1');
     });
+
+    it('should add scan key', async () => {
+      await initRepository();
+      const keys = {
+        'some_path/inner_path_1/_': {
+          first_value: 'default_value_1',
+          second_value: 'default_value_2',
+        },
+      };
+
+      _tweekRepo.addKeys(keys);
+
+      const result1 = await _tweekRepo.get('some_path/inner_path_1/_');
+      expect(result1).to.eql({ firstValue: 'default_value_1', secondValue: 'default_value_2' });
+
+      await refreshAndWait();
+      const result2 = await _tweekRepo.get('some_path/inner_path_1/_');
+      expect(result2).to.eql({ firstValue: 'value_1', secondValue: 'value_2' });
+    });
   });
 
   describe('refresh', () => {

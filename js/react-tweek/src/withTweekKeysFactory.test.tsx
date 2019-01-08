@@ -1,6 +1,6 @@
 import React, { Component, Context } from 'react';
 import renderer from 'react-test-renderer';
-import { MemoryStore, NotPreparedPolicy, RepositoryKeyState, TweekRepository } from 'tweek-local-cache';
+import { NotPreparedPolicy, TweekRepository } from 'tweek-local-cache';
 import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
 
 type TweekProps = {
@@ -18,17 +18,6 @@ class Child extends Component<TweekProps> {
 }
 
 const mapping = {singleKey: 'single_key', scanKey: 'scan_key/_'};
-
-const scanKey = {
-  state: RepositoryKeyState.cached,
-  isScan: true
-};
-
-const cachedKey = (value: any) => ({
-  state: RepositoryKeyState.cached,
-  value,
-  isScan: false,
-});
 
 const waitImmediate = () => new Promise(res => setImmediate(res));
 
@@ -73,12 +62,10 @@ describe('withTweekKeysFactory', () => {
       },
       someProp: 'some value'
     };
-    await repository.useStore(new MemoryStore({
-      'single_key': cachedKey(expectedProps.singleKey),
-      'scan_key/a': cachedKey(expectedProps.scanKey.a),
-      'scan_key/b': cachedKey(expectedProps.scanKey.b),
-      'scan_key/_': scanKey
-    }));
+    repository.addKeys({
+      single_key: expectedProps.singleKey,
+      'scan_key/_': expectedProps.scanKey
+    });
 
     const withTweekKeysHoc = withTweekKeys(mapping);
 
@@ -102,12 +89,13 @@ describe('withTweekKeysFactory', () => {
         b: 'b scan value',
       },
     };
-    await repository.useStore(new MemoryStore({
-      'single_key': cachedKey('expectedProps.singleKey'),
-      'scan_key/a': cachedKey('expectedProps.scanKey.a'),
-      'scan_key/b': cachedKey('expectedProps.scanKey.b'),
-      'scan_key/_': scanKey
-    }));
+    repository.addKeys({
+      single_key: 'expectedProps.singleKey',
+      'scan_key/_': {
+        a: 'expectedProps.scanKey.a',
+        b: 'expectedProps.scanKey.b'
+      }
+    });
 
     const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
 
@@ -116,12 +104,12 @@ describe('withTweekKeysFactory', () => {
     const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
     const component = renderer.create(<EnhancedComponent/>);
 
-    await repository.useStore(new MemoryStore({
-      'single_key': cachedKey(expectedProps.singleKey),
-      'scan_key/a': cachedKey(expectedProps.scanKey.a),
-      'scan_key/b': cachedKey(expectedProps.scanKey.b),
-      'scan_key/_': scanKey
-    }));
+    repository.addKeys({
+      single_key: expectedProps.singleKey,
+      'scan_key/_': expectedProps.scanKey
+    });
+
+    await waitImmediate();
 
     const child = component.root.findByType(Child);
 
