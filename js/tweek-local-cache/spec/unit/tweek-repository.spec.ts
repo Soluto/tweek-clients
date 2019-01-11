@@ -383,9 +383,11 @@ describe('tweek repo test', () => {
     it('should add scan key', async () => {
       await initRepository();
       const keys = {
-        'some_path/inner_path_1/_': {
-          first_value: 'default_value_1',
-          second_value: 'default_value_2',
+        'some_path/_': {
+          'inner_path_1/_': {
+            first_value: 'default_value_1',
+            second_value: 'default_value_2',
+          },
         },
       };
 

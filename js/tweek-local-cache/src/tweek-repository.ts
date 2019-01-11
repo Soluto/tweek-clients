@@ -124,17 +124,7 @@ export default class TweekRepository {
   }
 
   public addKeys(flatKeys: FlatKeys) {
-    Object.entries(flatKeys).forEach(([key, value]) => {
-      if (!isScanKey(key)) {
-        this._cache.set(key, RepositoryKey.cached(false, value));
-        return;
-      }
-
-      const prefix = getKeyPrefix(key);
-      this._cache.set(key, RepositoryKey.cached(true));
-
-      Object.entries(value).forEach(([k, v]) => this._cache.set(`${prefix}/${k}`, RepositoryKey.cached(false, v)));
-    });
+    this._storeFlatKeys(flatKeys);
     this._emitter.emit();
   }
 
@@ -408,5 +398,21 @@ export default class TweekRepository {
     } else {
       this._cache.set(key, RepositoryKey.cached(false, value));
     }
+  }
+
+  private _storeFlatKeys(flatKeys: FlatKeys, root?: string) {
+    Object.entries(flatKeys).forEach(([key, value]) => {
+      if (root) {
+        key = `${root}/${key}`;
+      }
+
+      if (!isScanKey(key)) {
+        this._cache.set(key, RepositoryKey.cached(false, value));
+        return;
+      }
+
+      this._cache.set(key, RepositoryKey.cached(true));
+      this._storeFlatKeys(value, getKeyPrefix(key));
+    });
   }
 }
