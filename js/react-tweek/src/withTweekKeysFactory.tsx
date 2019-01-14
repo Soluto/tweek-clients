@@ -51,7 +51,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
         result => {
           this.setState((state) => {
             if (!isScanKey) {
-              result = result.value;
+              result = result.hasValue ? result.value : null;
             }
             if (isEqual(state[propName], result)) {
               return null;
