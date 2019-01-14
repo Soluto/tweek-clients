@@ -17,7 +17,7 @@ class Child extends Component<TweekProps> {
   }
 }
 
-const mapping = {singleKey: 'single_key', scanKey: 'scan_key/_'};
+const mapping = {singleKey: 'single_key', scanKey: 'scan_key/_', missingKey: 'missing_key'};
 
 const scanKey = {
   state: RepositoryKeyState.cached,
@@ -29,6 +29,10 @@ const cachedKey = (value: any) => ({
   value,
   isScan: false,
 });
+
+const missingKey = {
+  state: RepositoryKeyState.missing,
+};
 
 const waitImmediate = () => new Promise(res => setImmediate(res));
 
@@ -71,12 +75,14 @@ describe('withTweekKeysFactory', () => {
         a: 'a scan value',
         b: 'b scan value',
       },
+      missingKey: null,
       someProp: 'some value'
     };
     await repository.useStore(new MemoryStore({
       'single_key': cachedKey(expectedProps.singleKey),
       'scan_key/a': cachedKey(expectedProps.scanKey.a),
       'scan_key/b': cachedKey(expectedProps.scanKey.b),
+      'missing_key': missingKey,
       'scan_key/_': scanKey
     }));
 
@@ -101,11 +107,13 @@ describe('withTweekKeysFactory', () => {
         a: 'a scan value',
         b: 'b scan value',
       },
+      missingKey: null,
     };
     await repository.useStore(new MemoryStore({
       'single_key': cachedKey('expectedProps.singleKey'),
       'scan_key/a': cachedKey('expectedProps.scanKey.a'),
       'scan_key/b': cachedKey('expectedProps.scanKey.b'),
+      'missing_key': missingKey,
       'scan_key/_': scanKey
     }));
 
@@ -120,7 +128,6 @@ describe('withTweekKeysFactory', () => {
       'single_key': cachedKey(expectedProps.singleKey),
       'scan_key/a': cachedKey(expectedProps.scanKey.a),
       'scan_key/b': cachedKey(expectedProps.scanKey.b),
-      'scan_key/_': scanKey
     }));
 
     const child = component.root.findByType(Child);
