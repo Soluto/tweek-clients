@@ -7,8 +7,8 @@ describe('optimize include', () => {
     expect(result).to.deep.equal(['a/_', 'b']);
   });
 
-  it('should not filter hidden keys', () => {
-    const result = optimizeInclude(['@a/_', '@a/b', 'b/_', 'b/c/@d']);
-    expect(result).to.deep.equal(['@a/_', 'b/_', 'b/c/@d']);
+  it('should handle hidden keys correctly', () => {
+    const result = optimizeInclude(['@a/_', '@a/b/@c/_', '@a/b/@c/d', '@a/c', '@a/d/_', 'b/_', 'b/c', 'b/@d']);
+    expect(result).to.deep.equal(['@a/_', '@a/b/@c/_', 'b/@d', 'b/_']);
   });
 });

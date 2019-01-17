@@ -22,23 +22,27 @@ export const optimizeInclude = (keys: string[]): string[] => {
   keys = Array.from(keys);
   keys.sort();
 
-  while (keys.length) {
-    const currentKey = keys.shift();
-    result.push(currentKey!);
+  const handleKey = (key: string) => {
+    result.push(key);
 
-    if (!isScanKey(currentKey!)) {
-      continue;
+    if (!isScanKey(key!)) {
+      return;
     }
 
-    const prefix = currentKey!.substring(0, currentKey!.length - 1);
+    const prefixLength = key.length - 1;
+    const prefix = key.substring(0, prefixLength);
 
     while (keys.length && keys[0].startsWith(prefix)) {
-      const nextKey = keys.shift();
-      const relative = nextKey!.substring(prefix.length);
+      const nextKey = keys.shift()!;
+      const relative = nextKey.substring(prefixLength);
       if (isHiddenKey(relative)) {
-        result.push(nextKey!);
+        handleKey(nextKey);
       }
     }
+  };
+
+  while (keys.length) {
+    handleKey(keys.shift()!);
   }
 
   return result;
