@@ -33,7 +33,8 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   state: WithTweekKeysState = {};
   private _subscriptions: ZenObservable.Subscription[] = [];
 
-  componentDidMount() {
+  constructor(props: WithTweekKeysRepoProps) {
+    super(props);
     this._subscribeToKeys();
   }
 
