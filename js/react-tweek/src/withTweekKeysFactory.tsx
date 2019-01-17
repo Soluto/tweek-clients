@@ -36,6 +36,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   componentDidUpdate(prevProps: WithTweekKeysRepoProps) {
     if (prevProps._tweekRepo !== this.props._tweekRepo) {
       this._unsubscribe();
+      this.setState(Object.keys(this.props._keyPropsMapping).reduce((acc, prop) => ({...acc, [prop]: undefined}), {}));
       this._subscribeToKeys();
     }
   }
