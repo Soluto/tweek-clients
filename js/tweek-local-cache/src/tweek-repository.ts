@@ -3,7 +3,18 @@ import { createChangeEmitter } from 'change-emitter';
 import $$observable from 'symbol-observable';
 import Observable from 'zen-observable';
 import Trie from './trie';
-import { delay, distinct, once, partitionByIndex, snakeToCamelCase } from './utils';
+import {
+  delay,
+  distinct,
+  flatMap,
+  getAllPrefixes,
+  getKeyPrefix,
+  isNullOrUndefined,
+  isScanKey,
+  once,
+  partitionByIndex,
+  snakeToCamelCase,
+} from './utils';
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
@@ -21,31 +32,12 @@ import {
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 import * as RepositoryKey from './repository-key';
 
-function isNullOrUndefined(x: unknown): x is null | undefined {
-  return x === null || x === undefined;
-}
-
 export const TweekKeySplitJoin = {
   split: (key: string) => {
     return key.toLowerCase().split('/');
   },
   join: (fragments: string[]) => fragments.join('/'),
 };
-
-const getAllPrefixes = (key: string) => {
-  return key
-    .split('/')
-    .slice(0, -1)
-    .reduce((acc: string[], next) => [...acc, [...acc.slice(-1), next].join('/')], []);
-};
-
-const getKeyPrefix = (key: string) =>
-  key
-    .split('/')
-    .slice(0, -1)
-    .join('/');
-
-const flatMap = <T, U>(arr: T[], fn: (t: T) => U[]) => Array.prototype.concat.apply([], arr.map(fn));
 
 type KeyValues = { [key: string]: any };
 
@@ -122,7 +114,7 @@ export default class TweekRepository {
   public prepare(key: string) {
     const node = this._cache.get(key);
     if (!node) {
-      const isScan = TweekRepository._isScan(key);
+      const isScan = isScanKey(key);
       this._cache.set(key, RepositoryKey.request(isScan));
       this._isDirty = true;
       this._checkRefresh();
@@ -176,7 +168,7 @@ export default class TweekRepository {
   public observe<T = any>(key: string, policy?: GetPolicy): Observable<T>;
   public observe(key: string, policy: GetPolicy = {}) {
     policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
-    const isScan = TweekRepository._isScan(key);
+    const isScan = isScanKey(key);
     const self = this;
     return new Observable<any>(observer => {
       function handleNotReady() {
@@ -303,7 +295,7 @@ export default class TweekRepository {
   private _updateTrieKeys(keys: string[], keyValues: KeyValues) {
     let valuesTrie: Trie<any> | undefined;
     for (const keyToUpdate of keys) {
-      const isScan = TweekRepository._isScan(keyToUpdate);
+      const isScan = isScanKey(keyToUpdate);
       if (isScan) {
         if (!valuesTrie) {
           valuesTrie = Trie.from(TweekKeySplitJoin, keyValues);
@@ -368,10 +360,6 @@ export default class TweekRepository {
     } else {
       this._cache.set(key, RepositoryKey.cached(false, value));
     }
-  }
-
-  private static _isScan(key: string) {
-    return key === '_' || key.endsWith('/_');
   }
 
   private static _ensurePolicy(policy: GetPolicy | null | undefined) {
