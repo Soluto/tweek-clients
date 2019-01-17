@@ -12,6 +12,7 @@ import {
   isNullOrUndefined,
   isScanKey,
   once,
+  optimizeInclude,
   partitionByIndex,
   snakeToCamelCase,
 } from './utils';
@@ -277,7 +278,7 @@ export default class TweekRepository {
       flatten: true,
       casing: TweekCasing.snake,
       context: this._context,
-      include: keysToRefresh,
+      include: optimizeInclude(keysToRefresh),
     };
 
     return this._client
