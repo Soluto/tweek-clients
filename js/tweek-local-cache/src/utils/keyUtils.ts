@@ -13,37 +13,47 @@ export const getKeyPrefix = (key: string) =>
 
 export const isScanKey = (key: string) => key === '_' || key.endsWith('/_');
 
-export const isHiddenKey = (key: string) => key.startsWith('@') || key.includes('/@');
-
 export const optimizeInclude = (keys: string[]): string[] => {
-  const result: string[] = [];
+  let count = 0,
+    i = 0;
+  const keysLength = keys.length;
+  const result = new Array<string>(keysLength);
 
-  //copy keys to not modify the original keys
-  keys = Array.from(keys);
   keys.sort();
 
   const handleKey = (key: string) => {
-    result.push(key);
+    result[count] = key;
+    count++;
 
-    if (!isScanKey(key!)) {
+    if (!isScanKey(key)) {
       return;
     }
 
     const prefixLength = key.length - 1;
     const prefix = key.substring(0, prefixLength);
 
-    while (keys.length && keys[0].startsWith(prefix)) {
-      const nextKey = keys.shift()!;
-      const relative = nextKey.substring(prefixLength);
-      if (isHiddenKey(relative)) {
+    while (i < keysLength) {
+      const nextKey = keys[i];
+
+      if (!nextKey.startsWith(prefix)) {
+        break;
+      }
+
+      i++;
+
+      if (nextKey.includes('/@', prefixLength)) {
         handleKey(nextKey);
       }
     }
   };
 
-  while (keys.length) {
-    handleKey(keys.shift()!);
+  while (i < keysLength) {
+    const key = keys[i];
+    i++;
+    handleKey(key);
   }
+
+  result.splice(count);
 
   return result;
 };
