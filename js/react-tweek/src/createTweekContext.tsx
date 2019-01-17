@@ -8,7 +8,7 @@ export type TweekContext = {
   Consumer: Consumer<TweekRepository>;
   prepare(key: string): void;
   withTweekKeys: WithTweekKeys;
-}
+};
 
 export default (defaultRepo: TweekRepository): TweekContext => {
   const keysToPrepare: string[] = [];
@@ -44,9 +44,7 @@ export default (defaultRepo: TweekRepository): TweekContext => {
     };
 
     render() {
-      return (
-        <TweekContext.Provider {...this.props} />
-      )
+      return <TweekContext.Provider {...this.props} />;
     }
   }
 
@@ -55,5 +53,5 @@ export default (defaultRepo: TweekRepository): TweekContext => {
     Consumer: TweekContext.Consumer,
     prepare: emitter.emit,
     withTweekKeys: withTweekKeysFactory(TweekContext, emitter.emit),
-  }
-}
+  };
+};
