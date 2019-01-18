@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { optimizeInclude } from '../../src/utils';
+import { optimizeInclude } from '../src/utils';
 
 describe('optimize include', () => {
   it('should filter keys correctly', () => {
