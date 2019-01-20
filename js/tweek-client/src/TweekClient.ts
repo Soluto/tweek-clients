@@ -1,6 +1,6 @@
 import * as qs from 'query-string';
 import chunk from 'lodash.chunk';
-import { convertTypingFromJSON, snakeToCamelCase } from './utils';
+import { convertTypingFromJSON, optimizeInclude, snakeToCamelCase } from './utils';
 import { Context, FetchConfig, ITweekClient, TweekCasing, TweekInitConfig } from './types';
 
 export default class TweekClient implements ITweekClient {
@@ -73,13 +73,15 @@ export default class TweekClient implements ITweekClient {
       ...this.config,
       ..._config,
     };
-    if (!_config.include) {
-      return this.fetchChunk(path, cfg);
-    }
 
     const { include, maxChunkSize = 100 } = cfg;
 
-    const includeChunks = chunk(include, maxChunkSize);
+    if (!include) {
+      return this.fetchChunk(path, cfg);
+    }
+
+    const optimizedInclude = optimizeInclude(include);
+    const includeChunks = chunk(optimizedInclude, maxChunkSize);
     const fetchConfigChunks = includeChunks.map(ic => ({ ...cfg, include: ic }));
     const fetchPromises = fetchConfigChunks.map(cc => this.fetchChunk(path, cc));
     const result = Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
