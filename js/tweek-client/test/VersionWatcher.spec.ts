@@ -5,7 +5,7 @@ import { delay } from '../src/utils';
 
 describe('VersionWatcher', () => {
   const baseServiceUrl = 'http://test/';
-  const matcher = 'http://test/api/v1/repo-version';
+  const matcher = 'http://test/status';
 
   function watcherToPromise(watcher: VersionWatcher, count?: number): Promise<any[]> {
     return new Promise((resolve, reject) => {
@@ -34,7 +34,7 @@ describe('VersionWatcher', () => {
     fetchMock.get(matcher, () => {
       const currentCount = count;
       count++;
-      return currentCount.toString();
+      return { 'repository revision': currentCount.toString() };
     });
 
     const watcher = new VersionWatcher(baseServiceUrl, 2);
@@ -46,7 +46,7 @@ describe('VersionWatcher', () => {
   });
 
   it('should emit items only when version changes', async () => {
-    fetchMock.get(matcher, 'someVersion');
+    fetchMock.get(matcher, { 'repository revision': 'someVersion' });
     const watcher = new VersionWatcher(baseServiceUrl, 2);
 
     const resultPromise = watcherToPromise(watcher);
@@ -61,7 +61,7 @@ describe('VersionWatcher', () => {
   });
 
   it("should stop emitting after 'dispose' was called", async () => {
-    fetchMock.get(matcher, 'someVersion');
+    fetchMock.get(matcher, { 'repository revision': 'someVersion' });
     const watcher = new VersionWatcher(baseServiceUrl, 2);
 
     await watcherToPromise(watcher, 1);
@@ -74,7 +74,7 @@ describe('VersionWatcher', () => {
 
   it('should retry if fetch error', async () => {
     fetchMock.getOnce(matcher, 500);
-    fetchMock.get(matcher, 'someVersion', { overwriteRoutes: false });
+    fetchMock.get(matcher, { 'repository revision': 'someVersion' }, { overwriteRoutes: false });
 
     const watcher = new VersionWatcher(baseServiceUrl, 2);
 
