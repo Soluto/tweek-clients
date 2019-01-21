@@ -199,4 +199,58 @@ describe('withTweekKeysFactory', () => {
 
     expect(unsubscribe).toHaveBeenCalled();
   });
+
+  test('adds default values on initial render', () => {
+    const expectedProps = {
+      singleKey: 'single value',
+      scanKey: {
+        a: 'a scan value',
+        b: 'b scan value',
+      },
+      missingKey: 'missing value default',
+    };
+
+    const withTweekKeysHoc = withTweekKeys(mapping, { defaultValues: expectedProps });
+    const EnhancedComponent = withTweekKeysHoc(Child);
+    const component = renderer.create(<EnhancedComponent />);
+    const child = component.root.findByType(Child);
+
+    expect(child.props).toEqual(expectedProps);
+  });
+
+  test('adds default value is prop is missing', async () => {
+    const defaultValues = {
+      singleKey: 'a',
+      scanKey: {},
+      missingKey: 'missing value default',
+    };
+    const expectedProps = {
+      singleKey: 'single value',
+      scanKey: {
+        a: 'a scan value',
+        b: 'b scan value',
+      },
+      missingKey: defaultValues.missingKey,
+    };
+    await repository.useStore(
+      new MemoryStore({
+        single_key: cachedKey(expectedProps.singleKey),
+        'scan_key/a': cachedKey(expectedProps.scanKey.a),
+        'scan_key/b': cachedKey(expectedProps.scanKey.b),
+        missing_key: missingKey,
+        'scan_key/_': scanKey,
+      }),
+    );
+
+    const withTweekKeysHoc = withTweekKeys(mapping, { defaultValues });
+
+    const EnhancedComponent = withTweekKeysHoc(Child);
+    const component = renderer.create(<EnhancedComponent />);
+
+    await waitImmediate();
+
+    const child = component.root.findByType(Child);
+
+    expect(child.props).toEqual(expectedProps);
+  });
 });
