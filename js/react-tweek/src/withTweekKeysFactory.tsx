@@ -43,14 +43,14 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   constructor(props: WithTweekKeysRepoProps) {
     super(props);
     this._subscribeToKeys();
-    this.state = this._defaultState;
+    this.state = this._getDefaultState();
   }
 
   componentDidUpdate(prevProps: WithTweekKeysRepoProps) {
     if (prevProps._tweekRepo !== this.props._tweekRepo) {
       this._unsubscribe();
       if (this.props.resetOnRepoChange) {
-        this.setState(this._defaultState);
+        this.setState(this._getDefaultState());
       }
       this._subscribeToKeys();
     }
@@ -98,7 +98,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
     return Object.keys(this.props._keyPropsMapping).every(key => this.state[key] !== undefined);
   }
 
-  private get _defaultState() {
+  private _getDefaultState() {
     const { _defaultValues = {} } = this.props;
     return Object.keys(this.props._keyPropsMapping).reduce(
       (acc, prop) => ({ ...acc, [prop]: _defaultValues![prop] }),
