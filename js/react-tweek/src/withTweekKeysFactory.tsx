@@ -8,6 +8,7 @@ export type WithTweekKeysOptions<T = { [s: string]: any }> = {
   onError?: (error: Error) => void;
   getPolicy?: GetPolicy;
   defaultValues?: Partial<T>;
+  resetOnRepoChange?: boolean;
 };
 
 export type WithTweekKeysProps = {
@@ -124,6 +125,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
           '_getPolicy',
           '_baseComponent',
           '_defaultValues',
+          'resetOnRepoChange',
         )}
       />
     );
@@ -131,13 +133,16 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
 }
 
 export default (TweekContext: Context<TweekRepository>, prepare: (key: string) => void): WithTweekKeys =>
-  function(keyPropsMapping: { [s: string]: string }, { getPolicy, onError, defaultValues }: WithTweekKeysOptions = {}) {
+  function(
+    keyPropsMapping: { [s: string]: string },
+    { getPolicy, onError, defaultValues, resetOnRepoChange }: WithTweekKeysOptions = {},
+  ) {
     if (!getPolicy || getPolicy.notPrepared === NotPreparedPolicy.prepare) {
       Object.values(keyPropsMapping).forEach(key => prepare(key));
     }
 
     return (BaseComponent: ComponentType<any>) => {
-      return (props: {}) => (
+      return (props: WithTweekKeysProps) => (
         <TweekContext.Consumer>
           {repo => (
             <WithTweekKeysComponent
@@ -148,6 +153,7 @@ export default (TweekContext: Context<TweekRepository>, prepare: (key: string) =
               _keyPropsMapping={keyPropsMapping}
               _defaultValues={defaultValues}
               {...props}
+              resetOnRepoChange={props.resetOnRepoChange === undefined ? resetOnRepoChange : props.resetOnRepoChange}
             />
           )}
         </TweekContext.Consumer>
