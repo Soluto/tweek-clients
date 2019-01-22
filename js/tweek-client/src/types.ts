@@ -6,15 +6,8 @@ export type Context = {
   [identityType: string]: IdentityContext;
 };
 
-export const enum TweekCasing {
-  snake = 'snake',
-  camelCase = 'camelCase',
-}
-
 export type FetchConfig = {
   include?: string[];
-  casing?: TweekCasing;
-  convertTyping?: boolean;
   flatten?: boolean;
   context?: Context;
   ignoreKeyTypes?: boolean;

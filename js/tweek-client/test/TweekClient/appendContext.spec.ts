@@ -1,7 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 import TweekClient from '../../src/TweekClient';
-import { TweekCasing } from '../../src';
 
 describe('tweek-client appendContext', () => {
   const defaultUrl = 'http://test';
@@ -10,8 +9,6 @@ describe('tweek-client appendContext', () => {
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: TweekCasing.snake,
-      convertTyping: false,
       fetch: fetchStub,
     });
 

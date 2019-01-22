@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig, TweekCasing } from '../../src';
+import { FetchConfig } from '../../src';
 import TweekClient from '../../src/TweekClient';
 
 describe('tweek-client fetchChunks', () => {
@@ -22,8 +22,6 @@ describe('tweek-client fetchChunks', () => {
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: TweekCasing.snake,
-      convertTyping: false,
       fetch: fetchStub,
     });
 

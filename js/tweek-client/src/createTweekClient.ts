@@ -1,7 +1,7 @@
 import TweekClient from './TweekClient';
 import { createFetchWithTimeout } from './utils';
 import { default as globalFetch } from 'cross-fetch';
-import { CreateTweekClientConfig, TweekCasing } from './types';
+import { CreateTweekClientConfig } from './types';
 
 export default function({
   baseServiceUrl,
@@ -27,8 +27,6 @@ export default function({
 
   return new TweekClient({
     baseServiceUrl,
-    casing: TweekCasing.camelCase,
-    convertTyping: false,
     context,
     fetch: createFetchWithTimeout(requestTimeoutInMillis, fetchClient),
     onError,

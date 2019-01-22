@@ -1,7 +1,13 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig, TweekCasing } from '../../src';
+import { FetchConfig } from '../../src';
 import TweekClient from '../../src/TweekClient';
+
+const ENCODE_$_CHARACTER = encodeURIComponent('$');
+const ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
+
+const queryParamsEncoder = (queryParams: string) =>
+  queryParams.replace(/\$/g, ENCODE_$_CHARACTER).replace(/\//g, ENCODE_SLASH_CHARACTER);
 
 describe('tweek-client fetch', () => {
   const defaultUrl = 'http://test/';
@@ -11,8 +17,6 @@ describe('tweek-client fetch', () => {
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: TweekCasing.snake,
-      convertTyping: false,
       fetch: fetchStub,
       onError: onErrorStub,
     });
@@ -70,15 +74,6 @@ describe('tweek-client fetch', () => {
   testsDefenitions.push({
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
-    config: { casing: TweekCasing.camelCase },
-    resultsToResolve: { some_path: { some_key: 'abc' } },
-    expectedResult: { somePath: { someKey: 'abc' } },
-  });
-
-  testsDefenitions.push({
-    pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
-    config: { casing: TweekCasing.snake },
     resultsToResolve: { some_path: { some_key: 'abc' } },
     expectedResult: { some_path: { some_key: 'abc' } },
   });
@@ -86,17 +81,9 @@ describe('tweek-client fetch', () => {
   testsDefenitions.push({
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
-    config: { convertTyping: true },
-    resultsToResolve: { some_path: { some_key: 'true' } },
-    expectedResult: { some_path: { some_key: true } },
-  });
-
-  testsDefenitions.push({
-    pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
-    resultsToResolve: { 'some_path/some_key': 'true' },
+    config: { flatten: true },
+    resultsToResolve: { 'some_path/some_key': true },
     expectedResult: { 'some_path/some_key': true },
   });
 
@@ -104,28 +91,18 @@ describe('tweek-client fetch', () => {
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
+    config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
-    expectedResult: { 'some_path/some_key': true },
+    expectedResult: { 'some_path/some_key': 'true' },
   });
 
   testsDefenitions.push({
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
+    config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
-    expectedResult: { 'some_path/some_key': true },
-    baseUrl: defaultUrl.substr(0, defaultUrl.length - 1),
-  });
-
-  testsDefenitions.push({
-    pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
-    expectedQueryParams: `?$flatten=true`,
-    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true },
-    resultsToResolve: { 'some_path/some_key': 'true' },
-    expectedResult: { 'some_path/some_key': true },
+    expectedResult: { 'some_path/some_key': 'true' },
     baseUrl: defaultUrl.substr(0, defaultUrl.length - 1),
   });
 
@@ -133,17 +110,17 @@ describe('tweek-client fetch', () => {
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true&$ignoreKeyTypes=true`,
-    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true, ignoreKeyTypes: true },
+    config: { flatten: true, ignoreKeyTypes: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
-    expectedResult: { 'some_path/some_key': true },
+    expectedResult: { 'some_path/some_key': 'true' },
   });
 
   testsDefenitions.push({
     pathToFetch: '/_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
-    config: { casing: TweekCasing.camelCase, convertTyping: true, flatten: true, ignoreKeyTypes: false },
-    resultsToResolve: { 'some_path/some_key': 'true' },
+    config: { flatten: true, ignoreKeyTypes: false },
+    resultsToResolve: { 'some_path/some_key': true },
     expectedResult: { 'some_path/some_key': true },
   });
 
@@ -156,7 +133,7 @@ describe('tweek-client fetch', () => {
       } else {
         fetchStub.resolves(new Response('{}'));
       }
-      const expectedUrl = test.expectedUrl + tweekClient.queryParamsEncoder(test.expectedQueryParams || '');
+      const expectedUrl = test.expectedUrl + queryParamsEncoder(test.expectedQueryParams || '');
 
       // Act
       const result = await tweekClient.fetch(test.pathToFetch, test.config);

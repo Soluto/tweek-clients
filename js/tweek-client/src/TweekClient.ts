@@ -1,17 +1,14 @@
 import * as qs from 'query-string';
 import chunk from 'lodash.chunk';
-import { convertTypingFromJSON, optimizeInclude, snakeToCamelCase } from './utils';
-import { Context, FetchConfig, ITweekClient, TweekCasing, TweekInitConfig } from './types';
+import { optimizeInclude } from './utils';
+import { Context, FetchConfig, ITweekClient, TweekInitConfig } from './types';
 
 export default class TweekClient implements ITweekClient {
   config: TweekInitConfig;
 
-  private static ENCODE_$_CHARACTER = encodeURIComponent('$');
-  private static ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
-
   constructor(config: TweekInitConfig) {
     this.config = {
-      ...{ casing: TweekCasing.snake, flatten: false, convertTyping: false, context: {}, ignoreKeyTypes: false },
+      ...{ flatten: false, context: {}, ignoreKeyTypes: false },
       ...config,
     };
 
@@ -24,7 +21,7 @@ export default class TweekClient implements ITweekClient {
   }
 
   private fetchChunk<T>(path: string, _config: TweekInitConfig & FetchConfig): Promise<T> {
-    const { casing, flatten, baseServiceUrl, convertTyping, context, include, ignoreKeyTypes, onError } = _config;
+    const { flatten, baseServiceUrl, context, include, ignoreKeyTypes, onError } = _config;
 
     const queryParamsObject = this._contextToQueryParams(context);
 
@@ -38,16 +35,15 @@ export default class TweekClient implements ITweekClient {
 
     queryParamsObject['$include'] = include;
     const queryString = qs.stringify(queryParamsObject);
-    const encodedQueryString = this.queryParamsEncoder(queryString);
 
     const url =
       baseServiceUrl +
       '/api/v1/keys' +
       (path.startsWith('/') ? '' : '/') +
       path +
-      (!!encodedQueryString ? `?${encodedQueryString}` : '');
+      (queryString ? `?${queryString}` : '');
 
-    let result: Promise<any> = this.config.fetch(url).then(response => {
+    return this.config.fetch(url).then(response => {
       if (response.ok) {
         return response.json();
       } else {
@@ -56,16 +52,6 @@ export default class TweekClient implements ITweekClient {
         return Promise.reject(error);
       }
     });
-
-    if (!flatten && casing === 'camelCase') {
-      result = result.then(snakeToCamelCase);
-    }
-
-    if (convertTyping) {
-      result = result.then(convertTypingFromJSON);
-    }
-
-    return <Promise<T>>result;
   }
 
   fetch<T>(path: string, _config: FetchConfig = {}): Promise<T> {
@@ -115,9 +101,6 @@ export default class TweekClient implements ITweekClient {
     });
     return <Promise<void>>result;
   }
-
-  public queryParamsEncoder = (queryParams: string) =>
-    queryParams.replace(/\$/g, TweekClient.ENCODE_$_CHARACTER).replace(/\//g, TweekClient.ENCODE_SLASH_CHARACTER);
 
   private _contextToQueryParams = (context: Context | undefined): qs.InputParams => {
     if (!context) {

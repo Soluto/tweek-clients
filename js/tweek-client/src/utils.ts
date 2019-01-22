@@ -32,34 +32,6 @@ export const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof 
     });
 };
 
-export function snakeToCamelCase(target: any) {
-  if (target === null || typeof target !== 'object' || Array.isArray(target)) return target;
-  return Object.keys(target).reduce((o: any, key) => {
-    let [firstKey, ...others] = key.split('_');
-    let newKey = [firstKey, ...others.map(capitalize)].join('');
-    o[newKey] = snakeToCamelCase(target[key]);
-    return o;
-  }, {});
-}
-
-export function convertTypingFromJSON(target: any) {
-  switch (typeof target) {
-    case 'string':
-      try {
-        return JSON.parse(target);
-      } catch (e) {
-        return target;
-      }
-    case 'object':
-      return Object.keys(target).reduce((o: any, key) => {
-        o[key] = convertTypingFromJSON(target[key]);
-        return o;
-      }, {});
-    default:
-      return target;
-  }
-}
-
 export function delay(timeout: number) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
