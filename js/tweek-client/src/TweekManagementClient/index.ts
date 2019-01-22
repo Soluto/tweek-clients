@@ -1,10 +1,8 @@
-import { TweekInitConfig } from './types';
-import { normalizeBaseUrl } from './utils';
+import { TweekInitConfig } from '../types';
+import { normalizeBaseUrl } from '../utils';
+import { ITweekManagementClient } from './types';
 
-export interface ITweekManagementClient {
-  appendContext(identityType: string, identityId: string, context: object): Promise<void>;
-  deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
-}
+export * from './types';
 
 export class TweekManagementClient implements ITweekManagementClient {
   constructor(public config: TweekInitConfig) {

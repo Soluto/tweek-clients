@@ -1,31 +1,11 @@
 import { InputParams } from 'query-string';
 import chunk from 'lodash.chunk';
-import { normalizeBaseUrl, optimizeInclude, toQueryString } from './utils';
-import { TweekInitConfig } from './types';
-import { FetchError } from './FetchError';
+import { normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
+import { TweekInitConfig } from '../types';
+import { FetchError } from '../FetchError';
+import { Context, GetValuesConfig, TweekClientConfig } from './types';
 
-export type IdentityContext = { id?: string } & {
-  [prop: string]: string | number | boolean | Array<string | number | boolean>;
-};
-
-export type Context = {
-  [identityType: string]: string | IdentityContext;
-};
-
-type RequestConfig = {
-  include?: string[];
-};
-
-type ClientConfig = {
-  context?: Context;
-  flatten?: boolean;
-  ignoreKeyTypes?: boolean;
-  maxChunkSize?: number;
-};
-
-export type GetValuesConfig = ClientConfig & RequestConfig;
-
-export type TweekClientConfig = TweekInitConfig & ClientConfig;
+export * from './types';
 
 export interface ITweekClient {
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
