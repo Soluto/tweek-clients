@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import TweekManagementClient from '../../src/TweekManagementClient';
+import { TweekManagementClient } from '../../src';
 
 describe('tweek-client deleteContext', () => {
   const defaultUrl = 'http://test';
@@ -31,7 +31,7 @@ describe('tweek-client deleteContext', () => {
     identityId: 'abcd1234',
     identityType: 'user',
     property: 'name',
-    expectedUrl: `${defaultUrl}/api/v1/context/user/abcd1234/name`,
+    expectedUrl: `${defaultUrl}/api/v2/context/user/abcd1234/name`,
     expectedSuccess: true,
   });
 
@@ -39,7 +39,7 @@ describe('tweek-client deleteContext', () => {
     identityId: 'a1b2c3d4',
     identityType: 'device',
     property: 'osType',
-    expectedUrl: `${defaultUrl}/api/v1/context/device/a1b2c3d4/osType`,
+    expectedUrl: `${defaultUrl}/api/v2/context/device/a1b2c3d4/osType`,
     expectedSuccess: false,
   });
 

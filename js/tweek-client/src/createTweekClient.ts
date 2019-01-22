@@ -1,9 +1,19 @@
-import TweekClient from './TweekClient';
+import { TweekClient } from './TweekClient';
 import { createFetchWithTimeout } from './utils';
 import { default as globalFetch } from 'cross-fetch';
-import { CreateTweekClientConfig } from './types';
 
-export default function({
+export type CreateTweekClientConfig = {
+  baseServiceUrl: string;
+  context?: any;
+  getAuthenticationToken?: () => Promise<string> | string;
+  clientName?: string;
+  fetch?: typeof fetch;
+  requestTimeoutInMillis?: number;
+  onError?(response: Response): void;
+  useLegacyEndpoint?: boolean;
+};
+
+export function createTweekClient({
   baseServiceUrl,
   fetch = globalFetch,
   context = {},
@@ -11,6 +21,7 @@ export default function({
   requestTimeoutInMillis = 8000,
   onError,
   clientName,
+  useLegacyEndpoint,
 }: CreateTweekClientConfig) {
   const fetchClient = (input: RequestInfo, init: RequestInit = {}) => {
     const headersPromise = getAuthenticationToken
@@ -41,9 +52,12 @@ export default function({
     return fetchPromise;
   };
 
-  return new TweekClient({
-    baseServiceUrl,
-    context,
-    fetch: createFetchWithTimeout(requestTimeoutInMillis, fetchClient),
-  });
+  return new TweekClient(
+    {
+      baseServiceUrl,
+      context,
+      fetch: createFetchWithTimeout(requestTimeoutInMillis, fetchClient),
+    },
+    useLegacyEndpoint,
+  );
 }

@@ -1,7 +1,7 @@
 import fetchMock from 'fetch-mock';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import createTweekClient from '../../src/createTweekClient';
+import { createTweekClient } from '../../src';
 
 describe('create tweek client', () => {
   const baseServiceUrl = 'http://test/';

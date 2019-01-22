@@ -1,13 +1,18 @@
-import { ITweekManagementClient, TweekInitConfig } from './types';
+import { TweekInitConfig } from './types';
 import { normalizeBaseUrl } from './utils';
 
-export default class TweekManagementClient implements ITweekManagementClient {
+export interface ITweekManagementClient {
+  appendContext(identityType: string, identityId: string, context: object): Promise<void>;
+  deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
+}
+
+export class TweekManagementClient implements ITweekManagementClient {
   constructor(public config: TweekInitConfig) {
     this.config.baseServiceUrl = normalizeBaseUrl(config.baseServiceUrl);
   }
 
   appendContext(identityType: string, identityId: string, context: object): Promise<void> {
-    const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}`;
+    const url = `${this.config.baseServiceUrl}/api/v2/context/${identityType}/${identityId}`;
     const result = this.config
       .fetch(url, {
         method: 'POST',
@@ -25,7 +30,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
   }
 
   deleteContext(identityType: string, identityId: string, property: string): Promise<void> {
-    const url = `${this.config.baseServiceUrl}/api/v1/context/${identityType}/${identityId}/${property}`;
+    const url = `${this.config.baseServiceUrl}/api/v2/context/${identityType}/${identityId}/${property}`;
     const result = this.config.fetch(url, { method: 'DELETE' }).then(response => {
       if (!response.ok) {
         throw new Error(`Error deleting context property, code ${response.status}, message: '${response.statusText}'`);

@@ -1,6 +1,6 @@
 import fetchMock from 'fetch-mock';
 import { expect } from 'chai';
-import VersionWatcher from '../src/VersionWatcher';
+import { VersionWatcher } from '../src';
 import { delay } from '../src/utils';
 
 describe('VersionWatcher', () => {

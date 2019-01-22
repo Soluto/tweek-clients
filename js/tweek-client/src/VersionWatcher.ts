@@ -17,7 +17,7 @@ type Message = {
  * Version Watcher for Tweek rules repository.
  * This is an experimental class and it will change in future releases
  */
-export default class VersionWatcher extends Observable<string> {
+export class VersionWatcher extends Observable<string> {
   private readonly _emitter = createChangeEmitter();
   private readonly _versionUrl: string;
 

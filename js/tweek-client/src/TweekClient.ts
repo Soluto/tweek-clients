@@ -1,21 +1,48 @@
 import { InputParams } from 'query-string';
 import chunk from 'lodash.chunk';
 import { normalizeBaseUrl, optimizeInclude, toQueryString } from './utils';
-import { Context, GetValuesConfig, ITweekClient, TweekInitConfig } from './types';
+import { TweekInitConfig } from './types';
 import { FetchError } from './FetchError';
 
-export type TweekClientConfig = TweekInitConfig & GetValuesConfig;
+export type IdentityContext = { id?: string } & {
+  [prop: string]: string | number | boolean | Array<string | number | boolean>;
+};
 
-export default class TweekClient implements ITweekClient {
+export type Context = {
+  [identityType: string]: string | IdentityContext;
+};
+
+type RequestConfig = {
+  include?: string[];
+};
+
+type ClientConfig = {
+  context?: Context;
+  flatten?: boolean;
+  ignoreKeyTypes?: boolean;
+  maxChunkSize?: number;
+};
+
+export type GetValuesConfig = ClientConfig & RequestConfig;
+
+export type TweekClientConfig = TweekInitConfig & ClientConfig;
+
+export interface ITweekClient {
+  getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
+}
+
+export class TweekClient implements ITweekClient {
   config: TweekClientConfig;
+  private readonly _endpoint: string;
 
-  constructor(config: TweekClientConfig) {
+  constructor(config: TweekClientConfig, useLegacyEndpoint?: boolean) {
     this.config = {
       context: {},
       ...config,
     };
 
     this.config.baseServiceUrl = normalizeBaseUrl(config.baseServiceUrl);
+    this._endpoint = useLegacyEndpoint ? '/api/v1/keys/' : '/api/v2/values/';
   }
 
   getValues<T>(path: string, _config: GetValuesConfig = {}): Promise<T> {
@@ -54,7 +81,7 @@ export default class TweekClient implements ITweekClient {
 
     const queryString = toQueryString(queryParamsObject);
 
-    const url = `${baseServiceUrl}/api/v1/keys/${path}${queryString}`;
+    const url = `${baseServiceUrl}${this._endpoint}${path}${queryString}`;
 
     return this.config.fetch(url).then(response => {
       if (response.ok) {

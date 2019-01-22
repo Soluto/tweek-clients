@@ -1,7 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { GetValuesConfig } from '../../src';
-import TweekClient from '../../src/TweekClient';
+import { GetValuesConfig, TweekClient } from '../../src';
 
 describe('tweek-client fetchChunks', () => {
   type TestConfiguration = {
@@ -27,18 +26,18 @@ describe('tweek-client fetchChunks', () => {
 
     const test: TestConfiguration = {
       pathToFetch: '_',
-      expectedUrl: `${defaultUrl}api/v1/keys/_`,
+      expectedUrl: `${defaultUrl}api/v2/values/_`,
       stubCalls: [
         {
-          requestUrl: 'http://test/api/v1/keys/_?%24include=a1&%24include=a2&%24include=a3',
+          requestUrl: 'http://test/api/v2/values/_?%24include=a1&%24include=a2&%24include=a3',
           response: new Response('{ "a1": 1, "a2": 2, "a3": 3 }'),
         },
         {
-          requestUrl: 'http://test/api/v1/keys/_?%24include=b1&%24include=b2&%24include=b3',
+          requestUrl: 'http://test/api/v2/values/_?%24include=b1&%24include=b2&%24include=b3',
           response: new Response('{ "b1": "a", "b2": "b", "b3": "c" }'),
         },
         {
-          requestUrl: 'http://test/api/v1/keys/_?%24include=c5',
+          requestUrl: 'http://test/api/v2/values/_?%24include=c5',
           response: new Response('{ "c5": true }'),
         },
       ],

@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import TweekManagementClient from '../../src/TweekManagementClient';
+import { TweekManagementClient } from '../../src';
 
 describe('tweek-client appendContext', () => {
   const defaultUrl = 'http://test';
@@ -30,7 +30,7 @@ describe('tweek-client appendContext', () => {
   testsDefinitions.push({
     identityId: 'abcd1234',
     identityType: 'user',
-    expectedUrl: `${defaultUrl}/api/v1/context/user/abcd1234`,
+    expectedUrl: `${defaultUrl}/api/v2/context/user/abcd1234`,
     expectedSuccess: true,
     context: {
       name: 'SomeName',
@@ -42,7 +42,7 @@ describe('tweek-client appendContext', () => {
   testsDefinitions.push({
     identityId: 'a1b2c3d4',
     identityType: 'device',
-    expectedUrl: `${defaultUrl}/api/v1/context/device/a1b2c3d4`,
+    expectedUrl: `${defaultUrl}/api/v2/context/device/a1b2c3d4`,
     expectedSuccess: false,
     context: {
       osType: 'Android',

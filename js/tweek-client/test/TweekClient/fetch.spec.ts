@@ -1,7 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { GetValuesConfig } from '../../src';
-import TweekClient from '../../src/TweekClient';
+import { GetValuesConfig, TweekClient } from '../../src';
 
 const ENCODE_$_CHARACTER = encodeURIComponent('$');
 const ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
@@ -11,13 +10,16 @@ const queryParamsEncoder = (queryParams: string) =>
 
 describe('tweek-client fetch', () => {
   const defaultUrl = 'http://test/';
-  let prepare = (url?: string) => {
+  let prepare = (url?: string, useLegacyEndpoint?: boolean) => {
     const fetchStub = sinon.stub();
 
-    const tweekClient = new TweekClient({
-      baseServiceUrl: url || defaultUrl,
-      fetch: fetchStub,
-    });
+    const tweekClient = new TweekClient(
+      {
+        baseServiceUrl: url || defaultUrl,
+        fetch: fetchStub,
+      },
+      useLegacyEndpoint,
+    );
 
     return {
       tweekClient,
@@ -27,18 +29,22 @@ describe('tweek-client fetch', () => {
 
   const testsDefenitions: {
     pathToFetch: string;
-    expectedUrl: string;
     expectedQueryParams?: string;
-    resultsToResolve?: Object;
+    resultsToResolve?: any;
     config?: GetValuesConfig;
-    expectedResult?: Object;
+    expectedResult?: any;
     baseUrl?: string;
     context?: object;
   }[] = [];
 
   testsDefenitions.push({
+    pathToFetch: 'some_key',
+    resultsToResolve: 'some value',
+    expectedResult: 'some value',
+  });
+
+  testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$include=abc`,
     config: {
       include: ['abc'],
@@ -47,7 +53,6 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$include=path1&$include=path2/key&$include=path3/_`,
     config: {
       include: ['path1', 'path2/key', 'path3/_'],
@@ -56,7 +61,6 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?user=userid&user.gender=male`,
     config: {
       context: {
@@ -70,7 +74,6 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?user=userid`,
     config: {
       context: {
@@ -81,14 +84,12 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     resultsToResolve: { some_path: { some_key: 'abc' } },
     expectedResult: { some_path: { some_key: 'abc' } },
   });
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': true },
@@ -97,7 +98,6 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
@@ -106,7 +106,6 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
@@ -116,7 +115,6 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true&$ignoreKeyTypes=true`,
     config: { flatten: true, ignoreKeyTypes: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
@@ -125,29 +123,41 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true, ignoreKeyTypes: false },
     resultsToResolve: { 'some_path/some_key': true },
     expectedResult: { 'some_path/some_key': true },
   });
 
-  testsDefenitions.forEach(test =>
-    it('should execute fetch correctly', async () => {
-      // Arrange
-      const { tweekClient, fetchStub } = prepare(test.baseUrl);
-      fetchStub.resolves(new Response(JSON.stringify(test.resultsToResolve || {})));
-      const expectedUrl = test.expectedUrl + queryParamsEncoder(test.expectedQueryParams || '');
+  testsDefenitions.forEach(
+    ({ baseUrl, pathToFetch, config, resultsToResolve = {}, expectedQueryParams = '', expectedResult }) =>
+      it('should execute fetch correctly', async () => {
+        // Arrange
+        const { tweekClient, fetchStub } = prepare(baseUrl);
+        fetchStub.resolves(new Response(JSON.stringify(resultsToResolve)));
+        const expectedUrl = `${defaultUrl}api/v2/values/${pathToFetch}` + queryParamsEncoder(expectedQueryParams);
 
-      // Act
-      const result = await tweekClient.getValues(test.pathToFetch, test.config);
+        // Act
+        const result = await tweekClient.getValues(pathToFetch, config);
 
-      // Assert
-      sinon.assert.calledOnce(fetchStub);
-      sinon.assert.calledWithExactly(fetchStub, expectedUrl);
-      if (test.expectedResult) {
-        expect(result).to.eql(test.expectedResult, 'should return correct keys result');
-      }
-    }),
+        // Assert
+        sinon.assert.calledOnce(fetchStub);
+        sinon.assert.calledWithExactly(fetchStub, expectedUrl);
+        if (expectedResult) {
+          expect(result).to.eql(expectedResult, 'should return correct keys result');
+        }
+      }),
   );
+
+  it('should fetch correctly from legacy endpoint', async () => {
+    // Arrange
+    const { tweekClient, fetchStub } = prepare(defaultUrl, true);
+    fetchStub.resolves(new Response('{}'));
+    // Act
+    await tweekClient.getValues('_');
+
+    // Assert
+    sinon.assert.calledOnce(fetchStub);
+    sinon.assert.calledWithExactly(fetchStub, `${defaultUrl}api/v1/keys/_`);
+  });
 });
