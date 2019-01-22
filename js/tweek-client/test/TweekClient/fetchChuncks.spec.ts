@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig } from '../../src';
+import { GetValuesConfig } from '../../src';
 import TweekClient from '../../src/TweekClient';
 
 describe('tweek-client fetchChunks', () => {
@@ -9,7 +9,7 @@ describe('tweek-client fetchChunks', () => {
     expectedUrl: string;
     expectedQueryParams?: string;
     stubCalls: { requestUrl: string; response: Response }[];
-    config: FetchConfig;
+    config: GetValuesConfig;
     expectedResult?: Object;
     baseUrl?: string;
     context?: object;
@@ -72,7 +72,7 @@ describe('tweek-client fetchChunks', () => {
     });
 
     // Act
-    const result = await tweekClient.fetch(test.pathToFetch, test.config);
+    const result = await tweekClient.getValues(test.pathToFetch, test.config);
 
     // Assert
     sinon.assert.calledThrice(fetchStub);

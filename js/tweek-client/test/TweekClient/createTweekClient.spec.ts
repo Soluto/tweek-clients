@@ -1,4 +1,5 @@
 import fetchMock from 'fetch-mock';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import createTweekClient from '../../src/createTweekClient';
 
@@ -37,7 +38,7 @@ describe('create tweek client', () => {
       });
 
       // Act
-      await tweekClient.fetch(url);
+      await tweekClient.getValues(url);
 
       // Assert
       expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
@@ -53,7 +54,7 @@ describe('create tweek client', () => {
       });
 
       // Act
-      await tweekClient.fetch(url);
+      await tweekClient.getValues(url);
 
       // Assert
       expect(fetchMock.lastOptions(matcherName)).to.deep.equal(expectedOptions);
@@ -66,7 +67,7 @@ describe('create tweek client', () => {
         fetch: fetch,
       });
 
-      const testPromise = tweekClient.fetch(url);
+      const testPromise = tweekClient.getValues(url);
 
       return expect(testPromise).to.be.fulfilled;
     });
@@ -79,7 +80,7 @@ describe('create tweek client', () => {
       clientName: 'test',
     });
 
-    await tweekClient.fetch(url);
+    await tweekClient.getValues(url);
 
     expect(fetchMock.lastOptions(matcherName)).to.deep.include({ headers: { 'X-Api-Client': 'test' } });
   });
@@ -96,7 +97,25 @@ describe('create tweek client', () => {
       fetch: fetch,
     });
 
-    const response = await tweekClient.fetch(url);
+    const response = await tweekClient.getValues(url);
     expect(response).to.deep.equal(expectedResult);
+  });
+
+  it('should call onError if fetch returned an error', async () => {
+    const onError = sinon.stub();
+    const response = new Response(null, { status: 500 });
+    fetchMock.restore();
+    fetchMock.getOnce('*', response, { name: matcherName });
+
+    const tweekClient = createTweekClient({
+      baseServiceUrl,
+      fetch,
+      onError,
+    });
+
+    await expect(tweekClient.getValues(url)).to.be.rejected;
+    await new Promise(res => setImmediate(res));
+    sinon.assert.calledOnce(onError);
+    sinon.assert.calledWithExactly(onError, response);
   });
 });

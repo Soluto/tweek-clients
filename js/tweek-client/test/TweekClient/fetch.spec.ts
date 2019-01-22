@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig } from '../../src';
+import { GetValuesConfig } from '../../src';
 import TweekClient from '../../src/TweekClient';
 
 const ENCODE_$_CHARACTER = encodeURIComponent('$');
@@ -13,18 +13,15 @@ describe('tweek-client fetch', () => {
   const defaultUrl = 'http://test/';
   let prepare = (url?: string) => {
     const fetchStub = sinon.stub();
-    const onErrorStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
       fetch: fetchStub,
-      onError: onErrorStub,
     });
 
     return {
       tweekClient,
       fetchStub,
-      onErrorStub,
     };
   };
 
@@ -33,7 +30,7 @@ describe('tweek-client fetch', () => {
     expectedUrl: string;
     expectedQueryParams?: string;
     resultsToResolve?: Object;
-    config?: FetchConfig;
+    config?: GetValuesConfig;
     expectedResult?: Object;
     baseUrl?: string;
     context?: object;
@@ -74,6 +71,17 @@ describe('tweek-client fetch', () => {
   testsDefenitions.push({
     pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
+    expectedQueryParams: `?user=userid`,
+    config: {
+      context: {
+        user: 'userid',
+      },
+    },
+  });
+
+  testsDefenitions.push({
+    pathToFetch: '_',
+    expectedUrl: `${defaultUrl}api/v1/keys/_`,
     resultsToResolve: { some_path: { some_key: 'abc' } },
     expectedResult: { some_path: { some_key: 'abc' } },
   });
@@ -88,7 +96,7 @@ describe('tweek-client fetch', () => {
   });
 
   testsDefenitions.push({
-    pathToFetch: '/_',
+    pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
@@ -97,7 +105,7 @@ describe('tweek-client fetch', () => {
   });
 
   testsDefenitions.push({
-    pathToFetch: '/_',
+    pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
@@ -107,7 +115,7 @@ describe('tweek-client fetch', () => {
   });
 
   testsDefenitions.push({
-    pathToFetch: '/_',
+    pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true&$ignoreKeyTypes=true`,
     config: { flatten: true, ignoreKeyTypes: true },
@@ -116,7 +124,7 @@ describe('tweek-client fetch', () => {
   });
 
   testsDefenitions.push({
-    pathToFetch: '/_',
+    pathToFetch: '_',
     expectedUrl: `${defaultUrl}api/v1/keys/_`,
     expectedQueryParams: `?$flatten=true`,
     config: { flatten: true, ignoreKeyTypes: false },
@@ -127,37 +135,19 @@ describe('tweek-client fetch', () => {
   testsDefenitions.forEach(test =>
     it('should execute fetch correctly', async () => {
       // Arrange
-      const { tweekClient, fetchStub, onErrorStub } = prepare(test.baseUrl);
-      if (!!test.resultsToResolve) {
-        fetchStub.resolves(new Response(JSON.stringify(test.resultsToResolve)));
-      } else {
-        fetchStub.resolves(new Response('{}'));
-      }
+      const { tweekClient, fetchStub } = prepare(test.baseUrl);
+      fetchStub.resolves(new Response(JSON.stringify(test.resultsToResolve || {})));
       const expectedUrl = test.expectedUrl + queryParamsEncoder(test.expectedQueryParams || '');
 
       // Act
-      const result = await tweekClient.fetch(test.pathToFetch, test.config);
+      const result = await tweekClient.getValues(test.pathToFetch, test.config);
 
       // Assert
       sinon.assert.calledOnce(fetchStub);
       sinon.assert.calledWithExactly(fetchStub, expectedUrl);
-      sinon.assert.notCalled(onErrorStub);
-      if (!!test.expectedResult) expect(result).to.eql(test.expectedResult, 'should return corerct keys result');
+      if (test.expectedResult) {
+        expect(result).to.eql(test.expectedResult, 'should return correct keys result');
+      }
     }),
   );
-
-  it('should call onError if fetch returned an error', async () => {
-    const { tweekClient, fetchStub, onErrorStub } = prepare(defaultUrl);
-    const statusText = 'someStatusText';
-    fetchStub.resolves(
-      new Response(null, {
-        status: 500,
-        statusText,
-      }),
-    );
-    const fetchPromise = tweekClient.fetch('/_');
-    await expect(fetchPromise).to.be.rejectedWith(statusText);
-    await new Promise(res => setImmediate(res));
-    sinon.assert.calledOnce(onErrorStub);
-  });
 });

@@ -1,13 +1,13 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import TweekClient from '../../src/TweekClient';
+import TweekManagementClient from '../../src/TweekManagementClient';
 
 describe('tweek-client appendContext', () => {
   const defaultUrl = 'http://test';
   let prepare = (url?: string) => {
     const fetchStub = sinon.stub();
 
-    const tweekClient = new TweekClient({
+    const tweekClient = new TweekManagementClient({
       baseServiceUrl: url || defaultUrl,
       fetch: fetchStub,
     });

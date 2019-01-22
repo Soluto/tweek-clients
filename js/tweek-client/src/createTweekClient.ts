@@ -12,23 +12,38 @@ export default function({
   onError,
   clientName,
 }: CreateTweekClientConfig) {
-  const fetchClient = async (input: RequestInfo, init: RequestInit = {}) => {
-    return fetch(input, {
-      ...init,
-      headers: {
-        ...init.headers,
-        ['X-Api-Client']: clientName || 'unknown',
-        ...(getAuthenticationToken
-          ? { Authorization: `Bearer ${await Promise.resolve(getAuthenticationToken())}` }
-          : {}),
-      },
-    });
+  const fetchClient = (input: RequestInfo, init: RequestInit = {}) => {
+    const headersPromise = getAuthenticationToken
+      ? Promise.resolve(getAuthenticationToken()).then(t => ({ Authorization: `Bearer ${t}` }))
+      : Promise.resolve({});
+
+    let fetchPromise = headersPromise.then(authHeaders =>
+      fetch(input, {
+        ...init,
+        headers: {
+          ...init.headers,
+          ['X-Api-Client']: clientName || 'unknown',
+          ...authHeaders,
+        },
+      }),
+    );
+
+    if (onError) {
+      fetchPromise = fetchPromise.then(response => {
+        if (!response.ok) {
+          setImmediate(() => onError(response));
+        }
+
+        return response;
+      });
+    }
+
+    return fetchPromise;
   };
 
   return new TweekClient({
     baseServiceUrl,
     context,
     fetch: createFetchWithTimeout(requestTimeoutInMillis, fetchClient),
-    onError,
   });
 }

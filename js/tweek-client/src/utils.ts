@@ -1,8 +1,5 @@
 import { Response } from 'cross-fetch';
-
-export function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+import qs, { InputParams } from 'query-string';
 
 export const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
   input: RequestInfo,
@@ -81,4 +78,16 @@ export const optimizeInclude = (keys: string[]): string[] => {
   result.splice(count);
 
   return result;
+};
+
+export const normalizeBaseUrl = (url: string) => {
+  if (url.endsWith('/')) {
+    url = url.substr(0, url.length - 1);
+  }
+  return url;
+};
+
+export const toQueryString = (query: InputParams) => {
+  const queryString = qs.stringify(query);
+  return queryString ? `?${queryString}` : '';
 };
