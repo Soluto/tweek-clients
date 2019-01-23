@@ -5,16 +5,16 @@ import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
 
 export type TweekContext = {
   Provider: ComponentType<ProviderProps<TweekRepository>>;
-  Consumer: Consumer<TweekRepository>;
+  Consumer: Consumer<TweekRepository | undefined>;
   prepare(key: string): void;
   withTweekKeys: WithTweekKeys;
 };
 
-export default (defaultRepo: TweekRepository): TweekContext => {
+export default (defaultRepo?: TweekRepository): TweekContext => {
   const keysToPrepare: string[] = [];
   const emitter = createChangeEmitter<string>();
   emitter.listen(key => {
-    defaultRepo.prepare(key);
+    defaultRepo && defaultRepo.prepare(key);
     keysToPrepare.push(key);
   });
 
