@@ -27,7 +27,7 @@ export interface WithTweekKeys {
 
 type WithTweekKeysState = { [s: string]: any };
 type WithTweekKeysRepoProps = WithTweekKeysProps & {
-  _tweekRepo: TweekRepository;
+  _tweekRepo?: TweekRepository;
   _keyPropsMapping: { [s: string]: string };
   _onError?: (e: Error) => void;
   _getPolicy?: GetPolicy;
@@ -43,8 +43,8 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
 
   constructor(props: WithTweekKeysRepoProps) {
     super(props);
-    this._subscribeToKeys();
     this.state = this._getDefaultState();
+    this._subscribeToKeys();
   }
 
   componentDidUpdate(prevProps: WithTweekKeysRepoProps) {
@@ -62,9 +62,14 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   }
 
   private _subscribeToKeys() {
+    const { _tweekRepo } = this.props;
+    if (!_tweekRepo) {
+      return;
+    }
+
     this._subscriptions = Object.entries(this.props._keyPropsMapping).map(([propName, path]) => {
       const isScanKey = path.split('/').pop() === '_';
-      return this.props._tweekRepo.observe(path, this.props._getPolicy).subscribe(
+      return _tweekRepo.observe(path, this.props._getPolicy).subscribe(
         result => {
           this.setState(state => {
             if (!isScanKey) {
@@ -82,8 +87,8 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
           });
         },
         error => {
-          if (this.props._onError) this.props._onError(error);
-          else console.error(error);
+          const { _onError = console.error } = this.props;
+          _onError(error);
           this._unsubscribe();
         },
       );
@@ -102,7 +107,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   private _getDefaultState() {
     const { _defaultValues = {} } = this.props;
     return Object.keys(this.props._keyPropsMapping).reduce(
-      (acc, prop) => ({ ...acc, [prop]: _defaultValues![prop] }),
+      (acc, prop) => ({ ...acc, [prop]: _defaultValues[prop] }),
       {},
     );
   }
@@ -132,7 +137,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   }
 }
 
-export default (TweekContext: Context<TweekRepository>, prepare: (key: string) => void): WithTweekKeys =>
+export default (TweekContext: Context<TweekRepository | undefined>, prepare: (key: string) => void): WithTweekKeys =>
   function(
     keyPropsMapping: { [s: string]: string },
     { getPolicy, onError, defaultValues, resetOnRepoChange }: WithTweekKeysOptions = {},

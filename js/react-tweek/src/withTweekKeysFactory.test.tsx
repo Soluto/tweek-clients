@@ -46,7 +46,7 @@ describe('withTweekKeysFactory', () => {
     repository = new TweekRepository({ client: {} as any });
     TweekContext = React.createContext(repository);
     prepareMock = jest.fn();
-    withTweekKeys = withTweekKeysFactory(TweekContext, prepareMock);
+    withTweekKeys = withTweekKeysFactory(TweekContext as Context<TweekRepository | undefined>, prepareMock);
   });
 
   test('renders only if all keys are present', () => {
