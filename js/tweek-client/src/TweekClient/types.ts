@@ -1,11 +1,7 @@
-import { TweekInitConfig } from '../types';
-
-export type IdentityContext = { id?: string } & {
-  [prop: string]: string | number | boolean | Array<string | number | boolean>;
-};
+import { IdentityContext, TweekInitConfig } from '../types';
 
 export type Context = {
-  [identityType: string]: string | IdentityContext;
+  [identityType: string]: string | ({ id?: string } & IdentityContext);
 };
 
 type RequestConfig = {

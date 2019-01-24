@@ -8,7 +8,7 @@ const ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
 const queryParamsEncoder = (queryParams: string) =>
   queryParams.replace(/\$/g, ENCODE_$_CHARACTER).replace(/\//g, ENCODE_SLASH_CHARACTER);
 
-describe('tweek-client fetch', () => {
+describe('TweekClient getValues', () => {
   const defaultUrl = 'http://test/';
   let prepare = (url?: string, useLegacyEndpoint?: boolean) => {
     const fetchStub = sinon.stub();
@@ -131,7 +131,7 @@ describe('tweek-client fetch', () => {
 
   testsDefenitions.forEach(
     ({ baseUrl, pathToFetch, config, resultsToResolve = {}, expectedQueryParams = '', expectedResult }) =>
-      it('should execute fetch correctly', async () => {
+      it('should execute getValues correctly', async () => {
         // Arrange
         const { tweekClient, fetchStub } = prepare(baseUrl);
         fetchStub.resolves(new Response(JSON.stringify(resultsToResolve)));
@@ -149,7 +149,7 @@ describe('tweek-client fetch', () => {
       }),
   );
 
-  it('should fetch correctly from legacy endpoint', async () => {
+  it('should getValues correctly from legacy endpoint', async () => {
     // Arrange
     const { tweekClient, fetchStub } = prepare(defaultUrl, true);
     fetchStub.resolves(new Response('{}'));

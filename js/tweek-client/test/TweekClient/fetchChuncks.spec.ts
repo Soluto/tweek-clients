@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { GetValuesConfig, TweekClient } from '../../src';
 
-describe('tweek-client fetchChunks', () => {
+describe('TweekClient fetchChunks', () => {
   type TestConfiguration = {
     pathToFetch: string;
     expectedUrl: string;

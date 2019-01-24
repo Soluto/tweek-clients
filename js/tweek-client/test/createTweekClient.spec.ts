@@ -1,9 +1,9 @@
 import fetchMock from 'fetch-mock';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { createTweekClient } from '../../src';
+import { createTweekClient } from '../src';
 
-describe('create tweek client', () => {
+describe('createTweekClient', () => {
   const baseServiceUrl = 'http://test/';
   const matcherName = 'create-tweek-client';
   const token = 'expected_token';

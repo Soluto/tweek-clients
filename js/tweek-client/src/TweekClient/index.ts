@@ -67,7 +67,7 @@ export class TweekClient implements ITweekClient {
       if (response.ok) {
         return response.json();
       } else {
-        return Promise.reject(new FetchError('Error getting values from tweek', response));
+        return Promise.reject(new FetchError(response, 'Error getting values from tweek'));
       }
     });
   }
