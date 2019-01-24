@@ -1,7 +1,8 @@
-import { Response } from 'cross-fetch';
+import { fetch as globalFetch, Response } from 'cross-fetch';
 import qs, { InputParams } from 'query-string';
+import { FetchClientConfig } from './types';
 
-export const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
+const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
   input: RequestInfo,
   init?: RequestInit,
 ) => {
@@ -27,6 +28,49 @@ export const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof 
 
       throw error;
     });
+};
+
+export const createFetchClient = ({
+  fetch = globalFetch,
+  getAuthenticationToken,
+  requestTimeoutInMillis = 8000,
+  onError,
+  clientName,
+}: FetchClientConfig) => {
+  const fetchClient = (input: RequestInfo, init: RequestInit = {}) => {
+    const headersPromise = getAuthenticationToken
+      ? Promise.resolve(getAuthenticationToken()).then(t => ({ Authorization: `Bearer ${t}` }))
+      : Promise.resolve({});
+
+    let fetchPromise = headersPromise.then(authHeaders =>
+      fetch(input, {
+        ...init,
+        headers: {
+          ...init.headers,
+          ['X-Api-Client']: clientName || 'unknown',
+          ...authHeaders,
+        },
+      }),
+    );
+
+    if (onError) {
+      fetchPromise = fetchPromise.then(response => {
+        if (!response.ok) {
+          setImmediate(() => onError(response));
+        }
+
+        return response;
+      });
+    }
+
+    return fetchPromise;
+  };
+
+  if (!requestTimeoutInMillis) {
+    return fetchClient;
+  }
+
+  return createFetchWithTimeout(requestTimeoutInMillis, fetchClient);
 };
 
 export function delay(timeout: number) {
