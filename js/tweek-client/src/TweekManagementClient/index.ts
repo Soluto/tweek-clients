@@ -1,19 +1,15 @@
 import { IdentityContext, TweekInitConfig } from '../types';
 import { normalizeBaseUrl, toQueryString } from '../utils';
-import { Author, ITweekManagementClient, KeyDefinition, KeyManifest, Patch, Revision, Schema } from './types';
+import { CurrentUser, ITweekManagementClient, KeyDefinition, KeyManifest, Patch, Revision, Schema } from './types';
 import { InputParams } from 'query-string';
 import { FetchError } from '../FetchError';
 
 export * from './types';
 
-const toAuthorQueryParams = (author: Author) => ({
-  'author.name': author.name,
-  'author.email': author.email,
-});
-
 const jsonHeaders = { 'Content-Type': 'application/json' };
 
 const noop = () => {};
+const toJson = (response: Response) => response.json();
 const defaultSearchCount = 25;
 
 export class TweekManagementClient implements ITweekManagementClient {
@@ -23,30 +19,28 @@ export class TweekManagementClient implements ITweekManagementClient {
 
   getAllKeyManifests(): Promise<KeyManifest[]> {
     const url = `${this.config.baseServiceUrl}/api/v2/manifests`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   getKeyManifest(path: string): Promise<KeyManifest> {
     const url = `${this.config.baseServiceUrl}/api/v2/manifests/${path}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   getKeyDependents(path: string): Promise<string[]> {
     const url = `${this.config.baseServiceUrl}/api/v2/dependents/${path}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   getKeyDefinition(path: string, revision?: string): Promise<KeyDefinition> {
     const queryParamsObject: InputParams = { revision };
     const queryString = toQueryString(queryParamsObject);
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}${queryString}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
-  saveKeyDefinition(path: string, author: Author, keyDefinition: KeyDefinition): Promise<void> {
-    const queryParamsObject = toAuthorQueryParams(author);
-    const queryString = toQueryString(queryParamsObject);
-    const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}${queryString}`;
+  saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}`;
     const config = {
       method: 'PUT',
       headers: jsonHeaders,
@@ -56,10 +50,8 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  deleteKey(path: string, author: Author, aliases: string[] = []): Promise<void> {
-    const queryParamsObject = toAuthorQueryParams(author);
-    const queryString = toQueryString(queryParamsObject);
-    const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}${queryString}`;
+  deleteKey(path: string, aliases: string[] = []): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}`;
     const config = {
       method: 'DELETE',
       headers: jsonHeaders,
@@ -73,12 +65,12 @@ export class TweekManagementClient implements ITweekManagementClient {
     const queryParamsObject = { since };
     const queryString = toQueryString(queryParamsObject);
     const url = `${this.config.baseServiceUrl}/api/v2/revision-history/${path}${queryString}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   getAllTags(): Promise<string[]> {
     const url = `${this.config.baseServiceUrl}/api/v2/tags`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   appendTags(tags: string[]): Promise<void> {
@@ -99,7 +91,7 @@ export class TweekManagementClient implements ITweekManagementClient {
     };
     const queryString = toQueryString(queryParamsObject);
     const url = `${this.config.baseServiceUrl}/api/v2/suggestions${queryString}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   search(query: string, count?: number): Promise<string[]> {
@@ -109,12 +101,12 @@ export class TweekManagementClient implements ITweekManagementClient {
     };
     const queryString = toQueryString(queryParamsObject);
     const url = `${this.config.baseServiceUrl}/api/v2/search${queryString}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   getContext(identityType: string, identityId: string): Promise<IdentityContext> {
     const url = `${this.config.baseServiceUrl}/api/v2/context/${identityType}/${encodeURIComponent(identityId)}`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
   appendContext(identityType: string, identityId: string, context: IdentityContext): Promise<void> {
@@ -137,21 +129,17 @@ export class TweekManagementClient implements ITweekManagementClient {
 
   getAllSchemas(): Promise<Schema[]> {
     const url = `${this.config.baseServiceUrl}/api/v2/schemas`;
-    return this._fetch(url).then(response => response.json());
+    return this._fetch(url).then(toJson);
   }
 
-  deleteIdentity(identityType: string, author: Author): Promise<void> {
-    const queryParamsObject = toAuthorQueryParams(author);
-    const queryString = toQueryString(queryParamsObject);
-    const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}${queryString}`;
+  deleteIdentity(identityType: string): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}`;
     const config = { method: 'DELETE' };
     return this._fetch(url, config).then(noop);
   }
 
-  addNewIdentity(identityType: string, author: Author, schema: Schema): Promise<void> {
-    const queryParamsObject = toAuthorQueryParams(author);
-    const queryString = toQueryString(queryParamsObject);
-    const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}${queryString}`;
+  addNewIdentity(identityType: string, schema: Schema): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}`;
     const config = {
       method: 'POST',
       headers: jsonHeaders,
@@ -160,16 +148,19 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  updateIdentity(identityType: string, author: Author, patch: Patch): Promise<void> {
-    const queryParamsObject = toAuthorQueryParams(author);
-    const queryString = toQueryString(queryParamsObject);
-    const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}${queryString}`;
+  updateIdentity(identityType: string, patch: Patch): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}`;
     const config = {
       method: 'PATCH',
       headers: jsonHeaders,
       body: JSON.stringify(patch),
     };
     return this._fetch(url, config).then(noop);
+  }
+
+  currentUser(): Promise<CurrentUser> {
+    const url = `${this.config.baseServiceUrl}/api/v2/current-user`;
+    return this._fetch(url).then(toJson);
   }
 
   private _fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
