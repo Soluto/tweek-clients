@@ -1,8 +1,5 @@
 import { Response } from 'cross-fetch';
-
-export function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+import qs, { InputParams } from 'query-string';
 
 export const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
   input: RequestInfo,
@@ -31,34 +28,6 @@ export const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof 
       throw error;
     });
 };
-
-export function snakeToCamelCase(target: any) {
-  if (target === null || typeof target !== 'object' || Array.isArray(target)) return target;
-  return Object.keys(target).reduce((o: any, key) => {
-    let [firstKey, ...others] = key.split('_');
-    let newKey = [firstKey, ...others.map(capitalize)].join('');
-    o[newKey] = snakeToCamelCase(target[key]);
-    return o;
-  }, {});
-}
-
-export function convertTypingFromJSON(target: any) {
-  switch (typeof target) {
-    case 'string':
-      try {
-        return JSON.parse(target);
-      } catch (e) {
-        return target;
-      }
-    case 'object':
-      return Object.keys(target).reduce((o: any, key) => {
-        o[key] = convertTypingFromJSON(target[key]);
-        return o;
-      }, {});
-    default:
-      return target;
-  }
-}
 
 export function delay(timeout: number) {
   return new Promise(resolve => setTimeout(resolve, timeout));
@@ -109,4 +78,16 @@ export const optimizeInclude = (keys: string[]): string[] => {
   result.splice(count);
 
   return result;
+};
+
+export const normalizeBaseUrl = (url: string) => {
+  if (url.endsWith('/')) {
+    url = url.substr(0, url.length - 1);
+  }
+  return url;
+};
+
+export const toQueryString = (query: InputParams) => {
+  const queryString = qs.stringify(query);
+  return queryString ? `?${queryString}` : '';
 };

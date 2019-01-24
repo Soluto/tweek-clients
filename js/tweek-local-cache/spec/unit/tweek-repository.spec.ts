@@ -3,7 +3,7 @@ import chai from 'chai';
 import sinon from 'sinon';
 import chaiAsPromise from 'chai-as-promised';
 import { FakeServer } from 'simple-fake-server';
-import { Context, createTweekClient, FetchConfig, ITweekClient, TweekCasing } from 'tweek-client';
+import { Context, createTweekClient, GetValuesConfig, ITweekClient } from 'tweek-client';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
 import {
@@ -87,7 +87,7 @@ describe('tweek repo test', () => {
   beforeEach(done => {
     _tweekServer.http
       .get()
-      .to('/api/v1/keys/_/*')
+      .to('/api/v2/values/_/*')
       .willReturn({
         'my_path/string_value': 'my-string',
         'my_path/inner_path_1/int_value': 55,
@@ -102,7 +102,7 @@ describe('tweek repo test', () => {
     _createClientThatFails = () => {
       _tweekServer.http
         .get()
-        .to('/api/v1/keys/_/*')
+        .to('/api/v2/values/_/*')
         .willFail(500);
       return createTweekClient({ baseServiceUrl: 'http://localhost:1234/' });
     };
@@ -387,8 +387,7 @@ describe('tweek repo test', () => {
       const fetchStub = sinon.stub();
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
-        appendContext: sinon.stub(),
-        deleteContext: sinon.stub(),
+        getValues: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock });
@@ -407,8 +406,7 @@ describe('tweek repo test', () => {
       const fetchStub = sinon.stub().resolves({});
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
-        appendContext: sinon.stub(),
-        deleteContext: sinon.stub(),
+        getValues: <any>fetchStub,
       };
       const expectedContext = { identity: { prop: 'value' } };
 
@@ -417,9 +415,8 @@ describe('tweek repo test', () => {
       const expectedKeys = ['some_path1/_', 'some_path2/key1', 'some_path3/key2'];
       expectedKeys.forEach(key => _tweekRepo.prepare(key));
 
-      const expectedFetchConfig: FetchConfig = {
+      const expectedFetchConfig: GetValuesConfig = {
         flatten: true,
-        casing: TweekCasing.snake,
         context: <any>expectedContext,
         include: expectedKeys,
       };
@@ -498,8 +495,7 @@ describe('tweek repo test', () => {
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
-        appendContext: sinon.stub(),
-        deleteContext: sinon.stub(),
+        getValues: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });
@@ -528,8 +524,7 @@ describe('tweek repo test', () => {
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
-        appendContext: sinon.stub(),
-        deleteContext: sinon.stub(),
+        getValues: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });
@@ -570,8 +565,7 @@ describe('tweek repo test', () => {
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
-        appendContext: sinon.stub(),
-        deleteContext: sinon.stub(),
+        getValues: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });
@@ -614,8 +608,7 @@ describe('tweek repo test', () => {
 
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
-        appendContext: sinon.stub(),
-        deleteContext: sinon.stub(),
+        getValues: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });

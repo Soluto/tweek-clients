@@ -17,7 +17,7 @@ type Message = {
  * Version Watcher for Tweek rules repository.
  * This is an experimental class and it will change in future releases
  */
-export default class VersionWatcher extends Observable<string> {
+export class VersionWatcher extends Observable<string> {
   private readonly _emitter = createChangeEmitter();
   private readonly _versionUrl: string;
 
@@ -58,7 +58,7 @@ export default class VersionWatcher extends Observable<string> {
       baseServiceUrl += '/';
     }
 
-    this._versionUrl = `${baseServiceUrl}api/v1/repo-version`;
+    this._versionUrl = `${baseServiceUrl}status`;
   }
 
   get currentVersion(): string | undefined {
@@ -88,7 +88,8 @@ export default class VersionWatcher extends Observable<string> {
       while (!this._isDisposed) {
         const result = await fetch(this._versionUrl);
         if (result.ok) {
-          const version = await result.text();
+          const status = await result.json();
+          const version = status && status['repository revision'];
           if (version && version !== this._currentVersion) {
             this._currentVersion = version;
             this._emit({ type: MessageType.Value, payload: version });
