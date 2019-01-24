@@ -280,7 +280,7 @@ export default class TweekRepository {
     };
 
     return this._client
-      .getValues<any>('_', fetchConfig)
+      .fetch<any>('_', fetchConfig)
       .catch(err => {
         expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.expire(valueNode)));
         this._isDirty = true;

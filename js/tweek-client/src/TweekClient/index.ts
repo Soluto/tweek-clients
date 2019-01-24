@@ -9,6 +9,11 @@ export * from './types';
 
 export interface ITweekClient {
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
+
+  /**
+   * @deprecated use `getValues` instead
+   */
+  fetch<T>(path: string, config?: GetValuesConfig): Promise<T>;
 }
 
 export class TweekClient implements ITweekClient {
@@ -43,6 +48,8 @@ export class TweekClient implements ITweekClient {
     const fetchPromises = fetchConfigChunks.map(cc => this._fetchChunk(path, cc));
     return <Promise<T>>Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
   }
+
+  fetch = this.getValues;
 
   private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<T> {
     const { flatten, baseServiceUrl, context, include, ignoreKeyTypes } = _config;
