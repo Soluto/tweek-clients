@@ -27,11 +27,6 @@ export type KeyDefinition = {
   implementation?: KeyImplementation;
 };
 
-export type Author = {
-  name: string;
-  email: string;
-};
-
 export type Schema = { [s: string]: any };
 
 export type Patch = Operation[];
@@ -42,13 +37,20 @@ export type Revision = {
   author: string;
 };
 
+export type CurrentUser = {
+  Email: string;
+  Group: string;
+  Name: string;
+  User: string;
+};
+
 export interface ITweekManagementClient {
   getAllKeyManifests(): Promise<KeyManifest[]>;
   getKeyManifest(path: string): Promise<KeyManifest>;
   getKeyDependents(path: string): Promise<string[]>;
   getKeyDefinition(path: string, revision?: string): Promise<KeyDefinition>;
-  saveKeyDefinition(path: string, author: Author, keyDefinition: KeyDefinition): Promise<void>;
-  deleteKey(path: string, author: Author, additionalKeys?: string[]): Promise<void>;
+  saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<void>;
+  deleteKey(path: string, additionalKeys?: string[]): Promise<void>;
   getKeyRevisionHistory(path: string, since?: string): Promise<Revision[]>;
 
   getAllTags(): Promise<string[]>;
@@ -62,7 +64,9 @@ export interface ITweekManagementClient {
   deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
 
   getAllSchemas(): Promise<Schema[]>;
-  deleteIdentity(identityType: string, author: Author): Promise<void>;
-  addNewIdentity(identityType: string, author: Author, schema: Schema): Promise<void>;
-  updateIdentity(identityType: string, author: Author, patch: Patch): Promise<void>;
+  deleteIdentity(identityType: string): Promise<void>;
+  addNewIdentity(identityType: string, schema: Schema): Promise<void>;
+  updateIdentity(identityType: string, patch: Patch): Promise<void>;
+
+  currentUser(): Promise<CurrentUser>;
 }

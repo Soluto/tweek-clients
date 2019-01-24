@@ -92,31 +92,31 @@ describe('TweekManagementClient', () => {
   describe('saveKeyDefinition', () => {
     runTest({
       method: 'saveKeyDefinition',
-      args: ['some/key_path', { name: 'some_name', email: 'some@email' }, { a: 'a' }],
-      expectedUrl: '/api/v2/keys/some/key_path?author.email=some%40email&author.name=some_name',
+      args: ['some/key_path', { a: 'a' }],
+      expectedUrl: '/api/v2/keys/some/key_path',
       expectedRequestInit: args => ({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[2]),
+        body: JSON.stringify(args[1]),
       }),
     });
   });
   describe('deleteKey', () => {
     runTest({
       method: 'deleteKey',
-      args: ['some/key_path', { name: 'some_name', email: 'some@email' }],
-      expectedUrl: '/api/v2/keys/some/key_path?author.email=some%40email&author.name=some_name',
+      args: ['some/key_path'],
+      expectedUrl: '/api/v2/keys/some/key_path',
       expectedRequestInit: { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: '[]' },
     });
 
     runTest({
       method: 'deleteKey',
-      args: ['some/other_path', { name: 'some_name', email: 'some@email' }, ['a', 'b', 'c/d']],
-      expectedUrl: '/api/v2/keys/some/other_path?author.email=some%40email&author.name=some_name',
+      args: ['some/other_path', ['a', 'b', 'c/d']],
+      expectedUrl: '/api/v2/keys/some/other_path',
       expectedRequestInit: args => ({
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[2]),
+        body: JSON.stringify(args[1]),
       }),
     });
   });
@@ -226,33 +226,42 @@ describe('TweekManagementClient', () => {
   describe('deleteIdentity', () => {
     runTest({
       method: 'deleteIdentity',
-      args: ['device', { name: 'some_name', email: 'some@email' }],
-      expectedUrl: '/api/v2/schemas/device?author.email=some%40email&author.name=some_name',
+      args: ['device'],
+      expectedUrl: '/api/v2/schemas/device',
       expectedRequestInit: { method: 'DELETE' },
     });
   });
   describe('addNewIdentity', () => {
     runTest({
       method: 'addNewIdentity',
-      args: ['device', { name: 'some_name', email: 'some@email' }, { a: 'a', b: 'c' }],
-      expectedUrl: '/api/v2/schemas/device?author.email=some%40email&author.name=some_name',
+      args: ['device', { a: 'a', b: 'c' }],
+      expectedUrl: '/api/v2/schemas/device',
       expectedRequestInit: args => ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[2]),
+        body: JSON.stringify(args[1]),
       }),
     });
   });
   describe('updateIdentity', () => {
     runTest({
       method: 'updateIdentity',
-      args: ['device', { name: 'some_name', email: 'some@email' }, { a: 'a', b: 'c' }],
-      expectedUrl: '/api/v2/schemas/device?author.email=some%40email&author.name=some_name',
+      args: ['device', { a: 'a', b: 'c' }],
+      expectedUrl: '/api/v2/schemas/device',
       expectedRequestInit: args => ({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[2]),
+        body: JSON.stringify(args[1]),
       }),
+    });
+  });
+
+  describe('currentUser', () => {
+    runTest({
+      method: 'currentUser',
+      args: [],
+      expectedUrl: '/api/v2/current-user',
+      response: { a: 'a', b: 'b' },
     });
   });
 });
