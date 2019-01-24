@@ -22,7 +22,7 @@ jobs:
           command: |
             docker build -t js_tests .
             for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
-            docker run --network=blackbox_default -e TWEEK_LOCAL_API=http://api js_tests
+            docker run --network=blackbox_default -e TWEEK_GATEWAY_URL=http://gateway js_tests
 
       - deploy:
           name: npm

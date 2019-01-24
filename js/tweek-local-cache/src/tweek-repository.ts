@@ -1,4 +1,4 @@
-import { Context, FetchConfig, ITweekClient, TweekCasing } from 'tweek-client';
+import { Context, GetValuesConfig, ITweekClient } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
 import $$observable from 'symbol-observable';
 import Observable from 'zen-observable';
@@ -273,15 +273,14 @@ export default class TweekRepository {
 
     const keysToRefresh = expiredKeys.map(([key]) => key);
 
-    const fetchConfig: FetchConfig = {
+    const fetchConfig: GetValuesConfig = {
       flatten: true,
-      casing: TweekCasing.snake,
       context: this._context,
       include: keysToRefresh,
     };
 
     return this._client
-      .fetch<any>('_', fetchConfig)
+      .getValues<any>('_', fetchConfig)
       .catch(err => {
         expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.expire(valueNode)));
         this._isDirty = true;
