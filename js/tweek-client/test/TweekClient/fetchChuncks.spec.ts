@@ -1,47 +1,43 @@
-import sinon = require('sinon');
+import sinon from 'sinon';
 import { expect } from 'chai';
-import { FetchConfig } from '../../src/index';
-import TweekClient from '../../src/TweekClient';
+import { GetValuesConfig, TweekClient } from '../../src';
 
-describe('tweek-client fetchChunks', () => {
+describe('TweekClient fetchChunks', () => {
   type TestConfiguration = {
     pathToFetch: string;
     expectedUrl: string;
     expectedQueryParams?: string;
     stubCalls: { requestUrl: string; response: Response }[];
-    config: FetchConfig;
+    config: GetValuesConfig;
     expectedResult?: Object;
     baseUrl?: string;
     context?: object;
   };
 
-  const maxChuckSize = 3;
   const defaultUrl = 'http://test/';
 
-  const prepare = url => {
+  const prepare = (url?: string) => {
     const fetchStub = sinon.stub();
 
     const tweekClient = new TweekClient({
       baseServiceUrl: url || defaultUrl,
-      casing: 'snake',
-      convertTyping: false,
       fetch: fetchStub,
     });
 
     const test: TestConfiguration = {
       pathToFetch: '_',
-      expectedUrl: `${defaultUrl}api/v1/keys/_`,
+      expectedUrl: `${defaultUrl}api/v2/values/_`,
       stubCalls: [
         {
-          requestUrl: 'http://test/api/v1/keys/_?%24include=a1&%24include=a2&%24include=a3',
+          requestUrl: 'http://test/api/v2/values/_?%24include=a1&%24include=a2&%24include=a3',
           response: new Response('{ "a1": 1, "a2": 2, "a3": 3 }'),
         },
         {
-          requestUrl: 'http://test/api/v1/keys/_?%24include=b1&%24include=b2&%24include=b3',
+          requestUrl: 'http://test/api/v2/values/_?%24include=b1&%24include=b2&%24include=b3',
           response: new Response('{ "b1": "a", "b2": "b", "b3": "c" }'),
         },
         {
-          requestUrl: 'http://test/api/v1/keys/_?%24include=c5',
+          requestUrl: 'http://test/api/v2/values/_?%24include=c5',
           response: new Response('{ "c5": true }'),
         },
       ],
@@ -75,10 +71,10 @@ describe('tweek-client fetchChunks', () => {
     });
 
     // Act
-    const result = await tweekClient.fetch(test.pathToFetch, test.config);
+    const result = await tweekClient.getValues(test.pathToFetch, test.config);
 
     // Assert
-    expect(fetchStub).to.have.been.calledThrice;
+    sinon.assert.calledThrice(fetchStub);
     expect(result).to.deep.equal(test.expectedResult);
   });
 });

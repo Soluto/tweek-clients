@@ -1,20 +1,28 @@
-export type ValueNode<TValue> = any;
-
-export type TrieNode<TValue> = ValueNode<TValue> | { [key: string]: TrieNode<TValue> };
+export type TrieNode<TValue> = TValue | { [key: string]: TrieNode<TValue> };
 export type SplitJoin = {
   split: (key: string) => string[];
   join: (fragments: string[]) => string;
 };
 
 export default class Trie<TValue> {
-  constructor(private _splitJoin: SplitJoin) {}
+  constructor(private readonly _splitJoin: SplitJoin) {}
 
-  private _root: TrieNode<TValue> = {};
-  private _valueMap = new WeakMap<Node, TValue>();
+  private readonly _root: TrieNode<TValue> = {};
+  private readonly _valueMap = new WeakMap<{}, TValue>();
+
+  static from<T>(splitJoin: SplitJoin, values: { [key: string]: T }) {
+    const trie = new Trie<T>(splitJoin);
+
+    Object.entries(values).forEach(([k, v]) => {
+      trie.set(k, v);
+    });
+
+    return trie;
+  }
 
   set(key: string, value: TValue) {
     const fragments = this._splitJoin.split(key);
-    let node = fragments.reduce((acc, next) => {
+    const node = fragments.reduce((acc: any, next) => {
       if (!acc[next]) {
         acc[next] = {};
       }
@@ -25,7 +33,7 @@ export default class Trie<TValue> {
 
   get(key: string): TValue | undefined {
     const fragments = this._splitJoin.split(key);
-    let node = fragments.reduce((acc, next) => {
+    const node = fragments.reduce((acc: any, next) => {
       if (!acc) return null;
       return acc[next];
     }, this._root);
@@ -39,7 +47,7 @@ export default class Trie<TValue> {
 
   list(key?: string, index = 0): { [key: string]: TValue } {
     const fragments = (key && this._splitJoin.split(key)) || [];
-    let node = fragments.reduce((acc, next) => {
+    const node = fragments.reduce((acc: any, next) => {
       if (!acc) return null;
       return acc[next];
     }, this._root);

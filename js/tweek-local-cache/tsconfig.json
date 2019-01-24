@@ -1,14 +1,9 @@
 {
-  "compileOnSave": true,
-  "include": ["src"],
+  "extends": "../../tsconfig",
   "compilerOptions": {
-    "lib": ["dom", "es2015", "es2017.object", "ES2016.Array.Include"],
-    "target": "es5",
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "strictNullChecks": true,
-    "declaration": true,
-    "sourceMap": true,
+    /* Basic Options */
+    "lib": ["dom", "esnext"],
     "outDir": "./dist"
-  }
+  },
+  "files": ["src/index.ts"]
 }
