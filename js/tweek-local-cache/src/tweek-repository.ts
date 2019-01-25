@@ -77,15 +77,13 @@ export default class TweekRepository {
 
   public updateContext(valueOrMapper: Context | ((context: Context) => Context | null)) {
     if (typeof valueOrMapper === 'function') {
-      const newContext = valueOrMapper(this._context);
-      if (!newContext) {
+      valueOrMapper = <Context>valueOrMapper(this._context);
+      if (!valueOrMapper) {
         return;
       }
-      this._context = newContext;
-    } else {
-      this._context = valueOrMapper;
     }
-    this.expire();
+    this._context = valueOrMapper;
+    this._waitRefreshCycle().then(() => this.expire());
   }
 
   public addKeys(keys: FlatKeys) {
@@ -216,7 +214,6 @@ export default class TweekRepository {
     return this.observe('_');
   }
 
-  // @ts-ignore TS6133 (for testing purposes)
   private _waitRefreshCycle() {
     if (!this._refreshInProgress) return Promise.resolve();
     return this._refreshPromise;
@@ -275,6 +272,8 @@ export default class TweekRepository {
 
     const fetchConfig: GetValuesConfig = {
       flatten: true,
+      // @ts-ignore legacy support
+      casing: 'snake',
       context: this._context,
       include: keysToRefresh,
     };
