@@ -44,6 +44,29 @@ export type CurrentUser = {
   User: string;
 };
 
+export type AuthLoginInfo = {
+  login_type: string;
+  additional_info: { [s: string]: any };
+  scope: string;
+  response_type: string;
+};
+
+export type AuthProvider = {
+  name: string;
+  issuer: string;
+  authority: string;
+  client_id: string;
+  jwks_uri: string;
+  login_info: AuthLoginInfo;
+};
+
+export type ServiceDetails = {
+  version: string;
+  status: string;
+};
+
+export type Services = { [s: string]: ServiceDetails };
+
 export interface ITweekManagementClient {
   getAllKeyManifests(): Promise<KeyManifest[]>;
   getKeyManifest(path: string): Promise<KeyManifest>;
@@ -69,4 +92,6 @@ export interface ITweekManagementClient {
   updateIdentity(identityType: string, patch: Patch): Promise<void>;
 
   currentUser(): Promise<CurrentUser>;
+  getAuthProviders(): Promise<AuthProvider[]>;
+  getServiceDetails(): Promise<Services>;
 }

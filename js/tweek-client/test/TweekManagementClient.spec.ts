@@ -264,4 +264,20 @@ describe('TweekManagementClient', () => {
       response: { a: 'a', b: 'b' },
     });
   });
+  describe('getAuthProviders', () => {
+    runTest({
+      method: 'getAuthProviders',
+      args: [],
+      expectedUrl: '/auth/providers',
+      response: ['a', 'b', 'c'],
+    });
+  });
+  describe('getServiceDetails', () => {
+    runTest({
+      method: 'getServiceDetails',
+      args: [],
+      expectedUrl: '/version',
+      response: { a: 'b', c: 'd' },
+    });
+  });
 });
