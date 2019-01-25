@@ -417,6 +417,8 @@ describe('tweek repo test', () => {
 
       const expectedFetchConfig: GetValuesConfig = {
         flatten: true,
+        // @ts-ignore legacy support
+        casing: 'snake',
         context: <any>expectedContext,
         include: expectedKeys,
       };
