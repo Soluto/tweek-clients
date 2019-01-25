@@ -1,6 +1,16 @@
 import { IdentityContext, TweekInitConfig } from '../types';
 import { normalizeBaseUrl, toQueryString } from '../utils';
-import { CurrentUser, ITweekManagementClient, KeyDefinition, KeyManifest, Patch, Revision, Schema } from './types';
+import {
+  AuthProvider,
+  CurrentUser,
+  ITweekManagementClient,
+  KeyDefinition,
+  KeyManifest,
+  Patch,
+  Revision,
+  Schema,
+  Services,
+} from './types';
 import { InputParams } from 'query-string';
 import { FetchError } from '../FetchError';
 
@@ -160,6 +170,16 @@ export class TweekManagementClient implements ITweekManagementClient {
 
   currentUser(): Promise<CurrentUser> {
     const url = `${this.config.baseServiceUrl}/api/v2/current-user`;
+    return this._fetch(url).then(toJson);
+  }
+
+  getAuthProviders(): Promise<AuthProvider[]> {
+    const url = `${this.config.baseServiceUrl}/auth/providers`;
+    return this._fetch(url).then(toJson);
+  }
+
+  getServiceDetails(): Promise<Services> {
+    const url = `${this.config.baseServiceUrl}/version`;
     return this._fetch(url).then(toJson);
   }
 
