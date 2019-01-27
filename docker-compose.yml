@@ -10,14 +10,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - $PWD/testRepoData:/repo
     environment:
-      - API_PORT=1111
+      - GATEWAY_PORT=1111
 
   js_tests:
     build: .
     depends_on:
       - tweek-blackbox
     environment:
-      - TWEEK_LOCAL_API=http://api
+      - TWEEK_GATEWAY_URL=http://gateway
 
   dotnet_tests:
     build: ./dotnet

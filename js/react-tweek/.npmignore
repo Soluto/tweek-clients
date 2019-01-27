@@ -1,13 +1,11 @@
-src/
-spec/
-node_modules/
-
-.babelrc
-
 .git
 .gitignore
+.vscode
+.idea
+
+node_modules/
+**/*.test.tsx
+jest.config.js
 
 yarn.lock
 package-lock.json
-
-.vscode

@@ -1,4 +1,7 @@
 export * from './types';
-export { default as TweekClient } from './TweekClient';
-export { default as createTweekClient } from './createTweekClient';
-export { default as watchVersion } from './watchVersion';
+export * from './TweekClient';
+export * from './TweekManagementClient';
+export * from './createTweekClient';
+export * from './createTweekManagementClient';
+export * from './VersionWatcher';
+export * from './FetchError';

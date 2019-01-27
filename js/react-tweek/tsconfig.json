@@ -2,7 +2,8 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     /* Basic Options */
-    "lib": ["dom", "esnext"],
+    "lib": ["esnext"],
+    "jsx": "react",
     "outDir": "./dist"
   },
   "files": ["src/index.ts"]

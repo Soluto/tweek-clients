@@ -1,21 +1,48 @@
 import { expect } from 'chai';
-import getenv = require('getenv');
+const getenv: any = require('getenv');
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
+import axios from 'axios';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
+import { delay } from '../../src/utils';
 
-const TWEEK_LOCAL_API = getenv.string('TWEEK_LOCAL_API', 'http://127.0.0.1:1111');
+const TWEEK_GATEWAY_URL = getenv.string('TWEEK_GATEWAY_URL', 'http://127.0.0.1:1111');
 
-describe('tweek repo behavior test', () => {
+describe('tweek repo behavior test', function(this: Mocha.Suite) {
+  this.timeout(180000);
+
   let _tweekRepo: TweekRepository;
   let _tweekClient: ITweekClient;
 
+  before(async () => {
+    const instance = axios.create({ baseURL: TWEEK_GATEWAY_URL, timeout: 2000 });
+
+    let error;
+    for (let i = 0; i < 20; i++) {
+      try {
+        await instance.get('/health');
+        const result = await instance.get('/api/v2/values/@tweek_clients_tests/_');
+        expect(result.data).to.deep.include({
+          test_category: { test_key1: 'def value', test_key2: false },
+          test_category2: { user_fruit: 'apple' },
+        });
+        console.log('tweek api ready');
+        return;
+      } catch (err) {
+        error = err;
+        console.log('tweek api not ready yet:', err.message);
+        await delay(1000);
+      }
+    }
+
+    throw error;
+  });
+
   async function initTweekRepository(context: Context = {}) {
-    _tweekClient = createTweekClient({ baseServiceUrl: TWEEK_LOCAL_API });
+    _tweekClient = createTweekClient({ baseServiceUrl: TWEEK_GATEWAY_URL });
 
     const store = new MemoryStore();
-    _tweekRepo = new TweekRepository({ client: _tweekClient });
-    _tweekRepo.context = context;
+    _tweekRepo = new TweekRepository({ client: _tweekClient, context });
     await _tweekRepo.useStore(store);
   }
 
@@ -104,7 +131,7 @@ describe('tweek repo behavior test', () => {
 
       // Act
       _tweekRepo.refresh();
-      await (<any>_tweekRepo).waitRefreshCycle();
+      await (<any>_tweekRepo)._waitRefreshCycle();
 
       // Assert
       const getKeysValuesPromises: Promise<any>[] = test.expectedKeys.map(x => _tweekRepo.get(x.keyName));

@@ -1,13 +1,13 @@
-import fetchMock = require('fetch-mock');
+import fetchMock from 'fetch-mock';
 import { expect } from 'chai';
-import watchVersion from '../src/watchVersion';
+import { VersionWatcher } from '../src';
 import { delay } from '../src/utils';
 
-describe('watchVersion', () => {
+describe('VersionWatcher', () => {
   const baseServiceUrl = 'http://test/';
-  const matcher = 'http://test/api/v1/repo-version';
+  const matcher = 'http://test/status';
 
-  function watcherToPromise(watcher, count?: number): Promise<any[]> {
+  function watcherToPromise(watcher: VersionWatcher, count?: number): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const result: any[] = [];
       watcher.subscribe({
@@ -34,10 +34,10 @@ describe('watchVersion', () => {
     fetchMock.get(matcher, () => {
       const currentCount = count;
       count++;
-      return currentCount.toString();
+      return { 'repository revision': currentCount.toString() };
     });
 
-    const watcher = watchVersion(baseServiceUrl, 2);
+    const watcher = new VersionWatcher(baseServiceUrl, 2);
 
     const versions = await watcherToPromise(watcher, 5);
 
@@ -46,8 +46,8 @@ describe('watchVersion', () => {
   });
 
   it('should emit items only when version changes', async () => {
-    fetchMock.get(matcher, 'someVersion');
-    const watcher = watchVersion(baseServiceUrl, 2);
+    fetchMock.get(matcher, { 'repository revision': 'someVersion' });
+    const watcher = new VersionWatcher(baseServiceUrl, 2);
 
     const resultPromise = watcherToPromise(watcher);
     await delay(10);
@@ -61,8 +61,8 @@ describe('watchVersion', () => {
   });
 
   it("should stop emitting after 'dispose' was called", async () => {
-    fetchMock.get(matcher, 'someVersion');
-    const watcher = watchVersion(baseServiceUrl, 2);
+    fetchMock.get(matcher, { 'repository revision': 'someVersion' });
+    const watcher = new VersionWatcher(baseServiceUrl, 2);
 
     await watcherToPromise(watcher, 1);
 
@@ -74,9 +74,9 @@ describe('watchVersion', () => {
 
   it('should retry if fetch error', async () => {
     fetchMock.getOnce(matcher, 500);
-    fetchMock.get(matcher, 'someVersion');
+    fetchMock.get(matcher, { 'repository revision': 'someVersion' }, { overwriteRoutes: false });
 
-    const watcher = watchVersion(baseServiceUrl, 2);
+    const watcher = new VersionWatcher(baseServiceUrl, 2);
 
     const resultPromise = watcherToPromise(watcher, 1);
 

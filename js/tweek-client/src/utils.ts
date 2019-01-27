@@ -1,42 +1,137 @@
-import crossFetch = require('cross-fetch');
-const { Response } = crossFetch;
+import { fetch as globalFetch, Response } from 'cross-fetch';
+import qs, { InputParams } from 'query-string';
+import { FetchClientConfig } from './types';
 
-export function captialize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
+const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
+  input: RequestInfo,
+  init?: RequestInit,
+) => {
+  let timeout: any;
 
-export const createFetchWithTimeout = (timeout, fetch) => (input, init) =>
-  Promise.race([fetch(input, init), requestTimeout(timeout)]);
+  return Promise.race([
+    fetchFn(input, init),
+    new Promise<Response>(res => {
+      timeout = setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis);
+    }),
+  ])
+    .then(response => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
 
-export function requestTimeout(timeoutInMillis): Promise<Response> {
-  return new Promise(res => setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis));
-}
+      return response;
+    })
+    .catch(error => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
 
-export function snakeToCamelCase(target) {
-  if (target === null || typeof target !== 'object' || Array.isArray(target)) return target;
-  return Object.keys(target).reduce((o, key) => {
-    let [firstKey, ...others] = key.split('_');
-    let newKey = [firstKey, ...others.map(captialize)].join('');
-    o[newKey] = snakeToCamelCase(target[key]);
-    return o;
-  }, {});
-}
+      throw error;
+    });
+};
 
-export function convertTypingFromJSON(target) {
-  if (typeof target === 'string') {
-    try {
-      return JSON.parse(target);
-    } catch (e) {
-      return target;
+export const createFetchClient = ({
+  fetch = globalFetch,
+  getAuthenticationToken,
+  requestTimeoutInMillis = 8000,
+  onError,
+  clientName,
+}: FetchClientConfig) => {
+  const fetchClient = (input: RequestInfo, init: RequestInit = {}) => {
+    const headersPromise = getAuthenticationToken
+      ? Promise.resolve(getAuthenticationToken()).then(t => ({ Authorization: `Bearer ${t}` }))
+      : Promise.resolve({});
+
+    let fetchPromise = headersPromise.then(authHeaders =>
+      fetch(input, {
+        ...init,
+        headers: {
+          ...init.headers,
+          ['X-Api-Client']: clientName || 'unknown',
+          ...authHeaders,
+        },
+      }),
+    );
+
+    if (onError) {
+      fetchPromise = fetchPromise.then(response => {
+        if (!response.ok) {
+          setImmediate(() => onError(response));
+        }
+
+        return response;
+      });
     }
-  } else if (typeof target === 'object') {
-    return Object.keys(target).reduce((o, key) => {
-      o[key] = convertTypingFromJSON(target[key]);
-      return o;
-    }, {});
-  } else return target;
-}
 
-export function delay(timeout) {
+    return fetchPromise;
+  };
+
+  if (!requestTimeoutInMillis) {
+    return fetchClient;
+  }
+
+  return createFetchWithTimeout(requestTimeoutInMillis, fetchClient);
+};
+
+export function delay(timeout: number) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
+
+export const isScanKey = (key: string) => key === '_' || key.endsWith('/_');
+
+export const optimizeInclude = (keys: string[]): string[] => {
+  let count = 0,
+    i = 0;
+  const keysLength = keys.length;
+  const result = new Array<string>(keysLength);
+
+  keys.sort();
+
+  const handleKey = (key: string) => {
+    result[count] = key;
+    count++;
+
+    if (!isScanKey(key)) {
+      return;
+    }
+
+    const prefixLength = key.length - 1;
+    const prefix = key.substring(0, prefixLength);
+
+    while (i < keysLength) {
+      const nextKey = keys[i];
+
+      if (!nextKey.startsWith(prefix)) {
+        break;
+      }
+
+      i++;
+
+      if (nextKey.includes('/@', prefixLength)) {
+        handleKey(nextKey);
+      }
+    }
+  };
+
+  while (i < keysLength) {
+    const key = keys[i];
+    i++;
+    handleKey(key);
+  }
+
+  result.splice(count);
+
+  return result;
+};
+
+export const normalizeBaseUrl = (url: string) => {
+  if (url.endsWith('/')) {
+    url = url.substr(0, url.length - 1);
+  }
+  return url;
+};
+
+export const toQueryString = (query: InputParams) => {
+  const queryString = qs.stringify(query);
+  return queryString ? `?${queryString}` : '';
+};
