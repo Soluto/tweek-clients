@@ -1,5 +1,14 @@
 version: 2
 jobs:
+  env:
+    working_directory: ~/tweek-clients
+    environment:
+      NODE_ENV: development
+
+    machine: true
+
+    steps:
+      - 
   test_js:
     working_directory: ~/tweek-clients
     environment:
@@ -72,3 +81,5 @@ workflows:
     jobs:
       - test_js
       - test_dotnet
+        requires:
+          - test_js
