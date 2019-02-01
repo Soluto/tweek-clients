@@ -65,6 +65,15 @@ export type ServiceDetails = {
   status: string;
 };
 
+export type Policy = {
+  group: string,
+  user: string,
+  contexts: {[identityId: string]: string},
+  object: string,
+  action: "read" | "write" | "*",
+  effect: "allow" | "deny",
+}
+
 export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
@@ -94,4 +103,7 @@ export interface ITweekManagementClient {
   currentUser(): Promise<CurrentUser>;
   getAuthProviders(): Promise<AuthProvider[]>;
   getServiceDetails(): Promise<Services>;
+
+  getPolicies(): Promise<Policy[]>;
+  updatePolicies(policies: Policy[]): Promise<void>;
 }
