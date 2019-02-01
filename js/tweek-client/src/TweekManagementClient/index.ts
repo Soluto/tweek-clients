@@ -179,12 +179,22 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson).then(json => json.policies);
   }
 
-  updatePolicies(policies: Policy[]): Promise<void> {
+  replacePolicies(policies: Policy[]): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/policies`;
     const config = {
       method: 'PUT',
       headers: jsonHeaders,
       body: JSON.stringify({policies}),
+    };
+    return this._fetch(url, config).then(noop);
+  }
+
+  patchPolicies(patch: Patch): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/policies`;
+    const config = {
+      method: 'PATCH',
+      headers: jsonHeaders,
+      body: JSON.stringify(patch),
     };
     return this._fetch(url, config).then(noop);
   }

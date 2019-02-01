@@ -105,5 +105,6 @@ export interface ITweekManagementClient {
   getServiceDetails(): Promise<Services>;
 
   getPolicies(): Promise<Policy[]>;
-  updatePolicies(policies: Policy[]): Promise<void>;
+  replacePolicies(policies: Policy[]): Promise<void>;
+  patchPolicies(patch: Patch): Promise<void>;
 }
