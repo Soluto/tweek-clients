@@ -24,7 +24,7 @@ export type KeyManifest = {
 
 export type KeyDefinition = {
   manifest: KeyManifest;
-  implementation?: KeyImplementation;
+  implementation?: string;
 };
 
 export type Schema = { [s: string]: any };
@@ -84,7 +84,8 @@ export interface ITweekManagementClient {
 
   getContext(identityType: string, identityId: string): Promise<IdentityContext>;
   appendContext(identityType: string, identityId: string, context: IdentityContext): Promise<void>;
-  deleteContext(identityType: string, identityId: string, property: string): Promise<void>;
+  deleteContextProperty(identityType: string, identityId: string, property: string): Promise<void>;
+  deleteContext(identityType: string, identityId: string): Promise<void>;
 
   getAllSchemas(): Promise<Schema[]>;
   deleteIdentity(identityType: string): Promise<void>;
