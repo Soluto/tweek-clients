@@ -65,13 +65,22 @@ export type ServiceDetails = {
   status: string;
 };
 
+enum Action {
+  Read = 'read',
+  Write = 'write',
+  All = '*',
+}
+enum Effect {
+  Allow = 'allow',
+  Deny = 'deny',
+}
 export type Policy = {
   group: string;
   user: string;
   contexts: { [identityId: string]: string };
   object: string;
-  action: 'read' | 'write' | '*';
-  effect: 'allow' | 'deny';
+  action: Action;
+  effect: Effect;
 };
 
 export type Services = { [s: string]: ServiceDetails };
