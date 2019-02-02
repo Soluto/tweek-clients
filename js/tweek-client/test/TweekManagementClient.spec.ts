@@ -256,6 +256,49 @@ describe('TweekManagementClient', () => {
     });
   });
 
+  describe('getPolicies', () => {
+    runTest({
+      method: 'getPolicies',
+      expectedUrl: '/api/v2/policies',
+      response: {
+        policies: [
+          {
+            group: '*',
+            user: '*',
+            contexts: {},
+            object: '*',
+            action: '*',
+            effect: 'allow',
+          },
+        ],
+      },
+    });
+  });
+  describe('replacePolicies', () => {
+    runTest({
+      method: 'replacePolicies',
+      args: [[{ a: 'a' }]],
+      expectedUrl: '/api/v2/policies',
+      expectedRequestInit: args => ({
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ policies: args[0] }),
+      }),
+    });
+  });
+  describe('patchPolicies', () => {
+    runTest({
+      method: 'patchPolicies',
+      args: [{ a: 'a', b: 'c' }],
+      expectedUrl: '/api/v2/policies',
+      expectedRequestInit: args => ({
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(args[0]),
+      }),
+    });
+  });
+
   describe('currentUser', () => {
     runTest({
       method: 'currentUser',

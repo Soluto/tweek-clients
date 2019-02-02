@@ -66,13 +66,13 @@ export type ServiceDetails = {
 };
 
 export type Policy = {
-  group: string,
-  user: string,
-  contexts: {[identityId: string]: string},
-  object: string,
-  action: "read" | "write" | "*",
-  effect: "allow" | "deny",
-}
+  group: string;
+  user: string;
+  contexts: { [identityId: string]: string };
+  object: string;
+  action: 'read' | 'write' | '*';
+  effect: 'allow' | 'deny';
+};
 
 export type Services = { [s: string]: ServiceDetails };
 
@@ -104,7 +104,7 @@ export interface ITweekManagementClient {
   getAuthProviders(): Promise<AuthProvider[]>;
   getServiceDetails(): Promise<Services>;
 
-  getPolicies(): Promise<Policy[]>;
+  getPolicies(): Promise<{ policies: Policy[] }>;
   replacePolicies(policies: Policy[]): Promise<void>;
   patchPolicies(patch: Patch): Promise<void>;
 }
