@@ -130,10 +130,16 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  deleteContext(identityType: string, identityId: string, property: string): Promise<void> {
+  deleteContextProperty(identityType: string, identityId: string, property: string): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/context/${identityType}/${encodeURIComponent(
       identityId,
     )}/${property}`;
+    const config = { method: 'DELETE' };
+    return this._fetch(url, config).then(noop);
+  }
+
+  deleteContext(identityType: string, identityId: string): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/context/${identityType}/${encodeURIComponent(identityId)}`;
     const config = { method: 'DELETE' };
     return this._fetch(url, config).then(noop);
   }

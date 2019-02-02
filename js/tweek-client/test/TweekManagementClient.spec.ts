@@ -207,11 +207,19 @@ describe('TweekManagementClient', () => {
       }),
     });
   });
+  describe('deleteContextProperty', () => {
+    runTest({
+      method: 'deleteContextProperty',
+      args: ['user', 'abcd1234', 'name'],
+      expectedUrl: '/api/v2/context/user/abcd1234/name',
+      expectedRequestInit: { method: 'DELETE' },
+    });
+  });
   describe('deleteContext', () => {
     runTest({
       method: 'deleteContext',
-      args: ['user', 'abcd1234', 'name'],
-      expectedUrl: '/api/v2/context/user/abcd1234/name',
+      args: ['user', 'abcd1234'],
+      expectedUrl: '/api/v2/context/user/abcd1234',
       expectedRequestInit: { method: 'DELETE' },
     });
   });
