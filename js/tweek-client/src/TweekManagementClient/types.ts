@@ -65,6 +65,24 @@ export type ServiceDetails = {
   status: string;
 };
 
+export const enum Action {
+  Read = 'read',
+  Write = 'write',
+  All = '*',
+}
+export const enum Effect {
+  Allow = 'allow',
+  Deny = 'deny',
+}
+export type Policy = {
+  group: string;
+  user: string;
+  contexts: { [identityId: string]: string };
+  object: string;
+  action: Action;
+  effect: Effect;
+};
+
 export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
@@ -95,4 +113,8 @@ export interface ITweekManagementClient {
   currentUser(): Promise<CurrentUser>;
   getAuthProviders(): Promise<AuthProvider[]>;
   getServiceDetails(): Promise<Services>;
+
+  getPolicies(): Promise<{ policies: Policy[] }>;
+  replacePolicies(policies: Policy[]): Promise<void>;
+  patchPolicies(patch: Patch): Promise<void>;
 }
