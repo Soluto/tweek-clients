@@ -65,12 +65,12 @@ export type ServiceDetails = {
   status: string;
 };
 
-const enum Action {
+export const enum Action {
   Read = 'read',
   Write = 'write',
   All = '*',
 }
-const enum Effect {
+export const enum Effect {
   Allow = 'allow',
   Deny = 'deny',
 }
