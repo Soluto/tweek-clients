@@ -33,21 +33,27 @@ const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch):
 export const createFetchClient = ({
   fetch = globalFetch,
   getAuthenticationToken,
+  clientId,
+  clientSecret,
   requestTimeoutInMillis = 8000,
   onError,
-  clientName,
 }: FetchClientConfig) => {
   const fetchClient = (input: RequestInfo, init: RequestInit = {}) => {
-    const headersPromise = getAuthenticationToken
-      ? Promise.resolve(getAuthenticationToken()).then(t => ({ Authorization: `Bearer ${t}` }))
-      : Promise.resolve({});
+    let headersPromise: Promise<Record<string, string>>;
+
+    if (getAuthenticationToken) {
+      headersPromise = Promise.resolve(getAuthenticationToken()).then(t => ({ Authorization: `Bearer ${t}` }));
+    } else if (clientId && clientSecret) {
+      headersPromise = Promise.resolve({ 'X-Client-Id': clientId, 'X-Client-Secret': clientSecret });
+    } else {
+      headersPromise = Promise.resolve({});
+    }
 
     let fetchPromise = headersPromise.then(authHeaders =>
       fetch(input, {
         ...init,
         headers: {
           ...init.headers,
-          ['X-Api-Client']: clientName || 'unknown',
           ...authHeaders,
         },
       }),
