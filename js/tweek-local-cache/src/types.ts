@@ -33,26 +33,10 @@ export interface ITweekStore {
 
 export type TweekRepositoryConfig = {
   client: ITweekClient;
-  getPolicy?: GetPolicy;
   refreshInterval?: number;
   refreshDelay?: number;
   refreshErrorPolicy?: RefreshErrorPolicy;
   context?: Context;
-};
-
-export const enum NotReadyPolicy {
-  throw = 'throw',
-  wait = 'wait',
-}
-
-export const enum NotPreparedPolicy {
-  throw = 'throw',
-  prepare = 'prepare',
-}
-
-export type GetPolicy = {
-  notReady?: NotReadyPolicy;
-  notPrepared?: NotPreparedPolicy;
 };
 
 export interface RefreshErrorPolicy {

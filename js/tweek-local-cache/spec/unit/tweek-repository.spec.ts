@@ -6,15 +6,7 @@ import { FakeServer } from 'simple-fake-server';
 import { Context, createTweekClient, GetValuesConfig, ITweekClient } from 'tweek-client';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
-import {
-  Expiration,
-  GetPolicy,
-  ITweekStore,
-  NotPreparedPolicy,
-  NotReadyPolicy,
-  RefreshErrorPolicy,
-  RepositoryKeyState,
-} from '../../src';
+import { Expiration, ITweekStore, RefreshErrorPolicy, RepositoryKeyState } from '../../src';
 
 const waitPort: any = require('wait-port');
 
@@ -49,10 +41,10 @@ describe('tweek repo test', () => {
     await (<any>_tweekRepo)._waitRefreshCycle();
   }
 
-  function observeKey(key: string, count = 1, getPolicy?: GetPolicy): Promise<any[]> {
+  function observeKey(key: string, count = 1): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const items: any[] = [];
-      const subscription = _tweekRepo.observe(key, getPolicy).subscribe({
+      const subscription = _tweekRepo.observe(key).subscribe({
         next: value => {
           items.push(value);
           if (items.length === count) {
@@ -233,62 +225,6 @@ describe('tweek repo test', () => {
       expect(key2.value).to.equal(55);
       expect(key3.value).to.equal(true);
       expect(key4.value).to.equal(false);
-    });
-  });
-
-  describe('getPolicy', () => {
-    describe('notReady', () => {
-      it("should throw when not ready and policy is 'throw'", async () => {
-        // Arrange
-        await initRepository();
-        await _tweekRepo.prepare('path/that/was/not_ready');
-
-        // Act
-        const getPromise = _tweekRepo.get('path/that/was/not_ready', { notReady: NotReadyPolicy.throw });
-
-        // Assert
-        await expect(getPromise).to.be.rejectedWith('value not available yet');
-      });
-
-      it("should only refresh the requested key when policy is 'wait'", async () => {
-        // Arrange
-        let store = new MemoryStore({ 'my_path/inner_path_1/int_value': cachedItem(10) });
-        await initRepository({ store });
-        await _tweekRepo.prepare('my_path/string_value');
-
-        // Act
-        let key1 = await _tweekRepo.get('my_path/string_value', { notReady: NotReadyPolicy.wait });
-        let key2 = await _tweekRepo.get('my_path/inner_path_1/int_value', { notReady: NotReadyPolicy.throw });
-
-        // Assert
-        expect(key1.value).to.equal('my-string');
-        expect(key2.value).to.equal(10);
-      });
-    });
-
-    describe('notPrepared', () => {
-      it("should throw when not prepared and policy is 'throw'", async () => {
-        // Arrange
-        await initRepository();
-        const keyPath = 'my_path/string_value';
-
-        // Act
-        const getPromise = _tweekRepo.get(keyPath, { notPrepared: NotPreparedPolicy.throw });
-
-        // Assert
-        await expect(getPromise).to.be.rejectedWith(`key ${keyPath} not managed, use prepare to add it to cache`);
-      });
-
-      it("should get key if not prepared and policy is 'prepare'", async () => {
-        // Arrange
-        await initRepository();
-
-        //Act
-        let key1 = await _tweekRepo.get('my_path/string_value', { notPrepared: NotPreparedPolicy.prepare });
-
-        //Assert
-        expect(key1.value).to.equal('my-string');
-      });
     });
   });
 
@@ -755,12 +691,12 @@ describe('tweek repo test', () => {
       expect(keys.map(x => x.value)).to.deep.equal(['old-value', 'my-string']);
     });
 
-    it('should call error when fetch fails', async () => {
+    it('should call error when store is corrupted', async () => {
       // Arrange
-      await initRepository({ client: _createClientThatFails() });
+      await initRepository({ store: new MemoryStore({ 'some_path/key': cachedItem() }) });
 
       // Act
-      const keysPromise = observeKey('some_path/key', 1, { notPrepared: NotPreparedPolicy.throw });
+      const keysPromise = observeKey('some_path/key', 1);
 
       //Assert
       await expect(keysPromise).to.be.rejected;

@@ -9,7 +9,6 @@ import {
   flatMap,
   getAllPrefixes,
   getKeyPrefix,
-  isNullOrUndefined,
   isScanKey,
   once,
   partitionByIndex,
@@ -20,11 +19,8 @@ import MemoryStore from './memory-store';
 import {
   Expiration,
   FlatKeys,
-  GetPolicy,
   IRepositoryKey,
   ITweekStore,
-  NotPreparedPolicy,
-  NotReadyPolicy,
   RefreshErrorPolicy,
   RepositoryKeyState,
   TweekRepositoryConfig,
@@ -47,7 +43,6 @@ export default class TweekRepository {
   private _store: ITweekStore;
   private _client: ITweekClient;
   private _context: Context;
-  private _getPolicy: GetPolicy;
   private _refreshDelay: number;
   private _isDirty = false;
   private _retryCount = 0;
@@ -58,18 +53,12 @@ export default class TweekRepository {
 
   constructor({
     client,
-    getPolicy,
     refreshDelay,
     refreshErrorPolicy = exponentIntervalFailurePolicy(),
     context = {},
   }: TweekRepositoryConfig) {
     this._client = client;
     this._store = new MemoryStore();
-    this._getPolicy = {
-      notReady: NotReadyPolicy.wait,
-      notPrepared: NotPreparedPolicy.prepare,
-      ...TweekRepository._ensurePolicy(getPolicy),
-    };
     this._refreshDelay = refreshDelay || 30;
     this._refreshErrorPolicy = refreshErrorPolicy;
     this._context = context;
@@ -119,10 +108,10 @@ export default class TweekRepository {
     }
   }
 
-  public get<T = any>(key: string, policy?: GetPolicy): Promise<never | Optional<T> | T>;
-  public get(key: string, policy?: GetPolicy): Promise<never | Optional<any> | any> {
+  public get<T = any>(key: string): Promise<never | Optional<T> | T>;
+  public get(key: string): Promise<never | Optional<any> | any> {
     return new Promise((resolve, reject) => {
-      const observer = this.observe(key, policy);
+      const observer = this.observe(key);
       const subscription = observer.subscribe(
         value => {
           subscription.unsubscribe();
@@ -145,10 +134,6 @@ export default class TweekRepository {
       const node = this._cache.get(key);
 
       if (!node) {
-        if (this._getPolicy.notPrepared === NotPreparedPolicy.throw) {
-          throw new Error(`key ${key} not managed, use prepare to add it to cache`);
-        }
-
         this.prepare(key);
         continue;
       }
@@ -163,27 +148,20 @@ export default class TweekRepository {
     this._checkRefresh();
   }
 
-  public observe<T = any>(key: string, policy?: GetPolicy): Observable<T>;
-  public observe(key: string, policy: GetPolicy = {}) {
-    policy = { ...this._getPolicy, ...TweekRepository._ensurePolicy(policy) };
+  public observe<T = any>(key: string): Observable<T>;
+  public observe(key: string) {
     const isScan = isScanKey(key);
     const self = this;
     return new Observable<any>(observer => {
       function handleNotReady() {
-        switch (policy.notReady) {
-          case NotReadyPolicy.wait:
-            return self.expire([key]);
-          default:
-            return observer.error(new Error(`value not available yet for key: ${key}`));
-        }
+        return self.expire([key]);
       }
 
       function onKey() {
         const node = self._cache.get(key);
 
         if (!node) {
-          if (policy.notPrepared === NotPreparedPolicy.prepare) return self.prepare(key);
-          return observer.error(new Error(`key ${key} not managed, use prepare to add it to cache`));
+          return self.prepare(key);
         }
 
         if (isScan) {
@@ -358,30 +336,5 @@ export default class TweekRepository {
     } else {
       this._cache.set(key, RepositoryKey.cached(false, value));
     }
-  }
-
-  private static _ensurePolicy(policy: GetPolicy | null | undefined) {
-    if (isNullOrUndefined(policy)) return policy;
-    if (typeof policy !== 'object') throw new TypeError('expected getPolicy to be an object');
-
-    // @ts-ignore TS2367 (legacy support)
-    if (policy.notReady === 'refresh') {
-      policy = { ...policy, notReady: NotReadyPolicy.wait };
-    }
-
-    if (!isNullOrUndefined(policy.notReady) && ![NotReadyPolicy.wait, NotReadyPolicy.throw].includes(policy.notReady)) {
-      throw new TypeError(`expected notReady policy to be one of ['wait', 'throw'], instead got '${policy.notReady}'`);
-    }
-
-    if (
-      !isNullOrUndefined(policy.notPrepared) &&
-      ![NotPreparedPolicy.prepare, NotPreparedPolicy.throw].includes(policy.notPrepared)
-    ) {
-      throw new TypeError(
-        `expected notPrepared policy to be one of ['prepare', 'throw'], instead got '${policy.notPrepared}'`,
-      );
-    }
-
-    return policy;
   }
 }
