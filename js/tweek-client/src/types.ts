@@ -7,9 +7,25 @@ export type TweekInitConfig = {
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 };
 
-export type FetchClientConfig = {
-  getAuthenticationToken?: () => Promise<string> | string;
-  clientName?: string;
+export type BearerAuthenticationOptions = {
+  getAuthenticationToken: () => Promise<string> | string;
+  clientId?: undefined;
+  clientSecret?: undefined;
+};
+
+export type ClientCredentialsOptions = {
+  getAuthenticationToken?: undefined;
+  clientId: string;
+  clientSecret: string;
+};
+
+export type NoCredentialsOptions = {
+  getAuthenticationToken?: undefined;
+  clientId?: undefined;
+  clientSecret?: undefined;
+};
+
+export type FetchClientConfig = (BearerAuthenticationOptions | ClientCredentialsOptions | NoCredentialsOptions) & {
   fetch?: typeof fetch;
   requestTimeoutInMillis?: number;
   onError?(response: Response): void;

@@ -11,7 +11,6 @@ describe('createTweekClient', () => {
   const expectedOptions = {
     headers: {
       Authorization: `Bearer ${token}`,
-      'X-Api-Client': 'unknown',
     },
   };
 
@@ -73,16 +72,19 @@ describe('createTweekClient', () => {
     });
   });
 
-  it('should allow replacing x-client-api header', async () => {
+  it('should add client credentials to request', async () => {
     const tweekClient = createTweekClient({
       baseServiceUrl,
       fetch: fetch,
-      clientName: 'test',
+      clientId: 'test-id',
+      clientSecret: 'test-secret',
     });
 
     await tweekClient.getValues(url);
 
-    expect(fetchMock.lastOptions(matcherName)).to.deep.include({ headers: { 'X-Api-Client': 'test' } });
+    expect(fetchMock.lastOptions(matcherName)).to.deep.include({
+      headers: { 'X-Client-Id': 'test-id', 'X-Client-Secret': 'test-secret' },
+    });
   });
 
   it('should return arrays correctly', async () => {
