@@ -25,6 +25,7 @@ import {
   RepositoryKeyState,
   TweekRepositoryConfig,
   CachedSingleKey,
+  RepositoryKey,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 import * as StoredKeyUtils from './stored-key-utils';
@@ -154,39 +155,60 @@ export default class TweekRepository {
     const isScan = isScanKey(key);
     const self = this;
     return new Observable<any>(observer => {
-      function handleNotReady() {
-        return self.expire([key]);
-      }
-
       function onKey() {
-        const node = self._cache.get(key);
+        const cached = self.getCached(key);
 
-        if (!node) {
-          return self.prepare(key);
+        if (!cached) {
+          self.prepare(key);
+          return;
         }
 
-        if (isScan) {
-          const prefix = getKeyPrefix(key);
-          const relative = Object.entries(self._cache.listRelative(prefix));
-          if (
-            node.state === RepositoryKeyState.requested ||
-            relative.some(([_, value]) => value.state === RepositoryKeyState.requested && !value.isScan)
-          ) {
-            return handleNotReady();
-          }
-          return observer.next(self._extractScanResult(key));
+        if (isScan !== cached.isScan) {
+          observer.error(new Error('corrupted cache'));
+          return;
         }
 
-        if (node.state === RepositoryKeyState.requested) return handleNotReady();
-        if (node.state === RepositoryKeyState.missing) return observer.next(Optional.none());
-        if (node.isScan) return observer.error(new Error('corrupted cache'));
-        return observer.next(Optional.some(node.value));
+        if (cached.state === RepositoryKeyState.cached) {
+          observer.next(isScan ? cached.value : Optional.some(cached.value));
+          return;
+        }
+
+        if (cached.state === RepositoryKeyState.missing) {
+          observer.next(Optional.none());
+        }
       }
 
       onKey();
 
       return self._emitter.listen(onKey);
     });
+  }
+
+  public getCached<T = any>(key: string): RepositoryKey<T> | undefined;
+  public getCached(key: string): RepositoryKey<any> | undefined {
+    const node = this._cache.get(key);
+    if (!node) {
+      return undefined;
+    }
+
+    let { state, isScan = false, value } = node;
+
+    if (state === RepositoryKeyState.cached && isScan) {
+      const prefix = getKeyPrefix(key);
+      const relative = Object.entries(this._cache.listRelative(prefix));
+      if (relative.some(([_, v]) => v.state === RepositoryKeyState.requested && !v.isScan)) {
+        state = RepositoryKeyState.requested;
+        value = undefined;
+      } else {
+        value = this._extractScanResult(key);
+      }
+    }
+
+    return <RepositoryKey<any>>{
+      state,
+      isScan,
+      value,
+    };
   }
 
   public [$$observable]() {

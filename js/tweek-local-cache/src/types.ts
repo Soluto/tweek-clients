@@ -45,6 +45,14 @@ export type TweekStoredKeys = {
   [key: string]: StoredKey<any>;
 };
 
+export type RepositoryCachedKey<T> = {
+  state: RepositoryKeyState.cached;
+  isScan: boolean;
+  value: T;
+};
+
+export type RepositoryKey<T> = RepositoryCachedKey<T> | MissingKey | RequestedKey;
+
 export type FlatKeys = {
   [key: string]: any;
 };

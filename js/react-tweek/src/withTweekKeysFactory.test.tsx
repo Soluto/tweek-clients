@@ -1,6 +1,13 @@
 import React, { Component, Context } from 'react';
 import renderer from 'react-test-renderer';
-import { MemoryStore, RepositoryKeyState, TweekRepository } from 'tweek-local-cache';
+import {
+  MemoryStore,
+  RepositoryKeyState,
+  TweekRepository,
+  StoredKey,
+  CachedScanKey,
+  MissingKey,
+} from 'tweek-local-cache';
 import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
 
 type TweekProps = {
@@ -19,19 +26,21 @@ class Child extends Component<TweekProps> {
 
 const mapping = { singleKey: 'single_key', scanKey: 'scan_key/_', missingKey: 'missing_key' };
 
-const scanKey = {
+const scanKey: CachedScanKey = {
   state: RepositoryKeyState.cached,
   isScan: true,
 };
 
-const cachedKey = (value: any) => ({
-  state: RepositoryKeyState.cached,
-  value,
-  isScan: false,
-});
+const cachedKey = (value: any): StoredKey<any> =>
+  ({
+    state: RepositoryKeyState.cached,
+    value,
+    isScan: false,
+  } as any);
 
-const missingKey = {
+const missingKey: MissingKey = {
   state: RepositoryKeyState.missing,
+  isScan: false,
 };
 
 const waitImmediate = () => new Promise(res => setImmediate(res));
@@ -113,9 +122,9 @@ describe('withTweekKeysFactory', () => {
     };
     await repository.useStore(
       new MemoryStore({
-        single_key: cachedKey('expectedProps.singleKey'),
-        'scan_key/a': cachedKey('expectedProps.scanKey.a'),
-        'scan_key/b': cachedKey('expectedProps.scanKey.b'),
+        single_key: cachedKey('initial.singleKey'),
+        'scan_key/a': cachedKey('initial.scanKey.a'),
+        'scan_key/b': cachedKey('initial.scanKey.b'),
         missing_key: missingKey,
         'scan_key/_': scanKey,
       }),
