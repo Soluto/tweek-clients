@@ -6,19 +6,20 @@ import { FakeServer } from 'simple-fake-server';
 import { Context, createTweekClient, GetValuesConfig, ITweekClient } from 'tweek-client';
 import MemoryStore from '../../src/memory-store';
 import TweekRepository from '../../src/tweek-repository';
-import { Expiration, ITweekStore, RefreshErrorPolicy, RepositoryKeyState } from '../../src';
+import { Expiration, ITweekStore, RefreshErrorPolicy, RepositoryKeyState, StoredKey } from '../../src';
 
 const waitPort: any = require('wait-port');
 
 chai.use(chaiAsPromise);
 const { expect } = chai;
 
-const cachedItem = (value?: any, expiration?: Expiration) => ({
-  value,
-  state: RepositoryKeyState.cached,
-  isScan: value === undefined,
-  expiration,
-});
+const cachedItem = (value?: any, expiration?: Expiration): StoredKey<any> =>
+  <any>{
+    value,
+    state: RepositoryKeyState.cached,
+    isScan: value === undefined,
+    expiration,
+  };
 
 function delay(timeout: number) {
   return new Promise(resolve => setTimeout(resolve, timeout));

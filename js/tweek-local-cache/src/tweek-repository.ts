@@ -19,14 +19,15 @@ import MemoryStore from './memory-store';
 import {
   Expiration,
   FlatKeys,
-  IRepositoryKey,
+  StoredKey,
   ITweekStore,
   RefreshErrorPolicy,
   RepositoryKeyState,
   TweekRepositoryConfig,
+  CachedSingleKey,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
-import * as RepositoryKey from './repository-key';
+import * as StoredKeyUtils from './stored-key-utils';
 
 export const TweekKeySplitJoin = {
   split: (key: string) => {
@@ -39,7 +40,7 @@ type KeyValues = { [key: string]: any };
 
 export default class TweekRepository {
   private _emitter = createChangeEmitter();
-  private _cache = new Trie<IRepositoryKey<any>>(TweekKeySplitJoin);
+  private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
   private _context: Context;
@@ -76,7 +77,7 @@ export default class TweekRepository {
   }
 
   public addKeys(keys: FlatKeys) {
-    Object.entries(keys).forEach(([key, value]) => this._cache.set(key, RepositoryKey.cached(false, value)));
+    Object.entries(keys).forEach(([key, value]) => this._cache.set(key, StoredKeyUtils.cached(false, value)));
     this._emitter.emit();
   }
 
@@ -86,11 +87,11 @@ export default class TweekRepository {
       .load()
       .then(keys => {
         keys = keys || {};
-        Object.entries(keys).forEach(([key, value]: [string, IRepositoryKey<any>]) => {
+        Object.entries(keys).forEach(([key, value]: [string, StoredKey<any>]) => {
           if (value.expiration) {
             this._isDirty = true;
             this._checkRefresh();
-            value = RepositoryKey.expire(value);
+            value = StoredKeyUtils.expire(value);
           }
           this._cache.set(key, value);
         });
@@ -102,7 +103,7 @@ export default class TweekRepository {
     const node = this._cache.get(key);
     if (!node) {
       const isScan = isScanKey(key);
-      this._cache.set(key, RepositoryKey.request(isScan));
+      this._cache.set(key, StoredKeyUtils.request(isScan));
       this._isDirty = true;
       this._checkRefresh();
     }
@@ -141,7 +142,7 @@ export default class TweekRepository {
       if (node.expiration !== Expiration.refreshing) {
         this._isDirty = true;
         if (node.expiration !== Expiration.expired) {
-          this._cache.set(key, RepositoryKey.expire(node));
+          this._cache.set(key, StoredKeyUtils.expire(node));
         }
       }
     }
@@ -244,7 +245,7 @@ export default class TweekRepository {
 
     if (expiredKeys.length === 0) return Promise.resolve();
 
-    expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.refresh(valueNode)));
+    expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, StoredKeyUtils.refresh(valueNode)));
 
     const keysToRefresh = expiredKeys.map(([key]) => key);
 
@@ -259,7 +260,7 @@ export default class TweekRepository {
     return this._client
       .fetch<any>('_', fetchConfig)
       .catch(err => {
-        expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, RepositoryKey.expire(valueNode)));
+        expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, StoredKeyUtils.expire(valueNode)));
         this._isDirty = true;
         throw err;
       })
@@ -293,7 +294,7 @@ export default class TweekRepository {
         return;
       }
 
-      this._cache.set(subKey, RepositoryKey.cached(true));
+      this._cache.set(subKey, StoredKeyUtils.cached(true));
 
       const fullPrefix = getKeyPrefix(subKey);
       const nodes = fullPrefix === '' ? valuesTrie.list() : valuesTrie.listRelative(fullPrefix);
@@ -302,7 +303,7 @@ export default class TweekRepository {
 
       Object.entries(nodes).forEach(([n, value]) => {
         const fullKey = [...(fullPrefix === '' ? [] : [fullPrefix]), n].join('/');
-        this._cache.set(fullKey, RepositoryKey.cached(false, value));
+        this._cache.set(fullKey, StoredKeyUtils.cached(false, value));
       });
     });
   }
@@ -319,7 +320,7 @@ export default class TweekRepository {
           }
           return x[fragment];
         }, acc);
-        node[name] = valueNode.value;
+        node[name] = (<CachedSingleKey<any>>valueNode).value;
         return acc;
       }, {});
   }
@@ -327,14 +328,14 @@ export default class TweekRepository {
   private _setScanNodes(prefix: string, keys: string[]) {
     distinct(flatMap(keys, key => getAllPrefixes(key)))
       .map(path => [...(prefix === '' ? [] : [prefix]), path, '_'].join('/'))
-      .forEach(key => this._cache.set(key, RepositoryKey.cached(true)));
+      .forEach(key => this._cache.set(key, StoredKeyUtils.cached(true)));
   }
 
   private _updateNode(key: string, value: any) {
     if (value === undefined) {
-      this._cache.set(key, RepositoryKey.missing());
+      this._cache.set(key, StoredKeyUtils.missing());
     } else {
-      this._cache.set(key, RepositoryKey.cached(false, value));
+      this._cache.set(key, StoredKeyUtils.cached(false, value));
     }
   }
 }
