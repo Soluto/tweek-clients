@@ -40,7 +40,7 @@ export const TweekKeySplitJoin = {
 type KeyValues = { [key: string]: any };
 
 export default class TweekRepository {
-  private _emitter = createChangeEmitter();
+  private _emitter = createChangeEmitter<string[]>();
   private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
@@ -73,17 +73,20 @@ export default class TweekRepository {
         return;
       }
     }
-    this._context = valueOrMapper;
-    this._waitRefreshCycle().then(() => this.expire());
+    this._waitRefreshCycle().then(() => {
+      this._context = <Context>valueOrMapper;
+      this.expire();
+    });
   }
 
   public addKeys(keys: FlatKeys) {
     Object.entries(keys).forEach(([key, value]) => this._cache.set(key, StoredKeyUtils.cached(false, value)));
-    this._emitter.emit();
+    this._emitter.emit(Object.keys(keys));
   }
 
   public useStore(store: ITweekStore) {
     this._store = store;
+    const storedKeys: string[] = [];
     return this._store
       .load()
       .then(keys => {
@@ -95,9 +98,10 @@ export default class TweekRepository {
             value = StoredKeyUtils.expire(value);
           }
           this._cache.set(key, value);
+          storedKeys.push(key);
         });
       })
-      .then(() => this._emitter.emit());
+      .then(() => this._emitter.emit(storedKeys));
   }
 
   public prepare(key: string) {
@@ -153,7 +157,11 @@ export default class TweekRepository {
   public observe<T = any>(key: string): Observable<T>;
   public observe(key: string) {
     const isScan = isScanKey(key);
+    const prefixes = getAllPrefixes(key).map(k => `${k}/_`);
+    const prefix = key.substr(0, key.length - 1);
+
     const self = this;
+
     return new Observable<any>(observer => {
       function onKey() {
         const cached = self.getCached(key);
@@ -180,7 +188,18 @@ export default class TweekRepository {
 
       onKey();
 
-      return self._emitter.listen(onKey);
+      return self.listen(updatedKeys => {
+        const keysSet = new Set(updatedKeys);
+        if (
+          !keysSet.has(key) &&
+          !prefixes.some(p => keysSet.has(p)) &&
+          (!isScan || !updatedKeys.some(k => k.startsWith(prefix)))
+        ) {
+          return;
+        }
+
+        onKey();
+      });
     });
   }
 
@@ -211,6 +230,8 @@ export default class TweekRepository {
     };
   }
 
+  public listen = this._emitter.listen;
+
   public [$$observable]() {
     return this.observe('_');
   }
@@ -236,24 +257,21 @@ export default class TweekRepository {
     }
     this._refreshInProgress = true;
 
-    const promise = (this._retryCount === 0 ? delay(this._refreshDelay) : Promise.resolve())
+    return (this._retryCount === 0 ? delay(this._refreshDelay) : Promise.resolve())
       .then(() => this._refreshKeys())
       .then(() => {
         this._refreshInProgress = false;
         this._retryCount = 0;
+      })
+      .catch(ex => {
+        this._refreshErrorPolicy(
+          once(() => {
+            this._rollRefresh();
+          }),
+          ++this._retryCount,
+          ex,
+        );
       });
-
-    promise.catch(ex => {
-      this._refreshErrorPolicy(
-        once(() => {
-          this._rollRefresh();
-        }),
-        ++this._retryCount,
-        ex,
-      );
-    });
-
-    return promise.catch(_ => {});
   }
 
   private _refreshKeys() {
@@ -288,7 +306,7 @@ export default class TweekRepository {
       })
       .then(keyValues => this._updateTrieKeys(keysToRefresh, keyValues))
       .then(() => this._store.save(this._cache.list()))
-      .then(() => this._emitter.emit());
+      .then(() => this._emitter.emit(keysToRefresh));
   }
 
   private _updateTrieKeys(keys: string[], keyValues: KeyValues) {
@@ -311,7 +329,7 @@ export default class TweekRepository {
 
     const entries = Object.entries(this._cache.list(prefix));
     entries.forEach(([subKey, valueNode]) => {
-      if (valueNode.state === RepositoryKeyState.missing || !valueNode.isScan) {
+      if (!valueNode.isScan) {
         this._updateNode(subKey, keyValues[subKey]);
         return;
       }
@@ -319,12 +337,12 @@ export default class TweekRepository {
       this._cache.set(subKey, StoredKeyUtils.cached(true));
 
       const fullPrefix = getKeyPrefix(subKey);
-      const nodes = fullPrefix === '' ? valuesTrie.list() : valuesTrie.listRelative(fullPrefix);
+      const nodes = fullPrefix ? valuesTrie.listRelative(fullPrefix) : valuesTrie.list();
 
       this._setScanNodes(fullPrefix, Object.keys(nodes));
 
       Object.entries(nodes).forEach(([n, value]) => {
-        const fullKey = [...(fullPrefix === '' ? [] : [fullPrefix]), n].join('/');
+        const fullKey = fullPrefix ? `${fullPrefix}/${n}` : n;
         this._cache.set(fullKey, StoredKeyUtils.cached(false, value));
       });
     });
@@ -332,6 +350,7 @@ export default class TweekRepository {
 
   private _extractScanResult(key: string) {
     const prefix = getKeyPrefix(key);
+
     return Object.entries(this._cache.listRelative(prefix))
       .filter(([_, valueNode]) => valueNode.state === RepositoryKeyState.cached && !valueNode.isScan)
       .reduce((acc, [key, valueNode]) => {
@@ -349,7 +368,7 @@ export default class TweekRepository {
 
   private _setScanNodes(prefix: string, keys: string[]) {
     distinct(flatMap(keys, key => getAllPrefixes(key)))
-      .map(path => [...(prefix === '' ? [] : [prefix]), path, '_'].join('/'))
+      .map(path => (prefix ? `${prefix}/` : '') + `${path}/_`)
       .forEach(key => this._cache.set(key, StoredKeyUtils.cached(true)));
   }
 
