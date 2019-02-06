@@ -51,9 +51,6 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   componentDidUpdate(prevProps: WithTweekKeysRepoProps) {
     if (prevProps._tweekRepo !== this.props._tweekRepo) {
       this._unsubscribe();
-      if (this.props.resetOnRepoChange) {
-        this._safeSetState(this._getDefaultState());
-      }
       this._subscribeToKeys();
     }
   }
@@ -87,13 +84,14 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   }
 
   private _setKeysState = () => {
-    const { _keyPropsMapping, _tweekRepo } = this.props;
+    const { _keyPropsMapping, _tweekRepo, resetOnRepoChange } = this.props;
     if (!_tweekRepo) {
       return;
     }
 
     const { tweekValues: currentValues } = this.state;
-    const newValues: TweekValues = { ...currentValues };
+    const defaultValues = this._getDefaultState();
+    const newValues: TweekValues = defaultValues || {};
 
     for (const [prop, keyPath] of Object.entries(_keyPropsMapping)) {
       const cachedKey = _tweekRepo.getCached(keyPath);
@@ -102,9 +100,12 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
         if (cachedKey.state !== RepositoryKeyState.missing) {
           newValues[prop] = cachedKey.value;
         }
-      } else if (!currentValues) {
-        this._safeSetState(null);
-        return;
+      } else if (!defaultValues) {
+        if (resetOnRepoChange || !currentValues) {
+          this._safeSetState(null);
+          return;
+        }
+        newValues[prop] = currentValues[prop];
       }
     }
 
