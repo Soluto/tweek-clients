@@ -80,7 +80,9 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
       return null;
     }
 
-    return Object.keys(_keyPropsMapping).reduce((acc, prop) => ({ ...acc, [prop]: _defaultValues[prop] }), {});
+    const defaultState: TweekValues = {};
+    Object.keys(_keyPropsMapping).forEach(prop => (defaultState[prop] = _defaultValues[prop]));
+    return defaultState;
   }
 
   private _setKeysState = () => {
