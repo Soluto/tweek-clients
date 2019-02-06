@@ -6,8 +6,9 @@ type TestCase = {
   method: keyof ITweekManagementClient;
   args?: any[];
   expectedUrl: string;
-  expectedRequestInit?: RequestInit | ((args: any[]) => RequestInit);
+  expectedRequestInit?: RequestInit;
   response?: any;
+  transformedResult?: any;
 };
 
 describe('TweekManagementClient', () => {
@@ -23,11 +24,7 @@ describe('TweekManagementClient', () => {
     });
   });
 
-  const runTest = ({ method, args = [], expectedUrl, expectedRequestInit, response }: TestCase) => {
-    if (typeof expectedRequestInit === 'function') {
-      expectedRequestInit = expectedRequestInit(args);
-    }
-
+  const runTest = ({ method, args = [], expectedUrl, expectedRequestInit, response, transformedResult }: TestCase) => {
     const expectedFetchArgs = [baseServiceUrl + expectedUrl, expectedRequestInit];
 
     it(`should execute ${String(method)} correctly`, async () => {
@@ -37,7 +34,7 @@ describe('TweekManagementClient', () => {
 
       sinon.assert.calledOnce(fetchStub);
       sinon.assert.calledWithExactly(fetchStub, ...expectedFetchArgs);
-      expect(result).to.deep.equal(response);
+      expect(result).to.deep.equal(transformedResult || response);
     });
 
     it('should throw error if fetch return bad status code', async () => {
@@ -94,11 +91,11 @@ describe('TweekManagementClient', () => {
       method: 'saveKeyDefinition',
       args: ['some/key_path', { a: 'a' }],
       expectedUrl: '/api/v2/keys/some/key_path',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[1]),
-      }),
+        body: JSON.stringify({ a: 'a' }),
+      },
     });
   });
   describe('deleteKey', () => {
@@ -113,11 +110,11 @@ describe('TweekManagementClient', () => {
       method: 'deleteKey',
       args: ['some/other_path', ['a', 'b', 'c/d']],
       expectedUrl: '/api/v2/keys/some/other_path',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[1]),
-      }),
+        body: JSON.stringify(['a', 'b', 'c/d']),
+      },
     });
   });
   describe('getKeyRevisionHistory', () => {
@@ -148,11 +145,11 @@ describe('TweekManagementClient', () => {
       method: 'appendTags',
       args: [['a', 'b', 'c']],
       expectedUrl: '/api/v2/tags',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[0]),
-      }),
+        body: JSON.stringify(['a', 'b', 'c']),
+      },
     });
   });
 
@@ -200,11 +197,11 @@ describe('TweekManagementClient', () => {
       method: 'appendContext',
       args: ['device', 'a1b2c3d4', { osType: 'Android', osVersion: '6.0', batteryPercentage: 99.1 }],
       expectedUrl: '/api/v2/context/device/a1b2c3d4',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[2]),
-      }),
+        body: JSON.stringify({ osType: 'Android', osVersion: '6.0', batteryPercentage: 99.1 }),
+      },
     });
   });
   describe('deleteContextProperty', () => {
@@ -239,28 +236,28 @@ describe('TweekManagementClient', () => {
       expectedRequestInit: { method: 'DELETE' },
     });
   });
-  describe('addNewIdentity', () => {
+  describe('saveIdentity', () => {
     runTest({
-      method: 'addNewIdentity',
+      method: 'saveIdentity',
       args: ['device', { a: 'a', b: 'c' }],
       expectedUrl: '/api/v2/schemas/device',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[1]),
-      }),
+        body: JSON.stringify({ a: 'a', b: 'c' }),
+      },
     });
   });
-  describe('updateIdentity', () => {
+  describe('patchIdentity', () => {
     runTest({
-      method: 'updateIdentity',
+      method: 'patchIdentity',
       args: ['device', { a: 'a', b: 'c' }],
       expectedUrl: '/api/v2/schemas/device',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[1]),
-      }),
+        body: JSON.stringify({ a: 'a', b: 'c' }),
+      },
     });
   });
 
@@ -280,18 +277,28 @@ describe('TweekManagementClient', () => {
           },
         ],
       },
+      transformedResult: [
+        {
+          group: '*',
+          user: '*',
+          contexts: {},
+          object: '*',
+          action: '*',
+          effect: 'allow',
+        },
+      ],
     });
   });
-  describe('replacePolicies', () => {
+  describe('savePolicies', () => {
     runTest({
-      method: 'replacePolicies',
+      method: 'savePolicies',
       args: [[{ a: 'a' }]],
       expectedUrl: '/api/v2/policies',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ policies: args[0] }),
-      }),
+        body: JSON.stringify({ policies: [{ a: 'a' }] }),
+      },
     });
   });
   describe('patchPolicies', () => {
@@ -299,11 +306,33 @@ describe('TweekManagementClient', () => {
       method: 'patchPolicies',
       args: [{ a: 'a', b: 'c' }],
       expectedUrl: '/api/v2/policies',
-      expectedRequestInit: args => ({
+      expectedRequestInit: {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(args[0]),
-      }),
+        body: JSON.stringify({ a: 'a', b: 'c' }),
+      },
+    });
+  });
+
+  describe('getJWTExtractionPolicy', () => {
+    runTest({
+      method: 'getJWTExtractionPolicy',
+      expectedUrl: '/api/v2/jwt-extraction-policy',
+      response: { data: 'somerego' },
+      transformedResult: 'somerego',
+    });
+  });
+
+  describe('updateJWTExtractionPolicy', () => {
+    runTest({
+      method: 'updateJWTExtractionPolicy',
+      args: ['somerego'],
+      expectedUrl: '/api/v2/jwt-extraction-policy',
+      expectedRequestInit: {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: 'somerego' }),
+      },
     });
   });
 

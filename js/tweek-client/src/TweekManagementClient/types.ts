@@ -87,12 +87,12 @@ export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
   getAllKeyManifests(): Promise<KeyManifest[]>;
-  getKeyManifest(path: string): Promise<KeyManifest>;
-  getKeyDependents(path: string): Promise<string[]>;
-  getKeyDefinition(path: string, revision?: string): Promise<KeyDefinition>;
-  saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<void>;
-  deleteKey(path: string, additionalKeys?: string[]): Promise<void>;
-  getKeyRevisionHistory(path: string, since?: string): Promise<Revision[]>;
+  getKeyManifest(keyPath: string): Promise<KeyManifest>;
+  getKeyDependents(keyPath: string): Promise<string[]>;
+  getKeyDefinition(keyPath: string, revision?: string): Promise<KeyDefinition>;
+  saveKeyDefinition(keyPath: string, keyDefinition: KeyDefinition): Promise<void>;
+  deleteKey(keyPath: string, additionalKeyPaths?: string[]): Promise<void>;
+  getKeyRevisionHistory(keyPath: string, since?: string): Promise<Revision[]>;
 
   getAllTags(): Promise<string[]>;
   appendTags(tags: string[]): Promise<void>;
@@ -107,14 +107,17 @@ export interface ITweekManagementClient {
 
   getAllSchemas(): Promise<Schema[]>;
   deleteIdentity(identityType: string): Promise<void>;
-  addNewIdentity(identityType: string, schema: Schema): Promise<void>;
-  updateIdentity(identityType: string, patch: Patch): Promise<void>;
+  saveIdentity(identityType: string, schema: Schema): Promise<void>;
+  patchIdentity(identityType: string, patch: Patch): Promise<void>;
 
   currentUser(): Promise<CurrentUser>;
   getAuthProviders(): Promise<AuthProvider[]>;
   getServiceDetails(): Promise<Services>;
 
-  getPolicies(): Promise<{ policies: Policy[] }>;
-  replacePolicies(policies: Policy[]): Promise<void>;
+  getPolicies(): Promise<Policy[]>;
+  savePolicies(policies: Policy[]): Promise<void>;
   patchPolicies(patch: Patch): Promise<void>;
+
+  getJWTExtractionPolicy(): Promise<string>;
+  updateJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
 }

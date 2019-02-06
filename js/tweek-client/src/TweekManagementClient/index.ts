@@ -155,7 +155,7 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  addNewIdentity(identityType: string, schema: Schema): Promise<void> {
+  saveIdentity(identityType: string, schema: Schema): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}`;
     const config = {
       method: 'POST',
@@ -165,7 +165,7 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  updateIdentity(identityType: string, patch: Patch): Promise<void> {
+  patchIdentity(identityType: string, patch: Patch): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/schemas/${identityType}`;
     const config = {
       method: 'PATCH',
@@ -180,12 +180,31 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  getPolicies(): Promise<{ policies: Policy[] }> {
+  getPolicies(): Promise<Policy[]> {
     const url = `${this.config.baseServiceUrl}/api/v2/policies`;
-    return this._fetch(url).then(toJson);
+    return this._fetch(url)
+      .then(toJson)
+      .then(x => x.policies);
   }
 
-  replacePolicies(policies: Policy[]): Promise<void> {
+  getJWTExtractionPolicy(): Promise<string> {
+    const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
+    return this._fetch(url)
+      .then(toJson)
+      .then(x => x.data);
+  }
+
+  updateJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
+    const config = {
+      method: 'PUT',
+      headers: jsonHeaders,
+      body: JSON.stringify({ data: jwtRegoPolicy }),
+    };
+    return this._fetch(url, config).then(noop);
+  }
+
+  savePolicies(policies: Policy[]): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/policies`;
     const config = {
       method: 'PUT',
