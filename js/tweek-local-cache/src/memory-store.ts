@@ -1,13 +1,9 @@
-import { ITweekStore, TweekRepositoryKeys } from './types';
+import { ITweekStore, TweekStoredKeys } from './types';
 
 export default class implements ITweekStore {
-  _keys: TweekRepositoryKeys;
+  constructor(public _keys: TweekStoredKeys = {}) {}
 
-  constructor(initialKeys: TweekRepositoryKeys = {}) {
-    this._keys = initialKeys;
-  }
-
-  save(keys: TweekRepositoryKeys) {
+  save(keys: TweekStoredKeys) {
     this._keys = keys || {};
     return Promise.resolve();
   }
