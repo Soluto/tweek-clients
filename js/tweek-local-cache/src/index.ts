@@ -5,4 +5,4 @@ export * from './types';
 import * as StoredKeyUtils from './stored-key-utils';
 export { StoredKeyUtils };
 export { default as MemoryStore } from './memory-store';
-export { default as TweekRepository, TweekKeySplitJoin } from './tweek-repository';
+export * from './tweek-repository';
