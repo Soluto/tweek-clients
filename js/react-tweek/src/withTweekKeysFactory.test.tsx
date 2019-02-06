@@ -1,6 +1,13 @@
 import React, { Component, Context } from 'react';
 import renderer from 'react-test-renderer';
-import { MemoryStore, NotPreparedPolicy, RepositoryKeyState, TweekRepository } from 'tweek-local-cache';
+import {
+  MemoryStore,
+  RepositoryKeyState,
+  TweekRepository,
+  StoredKey,
+  CachedScanKey,
+  MissingKey,
+} from 'tweek-local-cache';
 import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
 
 type TweekProps = {
@@ -19,22 +26,22 @@ class Child extends Component<TweekProps> {
 
 const mapping = { singleKey: 'single_key', scanKey: 'scan_key/_', missingKey: 'missing_key' };
 
-const scanKey = {
+const scanKey: CachedScanKey = {
   state: RepositoryKeyState.cached,
   isScan: true,
 };
 
-const cachedKey = (value: any) => ({
-  state: RepositoryKeyState.cached,
-  value,
-  isScan: false,
-});
+const cachedKey = (value: any): StoredKey<any> =>
+  ({
+    state: RepositoryKeyState.cached,
+    value,
+    isScan: false,
+  } as any);
 
-const missingKey = {
+const missingKey: MissingKey = {
   state: RepositoryKeyState.missing,
+  isScan: false,
 };
-
-const waitImmediate = () => new Promise(res => setImmediate(res));
 
 describe('withTweekKeysFactory', () => {
   let repository: TweekRepository;
@@ -50,19 +57,19 @@ describe('withTweekKeysFactory', () => {
   });
 
   test('renders only if all keys are present', () => {
-    const observeMock = jest.fn().mockReturnValue({ subscribe: jest.fn().mockReturnValue(jest.fn()) });
+    const listenMock = jest.fn().mockResolvedValue(jest.fn());
     const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
 
     Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
 
     const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
     const component = renderer.create(
-      <TweekContext.Provider value={{ observe: observeMock } as any}>
+      <TweekContext.Provider value={{ listen: listenMock, getCached: jest.fn() } as any}>
         <EnhancedComponent />
       </TweekContext.Provider>,
     );
 
-    Object.values(mapping).forEach(path => expect(observeMock).toHaveBeenCalledWith(path, undefined));
+    expect(listenMock).toHaveBeenCalledTimes(1);
 
     const tree = component.toJSON();
     expect(tree).toBeNull();
@@ -75,7 +82,6 @@ describe('withTweekKeysFactory', () => {
         a: 'a scan value',
         b: 'b scan value',
       },
-      missingKey: null,
       someProp: 'some value',
     };
     await repository.useStore(
@@ -95,8 +101,6 @@ describe('withTweekKeysFactory', () => {
     const EnhancedComponent = withTweekKeysHoc(Child);
     const component = renderer.create(<EnhancedComponent someProp={expectedProps.someProp} />);
 
-    await waitImmediate();
-
     const child = component.root.findByType(Child);
 
     expect(child.props).toEqual(expectedProps);
@@ -109,13 +113,12 @@ describe('withTweekKeysFactory', () => {
         a: 'a scan value',
         b: 'b scan value',
       },
-      missingKey: null,
     };
     await repository.useStore(
       new MemoryStore({
-        single_key: cachedKey('expectedProps.singleKey'),
-        'scan_key/a': cachedKey('expectedProps.scanKey.a'),
-        'scan_key/b': cachedKey('expectedProps.scanKey.b'),
+        single_key: cachedKey('initial.singleKey'),
+        'scan_key/a': cachedKey('initial.scanKey.a'),
+        'scan_key/b': cachedKey('initial.scanKey.b'),
         missing_key: missingKey,
         'scan_key/_': scanKey,
       }),
@@ -141,57 +144,14 @@ describe('withTweekKeysFactory', () => {
     expect(child.props).toEqual(expectedProps);
   });
 
-  test('with getPolicy', async () => {
-    const getPolicy = {
-      notPrepared: NotPreparedPolicy.throw,
-    };
-    const observe = jest.fn().mockReturnValue({ subscribe: jest.fn() });
-    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping, { getPolicy });
-
-    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
-    renderer.create(
-      <TweekContext.Provider value={{ observe: observe } as any}>
-        <EnhancedComponent />
-      </TweekContext.Provider>,
-    );
-
-    expect(prepareMock).not.toHaveBeenCalled();
-    Object.values(mapping).forEach(path => expect(observe).toHaveBeenCalledWith(path, getPolicy));
-  });
-
-  test('with error handler', async () => {
-    const error = 'someError';
-    const observe = jest.fn().mockReturnValue({
-      subscribe: jest.fn((_, onError) => {
-        onError(error);
-
-        return { unsubscribe: jest.fn() };
-      }),
-    });
-    const onError = jest.fn();
-
-    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping, { onError });
-
-    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
-    renderer.create(
-      <TweekContext.Provider value={{ observe } as any}>
-        <EnhancedComponent />
-      </TweekContext.Provider>,
-    );
-
-    expect(onError).toHaveBeenCalledWith(error);
-  });
-
   test('unsubscribe when unloads', () => {
     const unsubscribe = jest.fn();
-    const observe = jest.fn().mockReturnValue({
-      subscribe: jest.fn().mockReturnValue({ unsubscribe }),
-    });
+    const listen = jest.fn().mockReturnValue(unsubscribe);
     const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
 
     const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
     const component = renderer.create(
-      <TweekContext.Provider value={{ observe } as any}>
+      <TweekContext.Provider value={{ listen, getCached: jest.fn() } as any}>
         <EnhancedComponent />
       </TweekContext.Provider>,
     );
@@ -246,8 +206,6 @@ describe('withTweekKeysFactory', () => {
 
     const EnhancedComponent = withTweekKeysHoc(Child);
     const component = renderer.create(<EnhancedComponent />);
-
-    await waitImmediate();
 
     const child = component.root.findByType(Child);
 

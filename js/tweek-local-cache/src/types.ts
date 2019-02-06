@@ -11,48 +11,63 @@ export const enum RepositoryKeyState {
   cached = 'cached',
 }
 
-export interface IRepositoryKey<T> {
-  state: RepositoryKeyState;
-  isScan?: boolean;
-  value?: T;
-  expiration?: Expiration;
-}
-
-export type TweekRepositoryKeys = {
-  [key: string]: IRepositoryKey<any>;
+export type CachedScanKey = {
+  state: RepositoryKeyState.cached;
+  isScan: true;
+  value?: undefined;
 };
+
+export type CachedSingleKey<T> = {
+  state: RepositoryKeyState.cached;
+  isScan: false;
+  value: T;
+};
+
+export type CachedKey<T> = CachedScanKey | CachedSingleKey<T>;
+
+export type MissingKey = {
+  state: RepositoryKeyState.missing;
+  isScan: false;
+  value?: undefined;
+};
+
+export type RequestedKey = {
+  state: RepositoryKeyState.requested;
+  isScan: boolean;
+  value?: undefined;
+};
+
+export type StoredKey<T> = (CachedKey<T> | MissingKey | RequestedKey) & {
+  expiration?: Expiration;
+};
+
+export type TweekStoredKeys = {
+  [key: string]: StoredKey<any>;
+};
+
+export type RepositoryCachedKey<T> = {
+  state: RepositoryKeyState.cached;
+  isScan: boolean;
+  value: T;
+};
+
+export type RepositoryKey<T> = RepositoryCachedKey<T> | MissingKey | RequestedKey;
 
 export type FlatKeys = {
   [key: string]: any;
 };
 
 export interface ITweekStore {
-  save: (keys: TweekRepositoryKeys) => Promise<void>;
-  load: () => Promise<TweekRepositoryKeys>;
+  save: (keys: TweekStoredKeys) => Promise<void>;
+  load: () => Promise<TweekStoredKeys>;
 }
 
 export type TweekRepositoryConfig = {
   client: ITweekClient;
-  getPolicy?: GetPolicy;
   refreshInterval?: number;
   refreshDelay?: number;
   refreshErrorPolicy?: RefreshErrorPolicy;
   context?: Context;
-};
-
-export const enum NotReadyPolicy {
-  throw = 'throw',
-  wait = 'wait',
-}
-
-export const enum NotPreparedPolicy {
-  throw = 'throw',
-  prepare = 'prepare',
-}
-
-export type GetPolicy = {
-  notReady?: NotReadyPolicy;
-  notPrepared?: NotPreparedPolicy;
 };
 
 export interface RefreshErrorPolicy {
