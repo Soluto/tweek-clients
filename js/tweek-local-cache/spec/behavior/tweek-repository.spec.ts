@@ -2,8 +2,7 @@ import { expect } from 'chai';
 const getenv: any = require('getenv');
 import { createTweekClient, ITweekClient, Context } from 'tweek-client';
 import axios from 'axios';
-import MemoryStore from '../../src/memory-store';
-import TweekRepository from '../../src/tweek-repository';
+import { TweekRepository, MemoryStore } from '../../src';
 import { delay } from '../../src/utils';
 
 const TWEEK_GATEWAY_URL = getenv.string('TWEEK_GATEWAY_URL', 'http://127.0.0.1:1111');

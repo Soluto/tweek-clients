@@ -39,7 +39,11 @@ export const TweekKeySplitJoin = {
 
 type KeyValues = { [key: string]: any };
 
-export default class TweekRepository {
+export type Unlisten = () => void;
+export type RepositoryListener = (updatedKeys: string[]) => void;
+export type Listen = (listen: RepositoryListener) => Unlisten;
+
+export class TweekRepository {
   private _emitter = createChangeEmitter<string[]>();
   private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
@@ -230,7 +234,7 @@ export default class TweekRepository {
     };
   }
 
-  public listen = this._emitter.listen;
+  public listen: Listen = this._emitter.listen;
 
   public [$$observable]() {
     return this.observe('_');

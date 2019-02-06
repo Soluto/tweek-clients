@@ -4,9 +4,15 @@ import sinon from 'sinon';
 import chaiAsPromise from 'chai-as-promised';
 import { FakeServer } from 'simple-fake-server';
 import { Context, createTweekClient, GetValuesConfig, ITweekClient } from 'tweek-client';
-import MemoryStore from '../../src/memory-store';
-import TweekRepository from '../../src/tweek-repository';
-import { Expiration, ITweekStore, RefreshErrorPolicy, RepositoryKeyState, StoredKey } from '../../src';
+import {
+  Expiration,
+  ITweekStore,
+  MemoryStore,
+  RefreshErrorPolicy,
+  RepositoryKeyState,
+  StoredKey,
+  TweekRepository,
+} from '../../src';
 
 const waitPort: any = require('wait-port');
 

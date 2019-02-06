@@ -1,6 +1,5 @@
 import React, { Component, ComponentType, Context } from 'react';
-import { RepositoryKeyState, TweekRepository } from 'tweek-local-cache';
-import { Unlisten } from 'change-emitter';
+import { RepositoryKeyState, TweekRepository, Unlisten } from 'tweek-local-cache';
 import isEqual from 'lodash.isequal';
 import omit from 'lodash.omit';
 import { ComponentEnhancer } from './typeUtils';
