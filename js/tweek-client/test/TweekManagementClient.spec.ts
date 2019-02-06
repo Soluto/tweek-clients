@@ -8,6 +8,7 @@ type TestCase = {
   expectedUrl: string;
   expectedRequestInit?: RequestInit | ((args: any[]) => RequestInit);
   response?: any;
+  transformedResult?: any;
 };
 
 describe('TweekManagementClient', () => {
@@ -23,7 +24,7 @@ describe('TweekManagementClient', () => {
     });
   });
 
-  const runTest = ({ method, args = [], expectedUrl, expectedRequestInit, response }: TestCase) => {
+  const runTest = ({ method, args = [], expectedUrl, expectedRequestInit, response, transformedResult }: TestCase) => {
     if (typeof expectedRequestInit === 'function') {
       expectedRequestInit = expectedRequestInit(args);
     }
@@ -37,7 +38,7 @@ describe('TweekManagementClient', () => {
 
       sinon.assert.calledOnce(fetchStub);
       sinon.assert.calledWithExactly(fetchStub, ...expectedFetchArgs);
-      expect(result).to.deep.equal(response);
+      expect(result).to.deep.equal(transformedResult || response);
     });
 
     it('should throw error if fetch return bad status code', async () => {
@@ -280,6 +281,16 @@ describe('TweekManagementClient', () => {
           },
         ],
       },
+      transformedResult: [
+        {
+          group: '*',
+          user: '*',
+          contexts: {},
+          object: '*',
+          action: '*',
+          effect: 'allow',
+        },
+      ],
     });
   });
   describe('replacePolicies', () => {
@@ -303,6 +314,28 @@ describe('TweekManagementClient', () => {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(args[0]),
+      }),
+    });
+  });
+
+  describe('getJWTExtractionPolicy', () => {
+    runTest({
+      method: 'getJWTExtractionPolicy',
+      expectedUrl: '/api/v2/jwt-extraction-policy',
+      response: { data: 'somerego' },
+      transformedResult: 'somerego',
+    });
+  });
+
+  describe('updateJWTExtractionPolicy', () => {
+    runTest({
+      method: 'updateJWTExtractionPolicy',
+      args: ['somerego'],
+      expectedUrl: '/api/v2/jwt-extraction-policy',
+      expectedRequestInit: args => ({
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: args[0] }),
       }),
     });
   });

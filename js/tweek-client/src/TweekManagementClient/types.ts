@@ -117,4 +117,7 @@ export interface ITweekManagementClient {
   getPolicies(): Promise<{ policies: Policy[] }>;
   replacePolicies(policies: Policy[]): Promise<void>;
   patchPolicies(patch: Patch): Promise<void>;
+
+  getJWTExtractionPolicy(): Promise<string>;
+  updateJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
 }

@@ -182,7 +182,26 @@ export class TweekManagementClient implements ITweekManagementClient {
 
   getPolicies(): Promise<{ policies: Policy[] }> {
     const url = `${this.config.baseServiceUrl}/api/v2/policies`;
-    return this._fetch(url).then(toJson);
+    return this._fetch(url)
+      .then(toJson)
+      .then(x => x.policies);
+  }
+
+  getJWTExtractionPolicy(): Promise<string> {
+    const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
+    return this._fetch(url)
+      .then(toJson)
+      .then(x => x.data);
+  }
+
+  updateJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
+    const config = {
+      method: 'PUT',
+      headers: jsonHeaders,
+      body: JSON.stringify({ data: jwtRegoPolicy }),
+    };
+    return this._fetch(url, config).then(noop);
   }
 
   replacePolicies(policies: Policy[]): Promise<void> {
