@@ -323,9 +323,9 @@ describe('TweekManagementClient', () => {
     });
   });
 
-  describe('updateJWTExtractionPolicy', () => {
+  describe('saveJWTExtractionPolicy', () => {
     runTest({
-      method: 'updateJWTExtractionPolicy',
+      method: 'saveJWTExtractionPolicy',
       args: ['somerego'],
       expectedUrl: '/api/v2/jwt-extraction-policy',
       expectedRequestInit: {

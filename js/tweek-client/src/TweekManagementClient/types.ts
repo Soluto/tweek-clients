@@ -124,5 +124,5 @@ export interface ITweekManagementClient {
   patchPolicies(patch: Patch): Promise<void>;
 
   getJWTExtractionPolicy(): Promise<string>;
-  updateJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
+  saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
 }

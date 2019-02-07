@@ -195,7 +195,7 @@ export class TweekManagementClient implements ITweekManagementClient {
       .then(x => x.data);
   }
 
-  updateJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void> {
+  saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
     const config = {
       method: 'PUT',
