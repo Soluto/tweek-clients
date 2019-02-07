@@ -5,12 +5,13 @@ import {
   CurrentUser,
   ITweekManagementClient,
   KeyDefinition,
+  KeyDependents,
   KeyManifest,
   Patch,
+  Policy,
   Revision,
   Schema,
   Services,
-  Policy,
 } from './types';
 import { InputParams } from 'query-string';
 import { FetchError } from '../FetchError';
@@ -38,7 +39,7 @@ export class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  getKeyDependents(path: string): Promise<string[]> {
+  getKeyDependents(path: string): Promise<KeyDependents> {
     const url = `${this.config.baseServiceUrl}/api/v2/dependents/${path}`;
     return this._fetch(url).then(toJson);
   }

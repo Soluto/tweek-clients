@@ -27,6 +27,11 @@ export type KeyDefinition = {
   implementation?: string;
 };
 
+export type KeyDependents = {
+  usedBy: string[];
+  aliases: string[];
+};
+
 export type Schema = { [s: string]: any };
 
 export type Patch = Operation[];
@@ -88,7 +93,7 @@ export type Services = { [s: string]: ServiceDetails };
 export interface ITweekManagementClient {
   getAllKeyManifests(): Promise<KeyManifest[]>;
   getKeyManifest(keyPath: string): Promise<KeyManifest>;
-  getKeyDependents(keyPath: string): Promise<string[]>;
+  getKeyDependents(keyPath: string): Promise<KeyDependents>;
   getKeyDefinition(keyPath: string, revision?: string): Promise<KeyDefinition>;
   saveKeyDefinition(keyPath: string, keyDefinition: KeyDefinition): Promise<void>;
   deleteKey(keyPath: string, additionalKeyPaths?: string[]): Promise<void>;
