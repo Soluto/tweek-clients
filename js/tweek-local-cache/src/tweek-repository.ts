@@ -1,7 +1,5 @@
 import { Context, GetValuesConfig, ITweekClient } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
-import $$observable from 'symbol-observable';
-import Observable from 'zen-observable';
 import Trie from './trie';
 import {
   delay,
@@ -17,15 +15,15 @@ import {
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
+  CachedSingleKey,
   Expiration,
   FlatKeys,
-  StoredKey,
   ITweekStore,
   RefreshErrorPolicy,
-  RepositoryKeyState,
-  TweekRepositoryConfig,
-  CachedSingleKey,
   RepositoryKey,
+  RepositoryKeyState,
+  StoredKey,
+  TweekRepositoryConfig,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 import * as StoredKeyUtils from './stored-key-utils';
@@ -120,18 +118,41 @@ export class TweekRepository {
 
   public get<T = any>(key: string): Promise<never | Optional<T> | T>;
   public get(key: string): Promise<never | Optional<any> | any> {
-    return new Promise((resolve, reject) => {
-      const observer = this.observe(key);
-      const subscription = observer.subscribe(
-        value => {
-          subscription.unsubscribe();
-          resolve(value);
-        },
-        error => {
-          subscription.unsubscribe();
-          reject(error);
-        },
-      );
+    const isScan = isScanKey(key);
+    const self = this;
+
+    return new Promise(function(resolve, reject) {
+      let unlisten: Unlisten | undefined;
+
+      function onKey() {
+        const cached = self.getCached(key);
+
+        if (!cached) {
+          self.prepare(key);
+        } else if (cached.state !== RepositoryKeyState.requested) {
+          unlisten && unlisten();
+
+          if (isScan !== cached.isScan) {
+            return reject(new Error('corrupted cache'));
+          }
+
+          if (cached.state === RepositoryKeyState.cached) {
+            return resolve(isScan ? cached.value : Optional.some(cached.value));
+          }
+
+          if (cached.state === RepositoryKeyState.missing) {
+            return resolve(Optional.none());
+          }
+
+          return reject(new Error('corrupted cache'));
+        }
+
+        if (!unlisten) {
+          unlisten = self.listen(onKey);
+        }
+      }
+
+      onKey();
     });
   }
 
@@ -156,55 +177,6 @@ export class TweekRepository {
       }
     }
     this._checkRefresh();
-  }
-
-  public observe<T = any>(key: string): Observable<T>;
-  public observe(key: string) {
-    const isScan = isScanKey(key);
-    const prefixes = getAllPrefixes(key).map(k => `${k}/_`);
-    const prefix = key.substr(0, key.length - 1);
-
-    const self = this;
-
-    return new Observable<any>(observer => {
-      function onKey() {
-        const cached = self.getCached(key);
-
-        if (!cached) {
-          self.prepare(key);
-          return;
-        }
-
-        if (isScan !== cached.isScan) {
-          observer.error(new Error('corrupted cache'));
-          return;
-        }
-
-        if (cached.state === RepositoryKeyState.cached) {
-          observer.next(isScan ? cached.value : Optional.some(cached.value));
-          return;
-        }
-
-        if (cached.state === RepositoryKeyState.missing) {
-          observer.next(Optional.none());
-        }
-      }
-
-      onKey();
-
-      return self.listen(updatedKeys => {
-        const keysSet = new Set(updatedKeys);
-        if (
-          !keysSet.has(key) &&
-          !prefixes.some(p => keysSet.has(p)) &&
-          (!isScan || !updatedKeys.some(k => k.startsWith(prefix)))
-        ) {
-          return;
-        }
-
-        onKey();
-      });
-    });
   }
 
   public getCached<T = any>(key: string): RepositoryKey<T> | undefined;
@@ -235,10 +207,6 @@ export class TweekRepository {
   }
 
   public listen: Listen = this._emitter.listen;
-
-  public [$$observable]() {
-    return this.observe('_');
-  }
 
   private _waitRefreshCycle() {
     if (!this._refreshInProgress) return Promise.resolve();

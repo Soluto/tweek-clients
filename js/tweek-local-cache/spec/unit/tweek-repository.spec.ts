@@ -48,25 +48,6 @@ describe('tweek repo test', () => {
     await (<any>_tweekRepo)._waitRefreshCycle();
   }
 
-  function observeKey(key: string, count = 1): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      const items: any[] = [];
-      const subscription = _tweekRepo.observe(key).subscribe({
-        next: value => {
-          items.push(value);
-          if (items.length === count) {
-            subscription.unsubscribe();
-            resolve(items);
-          }
-        },
-        error: err => {
-          subscription.unsubscribe();
-          reject(err);
-        },
-      });
-    });
-  }
-
   async function initRepository({ store, client = _defaultClient, context }: InitRepoConfig = {}) {
     _tweekRepo = new TweekRepository({ client, refreshDelay: 2, context });
     if (store) {
@@ -232,6 +213,14 @@ describe('tweek repo test', () => {
       expect(key2.value).to.equal(55);
       expect(key3.value).to.equal(true);
       expect(key4.value).to.equal(false);
+    });
+
+    it('should reject when store is corrupted', async () => {
+      // Arrange
+      await initRepository({ store: new MemoryStore({ 'some_path/key': cachedItem() }) });
+
+      //Assert
+      await expect(_tweekRepo.get('some_path/key')).to.be.rejected;
     });
   });
 
@@ -598,137 +587,70 @@ describe('tweek repo test', () => {
     });
   });
 
-  describe('observe', () => {
-    it('should observe single key', async () => {
+  describe('listen', () => {
+    it('should notify after useStore', async () => {
       // Arrange
+      const persistedNodes = {
+        'my_path/string_value': cachedItem('old-value'),
+      };
+      const store = new MemoryStore(persistedNodes);
+      const listen = sinon.stub();
       await initRepository();
-
-      await _tweekRepo.prepare('my_path/string_value');
-      await _tweekRepo.prepare('my_path/inner_path_1/int_value');
-      await _tweekRepo.prepare('my_path/inner_path_1/bool_positive_value');
-      await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_value');
-
-      await refreshAndWait();
+      _tweekRepo.listen(listen);
 
       // Act
-      let [key1] = await observeKey('my_path/string_value');
-      let [key2] = await observeKey('my_path/inner_path_1/int_value');
-      let [key3] = await observeKey('my_path/inner_path_1/bool_positive_value');
-      let [key4] = await observeKey('my_path/inner_path_2/bool_negative_value');
+      await _tweekRepo.useStore(store);
 
       // Assert
-      expect(key1).to.have.property('value', 'my-string');
-      expect(key2).to.have.property('value', 55);
-      expect(key3).to.have.property('value', true);
-      expect(key4).to.have.property('value', false);
+      sinon.assert.calledOnce(listen);
+      sinon.assert.calledWithExactly(listen, Object.keys(persistedNodes));
     });
 
-    it('should observe scan key', async () => {
+    it('should notify after addFlatKeys', async () => {
       // Arrange
+      const keys = {
+        'some_path/inner_path_1/first_value': 'default_value',
+      };
+      const listen = sinon.stub();
       await initRepository();
+      _tweekRepo.listen(listen);
 
+      // Act
+      _tweekRepo.addKeys(keys);
+
+      // Assert
+      sinon.assert.calledOnce(listen);
+      sinon.assert.calledWithExactly(listen, Object.keys(keys));
+    });
+
+    it('should notify after refresh', async () => {
+      // Arrange
+      const listen = sinon.stub();
+      await initRepository();
+      _tweekRepo.listen(listen);
+
+      // Act
       await _tweekRepo.prepare('some_path/_');
       await refreshAndWait();
 
-      const expectedKeysNode = {
-        innerPath1: {
-          firstValue: 'value_1',
-          secondValue: 'value_2',
-        },
-      };
-
-      // Act
-      let [keysNode] = await observeKey('some_path/_');
-
       // Assert
-      expect(keysNode).to.deep.equal(expectedKeysNode);
+      sinon.assert.calledOnce(listen);
+      sinon.assert.calledWithExactly(listen, ['some_path/_']);
     });
 
-    it('should observe root scan', async () => {
+    it('should stop notifying after unlisten', async () => {
       // Arrange
+      const listen = sinon.stub();
       await initRepository();
-      await _tweekRepo.prepare('_');
-      await refreshAndWait();
+      const unlisten = _tweekRepo.listen(listen);
 
       // Act
-      let [config] = await observeKey('_');
+      unlisten();
+      await _tweekRepo.prepare('some_path/_');
+      await refreshAndWait();
 
       // Assert
-      expect(config)
-        .to.have.property('innerPath1')
-        .that.deep.include({ firstValue: 'value_1' });
-    });
-
-    it('should be case insensitive', async () => {
-      // Arrange
-      await initRepository();
-
-      await _tweekRepo.prepare('my_Path/string_value');
-      await _tweekRepo.prepare('my_path/inneR_path_1/int_value');
-      await _tweekRepo.prepare('my_path/inner_path_1/bool_Positive_value');
-      await _tweekRepo.prepare('my_path/inner_path_2/bool_negative_Value');
-
-      await refreshAndWait();
-
-      // Act
-      let [key1] = await observeKey('My_path/string_value');
-      let [key2] = await observeKey('my_Path/inner_path_1/int_value');
-      let [key3] = await observeKey('my_path/Inner_path_1/bool_positive_value');
-      let [key4] = await observeKey('my_path/inner_path_2/Bool_negative_value');
-
-      // Assert
-      expect(key1).to.have.property('value', 'my-string');
-      expect(key2).to.have.property('value', 55);
-      expect(key3).to.have.property('value', true);
-      expect(key4).to.have.property('value', false);
-    });
-
-    it('should notify after refresh new value', async () => {
-      const persistedNodes = {
-        'my_path/string_value': cachedItem('old-value'),
-      };
-      const store = new MemoryStore(persistedNodes);
-      await initRepository({ store });
-      const keysPromise = observeKey('my_path/string_value', 2);
-
-      await refreshAndWait();
-
-      const keys = await keysPromise;
-      expect(keys).to.have.lengthOf(2);
-      expect(keys.map(x => x.value)).to.deep.equal(['old-value', 'my-string']);
-    });
-
-    it('should call error when store is corrupted', async () => {
-      // Arrange
-      await initRepository({ store: new MemoryStore({ 'some_path/key': cachedItem() }) });
-
-      // Act
-      const keysPromise = observeKey('some_path/key', 1);
-
-      //Assert
-      await expect(keysPromise).to.be.rejected;
-    });
-
-    it('should stop notifying after unsubscribe', async () => {
-      const persistedNodes = {
-        'my_path/string_value': cachedItem('old-value'),
-      };
-      const store = new MemoryStore(persistedNodes);
-      await initRepository({ store });
-
-      const items: any[] = [];
-      const subscription: ZenObservable.Subscription = _tweekRepo.observe('my_path/string_value').subscribe(
-        x => {
-          items.push(x.value);
-          subscription.unsubscribe();
-        },
-        () => subscription.unsubscribe(),
-      );
-
-      await refreshAndWait();
-
-      expect(items).to.have.lengthOf(1);
-      expect(items).to.deep.equal(['old-value']);
+      sinon.assert.notCalled(listen);
     });
   });
 });
