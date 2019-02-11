@@ -214,7 +214,7 @@ export class TweekRepository {
       return undefined;
     }
 
-    let { state, isScan = false, value } = node;
+    let { state, isScan, value } = node;
 
     if (state === RepositoryKeyState.cached && isScan) {
       const prefix = getKeyPrefix(key);
@@ -347,7 +347,9 @@ export class TweekRepository {
 
       Object.entries(nodes).forEach(([n, value]) => {
         const fullKey = fullPrefix ? `${fullPrefix}/${n}` : n;
-        this._cache.set(fullKey, StoredKeyUtils.cached(false, value));
+        const isScan = isScanKey(n);
+        // @ts-ignore
+        this._cache.set(fullKey, StoredKeyUtils.cached(isScan, isScan ? undefined : value));
       });
     });
   }
