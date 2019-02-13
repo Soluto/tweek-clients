@@ -4,7 +4,7 @@ import { TweekRepository } from 'tweek-local-cache';
 import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
 
 export type TweekContext = {
-  Provider: ComponentType<ProviderProps<TweekRepository>>;
+  Provider: ComponentType<ProviderProps<TweekRepository | undefined>>;
   Consumer: Consumer<TweekRepository | undefined>;
   prepare(key: string): void;
   withTweekKeys: WithTweekKeys;
@@ -21,10 +21,11 @@ export default (defaultRepo?: TweekRepository): TweekContext => {
   const TweekContext = React.createContext(defaultRepo);
   TweekContext.displayName = 'TweekContext';
 
-  class Provider extends Component<ProviderProps<TweekRepository>> {
-    private dispose: Unlisten | null = null;
+  class Provider extends Component<ProviderProps<TweekRepository | undefined>> {
+    private dispose: Unlisten;
 
-    componentDidMount() {
+    constructor(props: ProviderProps<TweekRepository | undefined>) {
+      super(props);
       keysToPrepare.forEach(this.prepare);
       this.dispose = emitter.listen(this.prepare);
     }
@@ -36,11 +37,12 @@ export default (defaultRepo?: TweekRepository): TweekContext => {
     }
 
     componentWillUnmount() {
-      this.dispose && this.dispose();
+      this.dispose();
     }
 
     private prepare = (key: string) => {
-      this.props.value.prepare(key);
+      const { value } = this.props;
+      value && value.prepare(key);
     };
 
     render() {

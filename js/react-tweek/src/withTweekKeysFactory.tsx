@@ -55,7 +55,7 @@ const extractTweekValues = (
     return resetOnRepoChange || !currentValues ? defaultValues : currentValues;
   }
 
-  const newValues: null | TweekValues = defaultValues || {};
+  const newValues: TweekValues = defaultValues || {};
 
   for (const [prop, keyPath] of Object.entries(_keyPropsMapping)) {
     const cachedKey = _tweekRepo.getCached(keyPath);
@@ -116,10 +116,7 @@ export class WithTweekKeysComponent extends Component<WithTweekKeysRepoProps, Wi
   private _setKeysState = () => {
     this.setState(({ tweekValues: currentValues }, props) => {
       const tweekValues = extractTweekValues(props, currentValues);
-      if (isEqual(tweekValues, currentValues)) {
-        return null;
-      }
-      return { tweekValues };
+      return isEqual(tweekValues, currentValues) ? null : { tweekValues };
     });
   };
 
