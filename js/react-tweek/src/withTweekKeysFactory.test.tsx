@@ -211,4 +211,29 @@ describe('withTweekKeysFactory', () => {
 
     expect(child.props).toEqual(expectedProps);
   });
+
+  test('unsubscribe and resubscribe when changing repository', () => {
+    const unsubscribe = jest.fn();
+    const listen = jest.fn().mockReturnValue(unsubscribe);
+    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
+
+    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
+
+    const render = () => (
+      <TweekContext.Provider value={{ listen, getCached: jest.fn() } as any}>
+        <EnhancedComponent />
+      </TweekContext.Provider>
+    );
+
+    const component = renderer.create(render());
+    expect(listen).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).not.toHaveBeenCalled();
+
+    listen.mockClear();
+
+    component.update(render());
+
+    expect(listen).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
 });
