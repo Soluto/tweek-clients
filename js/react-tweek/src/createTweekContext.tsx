@@ -1,7 +1,7 @@
 import React, { Component, ComponentType, Consumer, ProviderProps } from 'react';
 import { createChangeEmitter, Unlisten } from 'change-emitter';
 import { TweekRepository } from 'tweek-local-cache';
-import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
+import { withTweekKeysFactory, WithTweekKeys } from './withTweekKeysFactory';
 
 export type TweekContext = {
   Provider: ComponentType<ProviderProps<TweekRepository | undefined>>;

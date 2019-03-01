@@ -1,6 +1,8 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "lib": ["dom", "esnext"],
+    "jsx": "react",
     /* Basic Options */
     "target": "es5",
     "module": "commonjs",
