@@ -1,7 +1,8 @@
-import React, { Context, FunctionComponent, ReactType } from 'react';
+import React, { Context, ElementType, FunctionComponent } from 'react';
 import { TweekRepository } from 'tweek-local-cache';
-import { getDisplayName, Omit } from './utils';
+import { getDisplayName } from './utils';
 import { ValuesMapping, ResetOptions, TweekValues } from './TweekValues';
+import { Omit, PrepareKey } from './types';
 
 export type WithTweekValuesOptions<T> = ResetOptions & {
   defaultValues?: T;
@@ -10,11 +11,11 @@ export type WithTweekValuesOptions<T> = ResetOptions & {
 export type WithTweekValues = <T>(
   valuesMapping: ValuesMapping<T>,
   options?: WithTweekValuesOptions<T>,
-) => <TProps extends T>(BaseComponent: ReactType<TProps>) => FunctionComponent<Omit<TProps, T> & ResetOptions>;
+) => <TProps extends T>(BaseComponent: ElementType<TProps>) => FunctionComponent<Omit<TProps, T> & ResetOptions>;
 
 export const createWithTweekValues = (
   TweekContext: Context<TweekRepository | undefined>,
-  prepare: (key: string) => void,
+  prepare: PrepareKey,
 ): WithTweekValues =>
   function<T>(
     valuesMapping: ValuesMapping<T>,
@@ -22,7 +23,7 @@ export const createWithTweekValues = (
   ) {
     (Object.values(valuesMapping) as string[]).forEach(key => prepare(key));
 
-    return <TProps extends T>(BaseComponent: ReactType<TProps>) => {
+    return <TProps extends T>(BaseComponent: ElementType<TProps>) => {
       const EnhancedComponent: FunctionComponent<Omit<TProps, T> & ResetOptions> = ({
         resetOnRepoChange = staticResetOnRepoChange,
         ...props

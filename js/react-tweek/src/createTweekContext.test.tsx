@@ -9,7 +9,7 @@ describe('createTweekContext', () => {
 
     const context = createTweekContext({ prepare } as any);
 
-    context.prepare(key);
+    context.prepareKey(key);
 
     expect(prepare).toHaveBeenCalledWith(key);
   });
@@ -19,7 +19,7 @@ describe('createTweekContext', () => {
     const key = 'some_key_path';
 
     const Context = createTweekContext({ prepare: jest.fn() } as any);
-    Context.prepare(key);
+    Context.prepareKey(key);
     renderer.create(<Context.Provider value={{ prepare } as any} />);
 
     expect(prepare).toHaveBeenCalledWith(key);
@@ -31,7 +31,7 @@ describe('createTweekContext', () => {
 
     const Context = createTweekContext({ prepare: jest.fn() } as any);
     renderer.create(<Context.Provider value={{ prepare } as any} />);
-    Context.prepare(key);
+    Context.prepareKey(key);
 
     expect(prepare).toHaveBeenCalledWith(key);
   });

@@ -42,6 +42,10 @@ function extractTweekValues<T>(
   for (const [prop, keyPath] of Object.entries(valuesMapping as Values)) {
     const cachedKey = tweekRepository.getCached(keyPath);
 
+    if (!cachedKey) {
+      tweekRepository.prepare(keyPath);
+    }
+
     if (cachedKey && cachedKey.state !== RepositoryKeyState.requested) {
       if (cachedKey.state !== RepositoryKeyState.missing) {
         newValues[prop] = cachedKey.value;
@@ -85,13 +89,12 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
   }
 
   private _subscribeToKeys() {
-    const { tweekRepository, valuesMapping } = this.props;
+    const { tweekRepository } = this.props;
     if (!tweekRepository) {
       return;
     }
 
     this._dispose = tweekRepository.listen(this._setKeysState);
-    (Object.values(valuesMapping) as string[]).forEach(k => tweekRepository.prepare(k));
   }
 
   private _unsubscribe() {

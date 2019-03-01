@@ -1,8 +1,6 @@
-import { ReactType } from 'react';
+import { ElementType } from 'react';
 
-export type Omit<T extends U, U> = Pick<T, Exclude<keyof T, keyof U>>;
-
-export const getDisplayName = (Component: ReactType) => {
+export const getDisplayName = (Component: ElementType<any>) => {
   if (typeof Component === 'string') {
     return Component;
   }
