@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import createTweekContext from './createTweekContext';
+import { createTweekContext } from './createTweekContext';
 
 describe('createTweekContext', () => {
   test('default provider should prepare keys when prepare is called', () => {

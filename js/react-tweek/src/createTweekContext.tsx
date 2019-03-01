@@ -3,14 +3,19 @@ import { createChangeEmitter, Unlisten } from 'change-emitter';
 import { TweekRepository } from 'tweek-local-cache';
 import { createWithTweekValues, WithTweekValues } from './createWithTweekValues';
 
+export type OptionalTweekRepository = TweekRepository | undefined;
+
+export type UseTweekRepository = () => OptionalTweekRepository;
+
 export type TweekContext = {
-  Provider: ComponentType<ProviderProps<TweekRepository | undefined>>;
-  Consumer: Consumer<TweekRepository | undefined>;
+  Provider: ComponentType<ProviderProps<OptionalTweekRepository>>;
+  Consumer: Consumer<OptionalTweekRepository>;
   prepare(key: string): void;
   withTweekValues: WithTweekValues;
+  useTweekRepository: UseTweekRepository;
 };
 
-export default (defaultRepo?: TweekRepository): TweekContext => {
+export const createTweekContext = (defaultRepo?: TweekRepository): TweekContext => {
   const keysToPrepare: string[] = [];
   const emitter = createChangeEmitter<string>();
   emitter.listen(key => {
@@ -21,10 +26,10 @@ export default (defaultRepo?: TweekRepository): TweekContext => {
   const TweekContext = React.createContext(defaultRepo);
   TweekContext.displayName = 'TweekContext';
 
-  class Provider extends Component<ProviderProps<TweekRepository | undefined>> {
-    private dispose: Unlisten;
+  class Provider extends Component<ProviderProps<OptionalTweekRepository>> {
+    private readonly dispose: Unlisten;
 
-    constructor(props: ProviderProps<TweekRepository | undefined>) {
+    constructor(props: ProviderProps<OptionalTweekRepository>) {
       super(props);
       keysToPrepare.forEach(this.prepare);
       this.dispose = emitter.listen(this.prepare);
@@ -50,10 +55,19 @@ export default (defaultRepo?: TweekRepository): TweekContext => {
     }
   }
 
+  function useTweekRepository() {
+    if (typeof React.useContext === 'undefined') {
+      throw new Error('hooks are not supported in this react version');
+    }
+
+    return React.useContext(TweekContext);
+  }
+
   return {
     Provider,
     Consumer: TweekContext.Consumer,
     prepare: emitter.emit,
     withTweekValues: createWithTweekValues(TweekContext, emitter.emit),
+    useTweekRepository,
   };
 };
