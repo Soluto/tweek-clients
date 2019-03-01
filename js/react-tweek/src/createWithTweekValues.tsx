@@ -1,8 +1,7 @@
 import React, { Context, ElementType, FunctionComponent } from 'react';
-import { TweekRepository } from 'tweek-local-cache';
 import { getDisplayName } from './utils';
 import { ValuesMapping, ResetOptions, TweekValues } from './TweekValues';
-import { Omit, PrepareKey } from './types';
+import { Omit, OptionalTweekRepository, PrepareKey } from './types';
 
 export type WithTweekValuesOptions<T> = ResetOptions & {
   defaultValues?: T;
@@ -14,7 +13,7 @@ export type WithTweekValues = <T>(
 ) => <TProps extends T>(BaseComponent: ElementType<TProps>) => FunctionComponent<Omit<TProps, T> & ResetOptions>;
 
 export const createWithTweekValues = (
-  TweekContext: Context<TweekRepository | undefined>,
+  TweekContext: Context<OptionalTweekRepository>,
   prepare: PrepareKey,
 ): WithTweekValues =>
   function<T>(

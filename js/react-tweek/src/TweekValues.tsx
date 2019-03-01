@@ -1,6 +1,7 @@
 import { Component, ReactElement } from 'react';
-import { RepositoryKeyState, TweekRepository, Unlisten } from 'tweek-local-cache';
+import { RepositoryKeyState, Unlisten } from 'tweek-local-cache';
 import isEqual from 'lodash.isequal';
+import { OptionalTweekRepository } from './types';
 
 type Values = { [s: string]: any };
 
@@ -11,7 +12,7 @@ export type ResetOptions = {
 export type ValuesMapping<T> = Record<keyof T, string>;
 
 export type TweekValuesProps<T extends {}> = ResetOptions & {
-  tweekRepository: TweekRepository | undefined;
+  tweekRepository: OptionalTweekRepository;
   valuesMapping: ValuesMapping<T>;
   defaultValues?: T;
   children: (values: T) => ReactElement<any> | null;

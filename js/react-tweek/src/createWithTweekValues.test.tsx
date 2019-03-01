@@ -9,6 +9,7 @@ import {
   MissingKey,
 } from 'tweek-local-cache';
 import { createWithTweekValues, WithTweekValues } from './createWithTweekValues';
+import { OptionalTweekRepository } from './types';
 
 type TweekProps = {
   singleKey: string;
@@ -60,7 +61,7 @@ describe('createWithTweekValues', () => {
     repository = new TweekRepository({ client: {} as any });
     TweekContext = React.createContext(repository);
     prepareMock = jest.fn();
-    withTweekValues = createWithTweekValues(TweekContext as Context<TweekRepository | undefined>, prepareMock);
+    withTweekValues = createWithTweekValues(TweekContext as Context<OptionalTweekRepository>, prepareMock);
   });
 
   test('renders only if all keys are present', () => {

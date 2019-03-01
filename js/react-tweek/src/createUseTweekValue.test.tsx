@@ -1,7 +1,8 @@
-import React, { Context, useContext } from 'react';
+import React, { Context } from 'react';
 import { MemoryStore, RepositoryKeyState, TweekRepository } from 'tweek-local-cache';
 import { createUseTweekValue, UseTweekValue } from './createUseTweekValue';
 import renderer, { act, ReactTestRenderer } from 'react-test-renderer';
+import { OptionalTweekRepository } from './types';
 
 type Props = {
   value: string;
@@ -31,7 +32,7 @@ describe('createUseTweekValue', () => {
     repository = new TweekRepository({ client: {} as any });
     TweekContext = React.createContext(repository);
     prepareMock = jest.fn();
-    useTweekValue = createUseTweekValue(() => useContext(TweekContext), prepareMock);
+    useTweekValue = createUseTweekValue(TweekContext as Context<OptionalTweekRepository>, prepareMock);
   });
 
   test('prepares key and returns default value if key is not prepared', () => {

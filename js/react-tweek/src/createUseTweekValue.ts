@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { Context, Reducer } from 'react';
 import isEqual from 'lodash.isequal';
 import { RepositoryKeyState } from 'tweek-local-cache';
-import { PrepareKey, UseTweekRepository } from './types';
+import { OptionalTweekRepository, PrepareKey } from './types';
+import { ensureHooks } from './utils';
 
 export interface UseTweekValue {
   <T>(keyPath: string, defaultValue: T): T;
@@ -16,33 +17,35 @@ function valueReducer<T>(prevValue: T, nextValue: T) {
   return nextValue;
 }
 
-export const createUseTweekValue = (useTweekRepository: UseTweekRepository, prepare: PrepareKey): UseTweekValue => {
-  function useTweekValue<T = any>(keyPath: string, defaultValue: T): T {
-    const tweekRepository = useTweekRepository();
-    const [tweekValue, setTweekValue] = React.useReducer(valueReducer, defaultValue);
+function getValueOrDefault<T>(keyPath: string, tweekRepository: OptionalTweekRepository, defaultValue: T) {
+  if (!tweekRepository) {
+    return defaultValue;
+  }
 
-    const getValue = () => {
-      if (!tweekRepository) {
-        return defaultValue;
-      }
+  const cached = tweekRepository.getCached(keyPath);
+  if (!cached) {
+    tweekRepository.prepare(keyPath);
+    return defaultValue;
+  }
 
-      const cached = tweekRepository.getCached(keyPath);
-      if (!cached) {
-        tweekRepository.prepare(keyPath);
-        return defaultValue;
-      }
+  return cached.state === RepositoryKeyState.cached ? cached.value : defaultValue;
+}
 
-      return cached.state === RepositoryKeyState.cached ? cached.value : defaultValue;
-    };
+export const createUseTweekValue = (
+  TweekContext: Context<OptionalTweekRepository>,
+  prepare: PrepareKey,
+): UseTweekValue => {
+  function useTweekValue<T>(keyPath: string, defaultValue: T): T {
+    ensureHooks();
 
-    const updateValue = () => setTweekValue(getValue());
+    const tweekRepository = React.useContext(TweekContext);
+    const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>>(valueReducer, defaultValue);
 
-    React.useEffect(updateValue, [keyPath]);
+    const updateValue = () => setTweekValue(getValueOrDefault(keyPath, tweekRepository, defaultValue));
 
-    React.useEffect(() => {
-      updateValue();
-      return tweekRepository && tweekRepository.listen(updateValue);
-    }, [tweekRepository]);
+    React.useEffect(updateValue, [tweekRepository, keyPath]);
+
+    React.useEffect(() => tweekRepository && tweekRepository.listen(updateValue), [tweekRepository]);
 
     return tweekValue;
   }

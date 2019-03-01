@@ -4,6 +4,7 @@ import { TweekRepository } from 'tweek-local-cache';
 import { createWithTweekValues, WithTweekValues } from './createWithTweekValues';
 import { OptionalTweekRepository, PrepareKey, UseTweekRepository } from './types';
 import { createUseTweekValue, UseTweekValue } from './createUseTweekValue';
+import { ensureHooks } from './utils';
 
 export type TweekContext = {
   Provider: ComponentType<ProviderProps<OptionalTweekRepository>>;
@@ -55,10 +56,7 @@ export const createTweekContext = (defaultRepo?: TweekRepository): TweekContext 
   }
 
   function useTweekRepository() {
-    if (typeof React.useContext === 'undefined') {
-      throw new Error('hooks are not supported in this react version');
-    }
-
+    ensureHooks();
     return React.useContext(TweekContext);
   }
 
@@ -68,6 +66,6 @@ export const createTweekContext = (defaultRepo?: TweekRepository): TweekContext 
     prepareKey: emitter.emit,
     withTweekValues: createWithTweekValues(TweekContext, emitter.emit),
     useTweekRepository,
-    useTweekValue: createUseTweekValue(useTweekRepository, emitter.emit),
+    useTweekValue: createUseTweekValue(TweekContext, emitter.emit),
   };
 };

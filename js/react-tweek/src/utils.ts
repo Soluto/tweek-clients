@@ -1,4 +1,4 @@
-import { ElementType } from 'react';
+import React, { ElementType } from 'react';
 
 export const getDisplayName = (Component: ElementType<any>) => {
   if (typeof Component === 'string') {
@@ -10,4 +10,10 @@ export const getDisplayName = (Component: ElementType<any>) => {
   }
 
   return Component.displayName || Component.name || 'Component';
+};
+
+export const ensureHooks = () => {
+  if (typeof React.useContext === 'undefined') {
+    throw new Error('hooks are not supported in this react version');
+  }
 };
