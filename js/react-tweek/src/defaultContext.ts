@@ -8,3 +8,8 @@ export const prepareKey = context.prepareKey;
 export const withTweekValues = context.withTweekValues;
 export const useTweekRepository = context.useTweekRepository;
 export const useTweekValue = context.useTweekValue;
+
+/**
+ * @deprecated Please use `withTweekValues`
+ */
+export const withTweekKeys = withTweekValues;
