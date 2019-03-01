@@ -1,26 +1,26 @@
 import React, { Context, FunctionComponent, ReactType } from 'react';
 import { TweekRepository } from 'tweek-local-cache';
 import { getDisplayName, Omit } from './utils';
-import { KeyMapping, ResetOptions, TweekKeys } from './TweekKeys';
+import { ValuesMapping, ResetOptions, TweekValues } from './TweekValues';
 
-export type WithTweekKeysOptions<T> = ResetOptions & {
+export type WithTweekValuesOptions<T> = ResetOptions & {
   defaultValues?: T;
 };
 
-export type WithTweekKeys = <T>(
-  keyPropsMapping: KeyMapping<T>,
-  options?: WithTweekKeysOptions<T>,
+export type WithTweekValues = <T>(
+  valuesMapping: ValuesMapping<T>,
+  options?: WithTweekValuesOptions<T>,
 ) => <TProps extends T>(BaseComponent: ReactType<TProps>) => FunctionComponent<Omit<TProps, T> & ResetOptions>;
 
-export const withTweekKeysFactory = (
+export const createWithTweekValues = (
   TweekContext: Context<TweekRepository | undefined>,
   prepare: (key: string) => void,
-): WithTweekKeys =>
+): WithTweekValues =>
   function<T>(
-    keyPropsMapping: KeyMapping<T>,
-    { defaultValues, resetOnRepoChange: staticResetOnRepoChange }: WithTweekKeysOptions<T> = {},
+    valuesMapping: ValuesMapping<T>,
+    { defaultValues, resetOnRepoChange: staticResetOnRepoChange }: WithTweekValuesOptions<T> = {},
   ) {
-    (Object.values(keyPropsMapping) as string[]).forEach(key => prepare(key));
+    (Object.values(valuesMapping) as string[]).forEach(key => prepare(key));
 
     return <TProps extends T>(BaseComponent: ReactType<TProps>) => {
       const EnhancedComponent: FunctionComponent<Omit<TProps, T> & ResetOptions> = ({
@@ -29,9 +29,9 @@ export const withTweekKeysFactory = (
       }) => (
         <TweekContext.Consumer>
           {repo => (
-            <TweekKeys
+            <TweekValues
               tweekRepository={repo}
-              keyMapping={keyPropsMapping}
+              valuesMapping={valuesMapping}
               defaultValues={defaultValues}
               resetOnRepoChange={resetOnRepoChange}
             >
@@ -39,12 +39,12 @@ export const withTweekKeysFactory = (
                 // @ts-ignore
                 return <BaseComponent {...props} {...values} />;
               }}
-            </TweekKeys>
+            </TweekValues>
           )}
         </TweekContext.Consumer>
       );
 
-      EnhancedComponent.displayName = `withTweekKeys(${getDisplayName(BaseComponent)})`;
+      EnhancedComponent.displayName = `withTweekValues(${getDisplayName(BaseComponent)})`;
 
       return EnhancedComponent;
     };

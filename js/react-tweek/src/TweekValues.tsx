@@ -1,45 +1,45 @@
 import { Component, ReactElement } from 'react';
 import { RepositoryKeyState, TweekRepository, Unlisten } from 'tweek-local-cache';
 import isEqual from 'lodash.isequal';
-import { WithTweekKeysOptions } from './withTweekKeysFactory';
 
-type TweekValues = { [s: string]: any };
+type Values = { [s: string]: any };
 
 export type ResetOptions = {
   resetOnRepoChange?: boolean;
 };
 
-export type KeyMapping<T> = Record<keyof T, string>;
+export type ValuesMapping<T> = Record<keyof T, string>;
 
-export type TweekKeysProps<T extends {}> = WithTweekKeysOptions<T> & {
+export type TweekValuesProps<T extends {}> = ResetOptions & {
   tweekRepository: TweekRepository | undefined;
-  keyMapping: KeyMapping<T>;
+  valuesMapping: ValuesMapping<T>;
+  defaultValues?: T;
   children: (values: T) => ReactElement<any> | null;
 };
 
-function filterDefaultValues<T>(keyMapping: KeyMapping<T>, defaultValues: T | undefined): T | null {
+function filterDefaultValues<T>(keyMapping: ValuesMapping<T>, defaultValues: T | undefined): T | null {
   if (!defaultValues) {
     return null;
   }
 
-  const defaultState: TweekValues = {};
-  Object.keys(keyMapping).forEach(prop => (defaultState[prop] = (defaultValues as TweekValues)[prop]));
+  const defaultState: Values = {};
+  Object.keys(keyMapping).forEach(prop => (defaultState[prop] = (defaultValues as Values)[prop]));
   return defaultState as T;
 }
 
 function extractTweekValues<T>(
-  { keyMapping, tweekRepository, defaultValues, resetOnRepoChange }: TweekKeysProps<T>,
+  { valuesMapping, tweekRepository, defaultValues, resetOnRepoChange }: TweekValuesProps<T>,
   currentValues: T | null,
 ): T | null {
-  const filteredDefaultValues = filterDefaultValues(keyMapping, defaultValues);
+  const filteredDefaultValues = filterDefaultValues(valuesMapping, defaultValues);
 
   if (!tweekRepository) {
     return resetOnRepoChange || !currentValues ? filteredDefaultValues : currentValues;
   }
 
-  const newValues: TweekValues = filteredDefaultValues || {};
+  const newValues: Values = filteredDefaultValues || {};
 
-  for (const [prop, keyPath] of Object.entries(keyMapping as TweekValues)) {
+  for (const [prop, keyPath] of Object.entries(valuesMapping as Values)) {
     const cachedKey = tweekRepository.getCached(keyPath);
 
     if (cachedKey && cachedKey.state !== RepositoryKeyState.requested) {
@@ -50,29 +50,29 @@ function extractTweekValues<T>(
       if (resetOnRepoChange || !currentValues) {
         return null;
       }
-      newValues[prop] = (currentValues as TweekValues)[prop];
+      newValues[prop] = (currentValues as Values)[prop];
     }
   }
 
   return newValues as T;
 }
 
-type TweekKeysState<T> = {
+type TweekValuesState<T> = {
   tweekValues: T | null;
 };
 
-export class TweekKeys<T> extends Component<TweekKeysProps<T>, TweekKeysState<T>> {
-  state: TweekKeysState<T>;
+export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesState<T>> {
+  state: TweekValuesState<T>;
   private _dispose: Unlisten | null = null;
 
-  constructor(props: TweekKeysProps<T>) {
+  constructor(props: TweekValuesProps<T>) {
     super(props);
 
     this.state = { tweekValues: extractTweekValues(props, null) };
     this._subscribeToKeys();
   }
 
-  componentDidUpdate(prevProps: TweekKeysProps<T>) {
+  componentDidUpdate(prevProps: TweekValuesProps<T>) {
     if (prevProps.tweekRepository !== this.props.tweekRepository) {
       this._unsubscribe();
       this._subscribeToKeys();
@@ -85,13 +85,13 @@ export class TweekKeys<T> extends Component<TweekKeysProps<T>, TweekKeysState<T>
   }
 
   private _subscribeToKeys() {
-    const { tweekRepository, keyMapping } = this.props;
+    const { tweekRepository, valuesMapping } = this.props;
     if (!tweekRepository) {
       return;
     }
 
     this._dispose = tweekRepository.listen(this._setKeysState);
-    (Object.values(keyMapping) as string[]).forEach(k => tweekRepository.prepare(k));
+    (Object.values(valuesMapping) as string[]).forEach(k => tweekRepository.prepare(k));
   }
 
   private _unsubscribe() {

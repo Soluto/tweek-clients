@@ -1,13 +1,13 @@
 import React, { Component, ComponentType, Consumer, ProviderProps } from 'react';
 import { createChangeEmitter, Unlisten } from 'change-emitter';
 import { TweekRepository } from 'tweek-local-cache';
-import { withTweekKeysFactory, WithTweekKeys } from './withTweekKeysFactory';
+import { createWithTweekValues, WithTweekValues } from './createWithTweekValues';
 
 export type TweekContext = {
   Provider: ComponentType<ProviderProps<TweekRepository | undefined>>;
   Consumer: Consumer<TweekRepository | undefined>;
   prepare(key: string): void;
-  withTweekKeys: WithTweekKeys;
+  withTweekValues: WithTweekValues;
 };
 
 export default (defaultRepo?: TweekRepository): TweekContext => {
@@ -54,6 +54,6 @@ export default (defaultRepo?: TweekRepository): TweekContext => {
     Provider,
     Consumer: TweekContext.Consumer,
     prepare: emitter.emit,
-    withTweekKeys: withTweekKeysFactory(TweekContext, emitter.emit),
+    withTweekValues: createWithTweekValues(TweekContext, emitter.emit),
   };
 };
