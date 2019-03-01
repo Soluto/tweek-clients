@@ -185,7 +185,7 @@ describe('createWithTweekValues', () => {
     expect(child.props).toEqual(expectedProps);
   });
 
-  test('adds default value is prop is missing', async () => {
+  test('adds default value if prop is missing', async () => {
     const defaultValues: TweekProps = {
       singleKey: 'a',
       scanKey: {},
