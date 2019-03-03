@@ -41,11 +41,11 @@ export const createUseTweekValue = (
     const tweekRepository = React.useContext(TweekContext);
     const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>>(valueReducer, defaultValue);
 
-    const updateValue = () => setTweekValue(getValueOrDefault(keyPath, tweekRepository, defaultValue));
-
-    React.useEffect(updateValue, [tweekRepository, keyPath]);
-
-    React.useEffect(() => tweekRepository && tweekRepository.listen(updateValue), [tweekRepository]);
+    React.useEffect(() => {
+      const updateValue = () => setTweekValue(getValueOrDefault(keyPath, tweekRepository, defaultValue));
+      updateValue();
+      return tweekRepository && tweekRepository.listen(updateValue);
+    }, [tweekRepository, keyPath, defaultValue]);
 
     return tweekValue;
   }
