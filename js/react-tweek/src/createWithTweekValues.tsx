@@ -1,4 +1,4 @@
-import React, { Context, ElementType, FunctionComponent } from 'react';
+import React, { ComponentType, Context, ElementType, FunctionComponent } from 'react';
 import { getDisplayName } from './utils';
 import { ValuesMapping, ResetOptions, TweekValues } from './TweekValues';
 import { Omit, OptionalTweekRepository, PrepareKey } from './types';
@@ -10,7 +10,7 @@ export type WithTweekValuesOptions<T> = ResetOptions & {
 export type WithTweekValues = <T>(
   valuesMapping: ValuesMapping<T>,
   options?: WithTweekValuesOptions<T>,
-) => <TProps extends T>(BaseComponent: ElementType<TProps>) => FunctionComponent<Omit<TProps, T> & ResetOptions>;
+) => <TProps extends T>(BaseComponent: ElementType<TProps>) => ComponentType<Omit<TProps, T> & ResetOptions>;
 
 export const createWithTweekValues = (
   TweekContext: Context<OptionalTweekRepository>,
