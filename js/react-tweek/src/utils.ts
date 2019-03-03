@@ -1,6 +1,6 @@
-import React, { ElementType } from 'react';
+import React, { ReactType } from 'react';
 
-export const getDisplayName = (Component: ElementType<any>) => {
+export const getDisplayName = (Component: ReactType<any>) => {
   if (typeof Component === 'string') {
     return Component;
   }
