@@ -10,6 +10,10 @@ export interface UseTweekValue {
 }
 
 function valueReducer<T>(prevValue: T, nextValue: T) {
+  // to bail out of dispatching
+  // if the values are equal we should return previous value for reference equality in objects
+  // relevant for scan keys only
+  // https://reactjs.org/docs/hooks-reference.html#bailing-out-of-a-dispatch
   if (isEqual(prevValue, nextValue)) {
     return prevValue;
   }
