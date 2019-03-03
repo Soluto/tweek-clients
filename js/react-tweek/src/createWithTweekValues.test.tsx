@@ -8,17 +8,19 @@ import {
   CachedScanKey,
   MissingKey,
 } from 'tweek-local-cache';
-import withTweekKeysFactory, { WithTweekKeys } from './withTweekKeysFactory';
+import { createWithTweekValues, WithTweekValues } from './createWithTweekValues';
+import { OptionalTweekRepository } from './types';
 
 type TweekProps = {
   singleKey: string;
   scanKey: {
-    a: string;
-    b: string;
+    a?: string;
+    b?: string;
   };
+  missingKey?: string;
 };
 
-class Child extends Component<TweekProps> {
+class Child extends Component<TweekProps & { someProp?: any }> {
   render() {
     return null;
   }
@@ -43,33 +45,39 @@ const missingKey: MissingKey = {
   isScan: false,
 };
 
-describe('withTweekKeysFactory', () => {
+const createMockRepository = (unsubscribe = jest.fn(), listen = jest.fn()): any => ({
+  listen: listen.mockReturnValue(unsubscribe),
+  getCached: jest.fn(),
+  prepare: jest.fn(),
+});
+
+describe('createWithTweekValues', () => {
   let repository: TweekRepository;
   let TweekContext: Context<TweekRepository>;
   let prepareMock: jest.Mock;
-  let withTweekKeys: WithTweekKeys;
+  let withTweekValues: WithTweekValues;
 
   beforeEach(() => {
     repository = new TweekRepository({ client: {} as any });
     TweekContext = React.createContext(repository);
     prepareMock = jest.fn();
-    withTweekKeys = withTweekKeysFactory(TweekContext as Context<TweekRepository | undefined>, prepareMock);
+    withTweekValues = createWithTweekValues(TweekContext as Context<OptionalTweekRepository>, prepareMock);
   });
 
   test('renders only if all keys are present', () => {
-    const listenMock = jest.fn().mockResolvedValue(jest.fn());
-    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
+    const mockRepository = createMockRepository();
+    const enhance = withTweekValues<TweekProps>(mapping);
 
     Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
 
-    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
+    const EnhancedComponent = enhance(Child);
     const component = renderer.create(
-      <TweekContext.Provider value={{ listen: listenMock, getCached: jest.fn() } as any}>
+      <TweekContext.Provider value={mockRepository}>
         <EnhancedComponent />
       </TweekContext.Provider>,
     );
 
-    expect(listenMock).toHaveBeenCalledTimes(1);
+    expect(mockRepository.listen).toHaveBeenCalledTimes(1);
 
     const tree = component.toJSON();
     expect(tree).toBeNull();
@@ -94,11 +102,11 @@ describe('withTweekKeysFactory', () => {
       }),
     );
 
-    const withTweekKeysHoc = withTweekKeys(mapping);
+    const enhance = withTweekValues<TweekProps>(mapping);
 
     Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
 
-    const EnhancedComponent = withTweekKeysHoc(Child);
+    const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent someProp={expectedProps.someProp} />);
 
     const child = component.root.findByType(Child);
@@ -124,11 +132,11 @@ describe('withTweekKeysFactory', () => {
       }),
     );
 
-    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
+    const enhance = withTweekValues<TweekProps>(mapping);
 
     Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
 
-    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
+    const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent />);
 
     await repository.useStore(
@@ -146,12 +154,12 @@ describe('withTweekKeysFactory', () => {
 
   test('unsubscribe when unloads', () => {
     const unsubscribe = jest.fn();
-    const listen = jest.fn().mockReturnValue(unsubscribe);
-    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
+    const mockRepository = createMockRepository(unsubscribe);
+    const enhance = withTweekValues<TweekProps>(mapping);
 
-    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
+    const EnhancedComponent = enhance(Child);
     const component = renderer.create(
-      <TweekContext.Provider value={{ listen, getCached: jest.fn() } as any}>
+      <TweekContext.Provider value={mockRepository}>
         <EnhancedComponent />
       </TweekContext.Provider>,
     );
@@ -161,7 +169,7 @@ describe('withTweekKeysFactory', () => {
   });
 
   test('adds default values on initial render', () => {
-    const expectedProps = {
+    const expectedProps: TweekProps = {
       singleKey: 'single value',
       scanKey: {
         a: 'a scan value',
@@ -170,16 +178,16 @@ describe('withTweekKeysFactory', () => {
       missingKey: 'missing value default',
     };
 
-    const withTweekKeysHoc = withTweekKeys(mapping, { defaultValues: expectedProps });
-    const EnhancedComponent = withTweekKeysHoc(Child);
+    const enhance = withTweekValues(mapping, { defaultValues: expectedProps });
+    const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent />);
     const child = component.root.findByType(Child);
 
     expect(child.props).toEqual(expectedProps);
   });
 
-  test('adds default value is prop is missing', async () => {
-    const defaultValues = {
+  test('adds default value if prop is missing', async () => {
+    const defaultValues: TweekProps = {
       singleKey: 'a',
       scanKey: {},
       missingKey: 'missing value default',
@@ -202,9 +210,9 @@ describe('withTweekKeysFactory', () => {
       }),
     );
 
-    const withTweekKeysHoc = withTweekKeys(mapping, { defaultValues });
+    const enhance = withTweekValues(mapping, { defaultValues });
 
-    const EnhancedComponent = withTweekKeysHoc(Child);
+    const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent />);
 
     const child = component.root.findByType(Child);
@@ -214,13 +222,13 @@ describe('withTweekKeysFactory', () => {
 
   test('unsubscribe and resubscribe when changing repository', () => {
     const unsubscribe = jest.fn();
-    const listen = jest.fn().mockReturnValue(unsubscribe);
-    const withTweekKeysHoc = withTweekKeys<TweekProps>(mapping);
+    const listen = jest.fn();
+    const enhance = withTweekValues<TweekProps>(mapping);
 
-    const EnhancedComponent = withTweekKeysHoc<TweekProps>(Child);
+    const EnhancedComponent = enhance(Child);
 
     const render = () => (
-      <TweekContext.Provider value={{ listen, getCached: jest.fn() } as any}>
+      <TweekContext.Provider value={createMockRepository(unsubscribe, listen)}>
         <EnhancedComponent />
       </TweekContext.Provider>
     );

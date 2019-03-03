@@ -1,6 +1,6 @@
 {
   "name": "react-tweek",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "react bindings for tweek",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,15 +14,11 @@
     "tweek-local-cache": "^0.5.0"
   },
   "dependencies": {
-    "humps": "^2.0.1",
-    "lodash.isequal": "^4.5.0",
-    "lodash.omit": "^4.5.0"
+    "lodash.isequal": "^4.5.0"
   },
   "devDependencies": {
-    "@types/humps": "^1.1.2",
     "@types/jest": "^23.3.13",
     "@types/lodash.isequal": "^4.5.3",
-    "@types/lodash.omit": "^4.5.4",
     "@types/react": "^16.8.1",
     "@types/react-test-renderer": "^16.0.3",
     "jest": "^23.6.0",
