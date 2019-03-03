@@ -74,7 +74,15 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
     super(props);
 
     this.state = { tweekValues: extractTweekValues(props, null) };
+  }
+
+  componentDidMount() {
     this._subscribeToKeys();
+
+    const tweekValues = extractTweekValues(this.props, null);
+    if (!isEqual(this.state.tweekValues, tweekValues)) {
+      this.setState({ tweekValues });
+    }
   }
 
   componentDidUpdate(prevProps: TweekValuesProps<T>) {
