@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -18,9 +19,9 @@ namespace Tweek.Client
 
         public event EventHandler<ApiCallErrorArgs> ApiCallErrorHandler;
 
-        IEnumerable<ITweekApiClient> mClients;
+        readonly ICollection<ITweekApiClient> mClients;
 
-        public TweekApiFallbackClient(IEnumerable<ITweekApiClient> clients)
+        public TweekApiFallbackClient(ICollection<ITweekApiClient> clients)
         {
             mClients = clients;
         }
@@ -74,6 +75,13 @@ namespace Tweek.Client
                 return null;
             });
         }
-        
+
+        public void Dispose()
+        {
+            foreach (var client in mClients)
+            {
+                client.Dispose();
+            }
+        }
     }
 }
