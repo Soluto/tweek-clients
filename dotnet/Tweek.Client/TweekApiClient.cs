@@ -71,5 +71,10 @@ namespace Tweek.Client
             var result = await mClient.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
             result.EnsureSuccessStatusCode();
         }
+
+        public void Dispose()
+        {
+            mClient.Dispose();
+        }
     }
 }

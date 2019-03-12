@@ -37,5 +37,10 @@ namespace Tweek.Client
         {
             return await mPolicy.ExecuteAsync(async () => await mClient.Get(keyPath, context, options));
         }
+
+        public void Dispose()
+        {
+            mClient.Dispose();
+        }
     }
 }
