@@ -129,17 +129,15 @@ describe('tweek repo behavior test', function(this: Mocha.Suite) {
       test.pathsToPrepare.forEach(x => _tweekRepo.prepare(x));
 
       // Act
-      _tweekRepo.refresh();
+      _tweekRepo.expire();
       await (<any>_tweekRepo)._waitRefreshCycle();
 
       // Assert
-      const getKeysValuesPromises: Promise<any>[] = test.expectedKeys.map(x => _tweekRepo.get(x.keyName));
+      const getKeysValuesPromises: Promise<any>[] = test.expectedKeys.map(x => _tweekRepo.getValue(x.keyName));
 
       try {
         const values = await Promise.all(getKeysValuesPromises);
-        values.forEach((x, index) =>
-          expect(x.value).to.eql(test.expectedKeys[index].value, 'should have correct value'),
-        );
+        values.forEach((x, index) => expect(x.value).to.eql(test.expectedKeys[index], 'should have correct value'));
       } catch (ex) {
         console.log('failed getting keys');
         throw ex;

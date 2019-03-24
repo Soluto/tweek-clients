@@ -94,15 +94,25 @@ export class TweekRepository {
     this._store = store;
 
     return this._store.load().then(keys => {
+      keys = keys || {};
+      const entries = Object.entries(keys);
+
+      for (const [key, value] of entries) {
+        const isScan = isScanKey(key);
+        if (isScan !== value.isScan) {
+          throw new Error('stored cache is corrupted. not loading');
+        }
+      }
+
       const updatedKeys: string[] = [];
 
-      keys = keys || {};
-      Object.entries(keys).forEach(([key, value]: [string, StoredKey<any>]) => {
+      for (let [key, value] of entries) {
         if (value.expiration) {
           this._isDirty = true;
           this._checkRefresh();
           value = StoredKeyUtils.expire(value);
         }
+
         const cached = this._cache.get(key);
 
         if (!cached || cached.state !== value.state || isEqual(cached.value, value.value)) {
@@ -110,7 +120,7 @@ export class TweekRepository {
         }
 
         this._cache.set(key, value);
-      });
+      }
 
       this._emit(updatedKeys);
     });
