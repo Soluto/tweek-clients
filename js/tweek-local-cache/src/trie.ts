@@ -1,8 +1,7 @@
+import { flatMap } from './utils';
+import { SplitJoin } from './split-join';
+
 export type TrieNode<TValue> = TValue | { [key: string]: TrieNode<TValue> };
-export type SplitJoin = {
-  split: (key: string) => string[];
-  join: (fragments: string[]) => string;
-};
 
 export default class Trie<TValue> {
   constructor(private readonly _splitJoin: SplitJoin) {}
@@ -63,5 +62,22 @@ export default class Trie<TValue> {
     return Object.keys(node)
       .map(name => this.list(this._splitJoin.join([...fragments, name]), index))
       .reduce((acc, next) => ({ ...acc, ...next }), initialValue);
+  }
+
+  listEntries(key?: string): string[] {
+    const fragments = (key && this._splitJoin.split(key)) || [];
+    const node = fragments.reduce((acc: any, next) => {
+      if (!acc) return null;
+      return acc[next];
+    }, this._root);
+
+    if (node === null || node === undefined) return [];
+
+    return flatMap(Object.keys(node), name => {
+      const subKey = this._splitJoin.join([...fragments, name]);
+      const subEntries = this.listEntries(subKey);
+      subEntries.push(subKey);
+      return subEntries;
+    });
   }
 }

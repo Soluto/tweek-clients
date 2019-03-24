@@ -6,3 +6,4 @@ import * as StoredKeyUtils from './stored-key-utils';
 export { StoredKeyUtils };
 export { default as MemoryStore } from './memory-store';
 export * from './tweek-repository';
+export * from './split-join';
