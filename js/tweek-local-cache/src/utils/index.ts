@@ -19,17 +19,26 @@ export function once(fn: Function): Function {
   };
 }
 
-export function createWarning(message: string) {
-  return once(() => {
-    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-      console.warn(message);
-    }
-  });
-}
-
 export function getValueOrOptional<T>(cached: RepositoryCachedKey<T> | MissingKey): T | Optional<T> {
   if (cached.isScan) {
     return cached.value;
   }
   return cached.state === RepositoryKeyState.missing ? Optional.none() : Optional.some(cached.value);
+}
+
+export function deprecated(target: string, newMethod: string) {
+  return function(_: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalValue = descriptor.value;
+    let notified = false;
+    descriptor.value = function() {
+      if (!notified) {
+        if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+          console.warn(`the ${target}.${propertyKey} method is deprecated, please use ${target}.${newMethod} instead`);
+        }
+        notified = true;
+      }
+
+      return originalValue.apply(this, arguments);
+    };
+  };
 }

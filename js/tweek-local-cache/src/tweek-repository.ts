@@ -5,8 +5,8 @@ import $$observable from 'symbol-observable';
 import Observable from 'zen-observable';
 import Trie from './trie';
 import {
-  createWarning,
   delay,
+  deprecated,
   distinct,
   flatMap,
   getAllPrefixes,
@@ -40,12 +40,6 @@ export type RepositoryListener = (updatedKeys: Set<string>) => void;
 export type Listen = (listen: RepositoryListener) => Unlisten;
 
 const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeyState.cached, RepositoryKeyState.missing]);
-
-const createDeprecationWarning = (deprecated: keyof TweekRepository, replacement: keyof TweekRepository) =>
-  createWarning(`'TweekRepository.${deprecated}' is deprecated. use 'TweekRepository.${replacement}' instead`);
-const getDeprecatedWarning = createDeprecationWarning('get', 'getValue');
-const observeDeprecatedWarning = createDeprecationWarning('observe', 'observeValue');
-const refreshDeprecatedWarning = createDeprecationWarning('refresh', 'expire');
 
 export class TweekRepository {
   private _emitter = createChangeEmitter<Set<string>>();
@@ -148,9 +142,8 @@ export class TweekRepository {
   /**
    * @deprecated Please use `getValue`
    */
+  @deprecated('TweekRepository', 'getValue')
   public get<T = any>(key: string): Promise<Optional<T> | T> {
-    getDeprecatedWarning();
-
     const cached = this.getCached(key);
 
     if (!cached) {
@@ -201,8 +194,8 @@ export class TweekRepository {
   /**
    * @deprecated Please use `expire`
    */
+  @deprecated('TweekRepository', 'expire')
   public refresh(keysToRefresh?: string[]) {
-    refreshDeprecatedWarning();
     this.expire(keysToRefresh);
   }
 
@@ -228,9 +221,8 @@ export class TweekRepository {
   /**
    * @deprecated Please use `observeValue`
    */
+  @deprecated('TweekRepository', 'observeValue')
   public observe<T = any>(key: string): Observable<T> {
-    observeDeprecatedWarning();
-
     const isScan = isScanKey(key);
 
     return new Observable<any>(observer => {
