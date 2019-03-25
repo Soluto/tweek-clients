@@ -20,7 +20,6 @@ import {
 import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
-  CachedSingleKey,
   Expiration,
   FlatKeys,
   ITweekStore,
@@ -309,8 +308,8 @@ export class TweekRepository {
 
     if (state === RepositoryKeyState.cached && isScan) {
       const prefix = getKeyPrefix(key);
-      const relative = Object.entries(this._cache.listRelative(prefix));
-      if (relative.some(([_, v]) => v.state === RepositoryKeyState.requested && !v.isScan)) {
+      const relative = Object.values(this._cache.list(prefix));
+      if (relative.some(v => !v.isScan && v.state === RepositoryKeyState.requested)) {
         state = RepositoryKeyState.requested;
         value = undefined;
       } else {
@@ -467,19 +466,25 @@ export class TweekRepository {
   private _extractScanResult(key: string) {
     const prefix = getKeyPrefix(key);
 
-    return Object.entries(this._cache.listRelative(prefix))
-      .filter(([_, valueNode]) => valueNode.state === RepositoryKeyState.cached && !valueNode.isScan)
-      .reduce((acc, [key, valueNode]) => {
-        const [fragments, [name]] = partitionByIndex(TweekKeySplitJoin.split(key).map(snakeToCamelCase), -1);
-        const node = fragments.reduce((x: KeyValues, fragment) => {
-          if (!x[fragment]) {
-            x[fragment] = {};
-          }
-          return x[fragment];
-        }, acc);
-        node[name] = (<CachedSingleKey<any>>valueNode).value;
-        return acc;
-      }, {});
+    const result = {};
+
+    for (const [key, valueNode] of Object.entries(this._cache.listRelative(prefix))) {
+      if (valueNode.isScan || valueNode.state !== RepositoryKeyState.cached) {
+        continue;
+      }
+
+      const [fragments, [name]] = partitionByIndex(TweekKeySplitJoin.split(key).map(snakeToCamelCase), -1);
+      let node: any = result;
+      for (const fragment of fragments) {
+        if (!(fragment in node)) {
+          node[fragment] = {};
+        }
+        node = node[fragment];
+      }
+      node[name] = valueNode.value;
+    }
+
+    return result;
   }
 
   private _emit(keys: string[]) {
