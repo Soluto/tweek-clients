@@ -38,6 +38,8 @@ export type Unlisten = () => void;
 export type RepositoryListener = (updatedKeys: string[]) => void;
 export type Listen = (listen: RepositoryListener) => Unlisten;
 
+const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeyState.cached, RepositoryKeyState.missing]);
+
 export class TweekRepository {
   private _emitter = createChangeEmitter<string[]>();
   private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
@@ -98,8 +100,7 @@ export class TweekRepository {
       const entries = Object.entries(keys);
 
       for (const [key, value] of entries) {
-        const isScan = isScanKey(key);
-        if (isScan !== value.isScan) {
+        if (!allowedKeyStates.has(value.state) || isScanKey(key) !== value.isScan) {
           throw new Error('stored cache is corrupted. not loading');
         }
       }
@@ -113,10 +114,11 @@ export class TweekRepository {
           value = StoredKeyUtils.expire(value);
         }
 
-        const cached = this._cache.get(key);
-
-        if (!cached || cached.state !== value.state || isEqual(cached.value, value.value)) {
-          updatedKeys.push(key);
+        if (!value.isScan) {
+          const cached = this._cache.get(key);
+          if (!cached || cached.state !== value.state || !isEqual(cached.value, value.value)) {
+            updatedKeys.push(key);
+          }
         }
 
         this._cache.set(key, value);
@@ -424,7 +426,7 @@ export class TweekRepository {
 
   private _updateNode(key: string, value: any): boolean {
     const cached = this._cache.get(key);
-    const updated = !cached || !isEqual(cached.value, value);
+    const updated = !cached || cached.state === RepositoryKeyState.requested || !isEqual(cached.value, value);
 
     if (value === undefined) {
       this._cache.set(key, StoredKeyUtils.missing());
@@ -459,8 +461,7 @@ export class TweekRepository {
     }
 
     const relative = flatMap(keys, k => getAllPrefixes(k).map(scan => `${scan}/_`));
-    const nestedKeys = flatMap(keys.filter(isScanKey).map(getKeyPrefix), prefix => this._cache.listEntries(prefix));
-    const affectedKeys = distinct(keys.concat(relative, nestedKeys));
+    const affectedKeys = distinct(keys.concat(relative));
 
     this._emitter.emit(affectedKeys);
   }
