@@ -5,11 +5,13 @@ import $$observable from 'symbol-observable';
 import Observable from 'zen-observable';
 import Trie from './trie';
 import {
+  createWarning,
   delay,
   distinct,
   flatMap,
   getAllPrefixes,
   getKeyPrefix,
+  getValueOrOptional,
   isScanKey,
   once,
   partitionByIndex,
@@ -39,6 +41,12 @@ export type RepositoryListener = (updatedKeys: Set<string>) => void;
 export type Listen = (listen: RepositoryListener) => Unlisten;
 
 const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeyState.cached, RepositoryKeyState.missing]);
+
+const createDeprecationWarning = (deprecated: keyof TweekRepository, replacement: keyof TweekRepository) =>
+  createWarning(`'TweekRepository.${deprecated}' is deprecated. use 'TweekRepository.${replacement}' instead`);
+const getDeprecatedWarning = createDeprecationWarning('get', 'getValue');
+const observeDeprecatedWarning = createDeprecationWarning('observe', 'observeValue');
+const refreshDeprecatedWarning = createDeprecationWarning('refresh', 'expire');
 
 export class TweekRepository {
   private _emitter = createChangeEmitter<Set<string>>();
@@ -142,34 +150,52 @@ export class TweekRepository {
    * @deprecated Please use `getValue`
    */
   public get<T = any>(key: string): Promise<Optional<T> | T> {
-    return new Promise((resolve, reject) => {
-      const observer = this.observe(key);
-      const subscription = observer.subscribe(
-        value => {
-          subscription.unsubscribe();
-          resolve(value);
-        },
-        error => {
-          subscription.unsubscribe();
-          reject(error);
-        },
-      );
+    getDeprecatedWarning();
+
+    const cached = this.getCached(key);
+
+    if (!cached) {
+      this.prepare(key);
+    } else if (cached.state !== RepositoryKeyState.requested) {
+      return Promise.resolve(getValueOrOptional(cached));
+    }
+
+    return new Promise<T>((resolve, reject) => {
+      const unlisten = this.listen(updatedKeys => {
+        if (updatedKeys.has(key)) {
+          unlisten();
+          const cached = this.getCached(key);
+          if (!cached || cached.state === RepositoryKeyState.requested) {
+            reject(new Error('repository state is corrupted'));
+          } else {
+            resolve(getValueOrOptional(cached));
+          }
+        }
+      });
     });
   }
 
   public getValue<T = any>(key: string): Promise<T> {
+    const cached = this.getCached(key);
+
+    if (!cached) {
+      this.prepare(key);
+    } else if (cached.state !== RepositoryKeyState.requested) {
+      return Promise.resolve(cached.value);
+    }
+
     return new Promise<T>((resolve, reject) => {
-      const observer = this.observeValue<T>(key);
-      const subscription = observer.subscribe(
-        value => {
-          subscription.unsubscribe();
-          resolve(value);
-        },
-        error => {
-          subscription.unsubscribe();
-          reject(error);
-        },
-      );
+      const unlisten = this.listen(updatedKeys => {
+        if (updatedKeys.has(key)) {
+          unlisten();
+          const cached = this.getCached(key);
+          if (!cached || cached.state === RepositoryKeyState.requested) {
+            reject(new Error('repository state is corrupted'));
+          } else {
+            resolve(cached.value);
+          }
+        }
+      });
     });
   }
 
@@ -177,6 +203,7 @@ export class TweekRepository {
    * @deprecated Please use `expire`
    */
   public refresh(keysToRefresh?: string[]) {
+    refreshDeprecatedWarning();
     this.expire(keysToRefresh);
   }
 
@@ -203,16 +230,16 @@ export class TweekRepository {
    * @deprecated Please use `observeValue`
    */
   public observe<T = any>(key: string): Observable<T> {
+    observeDeprecatedWarning();
+
     const isScan = isScanKey(key);
 
-    const self = this;
-
     return new Observable<any>(observer => {
-      function onKey() {
-        const cached = self.getCached(key);
+      const onKey = () => {
+        const cached = this.getCached(key);
 
         if (!cached) {
-          self.prepare(key);
+          this.prepare(key);
           return;
         }
 
@@ -229,11 +256,11 @@ export class TweekRepository {
         if (cached.state === RepositoryKeyState.missing) {
           observer.next(Optional.none());
         }
-      }
+      };
 
       onKey();
 
-      return self.listen(updatedKeys => {
+      return this.listen(updatedKeys => {
         if (!updatedKeys.has(key)) {
           return;
         }

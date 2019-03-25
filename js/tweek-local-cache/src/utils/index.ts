@@ -1,10 +1,9 @@
+import { MissingKey, RepositoryCachedKey, RepositoryKeyState } from '../types';
+import Optional from '../optional';
+
 export * from './arrayUtils';
 export * from './keyUtils';
 export * from './stringUtils';
-
-export function isNullOrUndefined(x: unknown): x is null | undefined {
-  return x === null || x === undefined;
-}
 
 export function delay(timeout: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, timeout));
@@ -18,4 +17,19 @@ export function once(fn: Function): Function {
     p = undefined;
     return result;
   };
+}
+
+export function createWarning(message: string) {
+  return once(() => {
+    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      console.warn(message);
+    }
+  });
+}
+
+export function getValueOrOptional<T>(cached: RepositoryCachedKey<T> | MissingKey): T | Optional<T> {
+  if (cached.isScan) {
+    return cached.value;
+  }
+  return cached.state === RepositoryKeyState.missing ? Optional.none() : Optional.some(cached.value);
 }
