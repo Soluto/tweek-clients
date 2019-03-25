@@ -3,23 +3,11 @@ export interface SplitJoin {
   join(fragments: string[]): string;
 }
 
-export class MemoizedTweekKeySplitJoin implements SplitJoin {
-  private readonly _cache = new Map<string, string[]>();
-
-  split(key: string): string[] {
-    const cached = this._cache.get(key);
-    if (cached) {
-      return cached;
-    }
-
-    const result = key.toLowerCase().split('/');
-    this._cache.set(key, result);
-    return result;
-  }
-
+export const TweekKeySplitJoin: SplitJoin = {
+  split(key: string) {
+    return key.toLowerCase().split('/');
+  },
   join(fragments: string[]) {
     return fragments.join('/');
-  }
-}
-
-export const TweekKeySplitJoin = new MemoizedTweekKeySplitJoin();
+  },
+};
