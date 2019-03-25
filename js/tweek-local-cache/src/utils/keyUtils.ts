@@ -1,13 +1,13 @@
+import { TweekKeySplitJoin } from '../split-join';
+
 export const getAllPrefixes = (key: string) => {
-  return key
-    .split('/')
+  return TweekKeySplitJoin.split(key)
     .slice(0, -1)
     .reduce((acc: string[], next) => [...acc, [...acc.slice(-1), next].join('/')], []);
 };
 
 export const getKeyPrefix = (key: string) =>
-  key
-    .split('/')
+  TweekKeySplitJoin.split(key)
     .slice(0, -1)
     .join('/');
 

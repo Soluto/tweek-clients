@@ -35,13 +35,13 @@ import { TweekKeySplitJoin } from './split-join';
 type KeyValues = { [key: string]: any };
 
 export type Unlisten = () => void;
-export type RepositoryListener = (updatedKeys: string[]) => void;
+export type RepositoryListener = (updatedKeys: Set<string>) => void;
 export type Listen = (listen: RepositoryListener) => Unlisten;
 
 const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeyState.cached, RepositoryKeyState.missing]);
 
 export class TweekRepository {
-  private _emitter = createChangeEmitter<string[]>();
+  private _emitter = createChangeEmitter<Set<string>>();
   private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
@@ -234,7 +234,7 @@ export class TweekRepository {
       onKey();
 
       return self.listen(updatedKeys => {
-        if (!updatedKeys.includes(key)) {
+        if (!updatedKeys.has(key)) {
           return;
         }
 
@@ -263,7 +263,7 @@ export class TweekRepository {
       onKey();
 
       return this.listen(updatedKeys => {
-        if (!updatedKeys.includes(key)) {
+        if (!updatedKeys.has(key)) {
           return;
         }
 
@@ -443,7 +443,7 @@ export class TweekRepository {
     return Object.entries(this._cache.listRelative(prefix))
       .filter(([_, valueNode]) => valueNode.state === RepositoryKeyState.cached && !valueNode.isScan)
       .reduce((acc, [key, valueNode]) => {
-        const [fragments, [name]] = partitionByIndex(key.split('/').map(snakeToCamelCase), -1);
+        const [fragments, [name]] = partitionByIndex(TweekKeySplitJoin.split(key).map(snakeToCamelCase), -1);
         const node = fragments.reduce((x: KeyValues, fragment) => {
           if (!x[fragment]) {
             x[fragment] = {};
@@ -461,7 +461,8 @@ export class TweekRepository {
     }
 
     const relative = flatMap(keys, k => getAllPrefixes(k).map(scan => `${scan}/_`));
-    const affectedKeys = distinct(keys.concat(relative));
+    const affectedKeys = new Set(keys.concat(relative));
+    affectedKeys.add('_');
 
     this._emitter.emit(affectedKeys);
   }

@@ -1066,7 +1066,10 @@ describe('tweek repo test', () => {
 
       // Assert
       sinon.assert.calledOnce(callback);
-      sinon.assert.calledWithExactly(callback, ['some/key/path', 'some/_', 'some/key/_']);
+      sinon.assert.calledWithExactly(
+        callback,
+        sinon.match.set.deepEquals(new Set(['some/key/path', 'some/_', 'some/key/_', '_'])),
+      );
     });
 
     it('should notify on useStore', async () => {
@@ -1081,7 +1084,10 @@ describe('tweek repo test', () => {
 
       // Assert
       sinon.assert.calledOnce(callback);
-      sinon.assert.calledWithExactly(callback, ['some/key/path', 'some/_', 'some/key/_']);
+      sinon.assert.calledWithExactly(
+        callback,
+        sinon.match.set.deepEquals(new Set(['some/key/path', 'some/_', 'some/key/_', '_'])),
+      );
     });
 
     it('should notify on refreshed keys', async () => {
@@ -1096,13 +1102,19 @@ describe('tweek repo test', () => {
 
       // Assert
       sinon.assert.calledOnce(callback);
-      sinon.assert.calledWithExactly(callback, [
-        'my_path/inner_path_1/int_value',
-        'my_path/inner_path_1/bool_positive_value',
-        'my_path/string_value',
-        'my_path/_',
-        'my_path/inner_path_1/_',
-      ]);
+      sinon.assert.calledWithExactly(
+        callback,
+        sinon.match.set.deepEquals(
+          new Set([
+            'my_path/inner_path_1/int_value',
+            'my_path/inner_path_1/bool_positive_value',
+            'my_path/string_value',
+            'my_path/_',
+            'my_path/inner_path_1/_',
+            '_',
+          ]),
+        ),
+      );
     });
 
     it('should notify only changed keys', async () => {
@@ -1118,12 +1130,18 @@ describe('tweek repo test', () => {
 
       // Assert
       sinon.assert.calledOnce(callback);
-      sinon.assert.calledWithExactly(callback, [
-        'my_path/inner_path_1/int_value',
-        'my_path/inner_path_1/bool_positive_value',
-        'my_path/_',
-        'my_path/inner_path_1/_',
-      ]);
+      sinon.assert.calledWithExactly(
+        callback,
+        sinon.match.set.deepEquals(
+          new Set([
+            'my_path/inner_path_1/int_value',
+            'my_path/inner_path_1/bool_positive_value',
+            'my_path/_',
+            'my_path/inner_path_1/_',
+            '_',
+          ]),
+        ),
+      );
     });
 
     it('should stop notifying after unlisten', async () => {
@@ -1139,7 +1157,10 @@ describe('tweek repo test', () => {
 
       // Assert
       sinon.assert.calledOnce(callback);
-      sinon.assert.calledWithExactly(callback, ['my_path/string_value', 'my_path/_']);
+      sinon.assert.calledWithExactly(
+        callback,
+        sinon.match.set.deepEquals(new Set(['my_path/string_value', 'my_path/_', '_'])),
+      );
     });
   });
 });
