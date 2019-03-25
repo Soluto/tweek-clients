@@ -21,7 +21,7 @@ function valueReducer<T>(prevValue: T, nextValue: T) {
   return nextValue;
 }
 
-function getValueOrDefault<T>(keyPath: string, tweekRepository: OptionalTweekRepository, defaultValue: T) {
+function getValueOrDefault<T>(tweekRepository: OptionalTweekRepository, keyPath: string, defaultValue: T): T {
   if (!tweekRepository) {
     return defaultValue;
   }
@@ -43,12 +43,21 @@ export const createUseTweekValue = (
     ensureHooks();
 
     const tweekRepository = React.useContext(TweekContext);
-    const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>>(valueReducer, defaultValue);
+    const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>, null>(valueReducer, null, () =>
+      getValueOrDefault(tweekRepository, keyPath, defaultValue),
+    );
 
     React.useEffect(() => {
-      const updateValue = () => setTweekValue(getValueOrDefault(keyPath, tweekRepository, defaultValue));
+      const updateValue = () => setTweekValue(getValueOrDefault(tweekRepository, keyPath, defaultValue));
       updateValue();
-      return tweekRepository && tweekRepository.listen(updateValue);
+      return (
+        tweekRepository &&
+        tweekRepository.listen(updatedKeys => {
+          if (updatedKeys.has(keyPath)) {
+            updateValue();
+          }
+        })
+      );
     }, [tweekRepository, keyPath, defaultValue]);
 
     return tweekValue;

@@ -64,6 +64,7 @@ function extractTweekValues<T>(
 
 type TweekValuesState<T> = {
   tweekValues: T | null;
+  tweekKeys: string[];
 };
 
 export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesState<T>> {
@@ -73,7 +74,10 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
   constructor(props: TweekValuesProps<T>) {
     super(props);
 
-    this.state = { tweekValues: extractTweekValues(props, null) };
+    this.state = {
+      tweekValues: extractTweekValues(this.props, null),
+      tweekKeys: Object.values(this.props.valuesMapping),
+    };
   }
 
   componentDidMount() {
@@ -91,6 +95,12 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
       this._subscribeToKeys();
       this._setKeysState();
     }
+    if (prevProps.valuesMapping !== this.props.valuesMapping) {
+      this.setState(({ tweekKeys: currentKeys }, props) => {
+        const tweekKeys: string[] = Object.values(props.valuesMapping);
+        return isEqual(currentKeys, tweekKeys) ? null : { tweekKeys };
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -103,7 +113,11 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
       return;
     }
 
-    this._dispose = tweekRepository.listen(this._setKeysState);
+    this._dispose = tweekRepository.listen(updatedKeys => {
+      if (this.state.tweekKeys.some(key => updatedKeys.has(key))) {
+        this._setKeysState();
+      }
+    });
   }
 
   private _unsubscribe() {
