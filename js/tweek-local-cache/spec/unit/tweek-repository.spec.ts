@@ -175,7 +175,7 @@ describe('tweek repo test', () => {
         let config = await _tweekRepo.get('_');
 
         // Assert
-        expect(config.innerPath1.firstValue).to.equal('value_1');
+        expect(config.somePath.innerPath1.firstValue).to.equal('value_1');
       });
 
       it('should get single key after scan prepare', async () => {
@@ -305,7 +305,8 @@ describe('tweek repo test', () => {
 
         // Assert
         expect(value)
-          .to.have.property('innerPath1')
+          .to.have.property('somePath')
+          .that.has.property('innerPath1')
           .that.deep.include({ firstValue: 'value_1' });
       });
 
@@ -819,7 +820,8 @@ describe('tweek repo test', () => {
 
       // Assert
       expect(config)
-        .to.have.property('innerPath1')
+        .to.have.property('somePath')
+        .that.has.property('innerPath1')
         .that.deep.include({ firstValue: 'value_1' });
     });
 
@@ -961,7 +963,8 @@ describe('tweek repo test', () => {
 
       // Assert
       expect(config)
-        .to.have.property('innerPath1')
+        .to.have.property('somePath')
+        .that.has.property('innerPath1')
         .that.deep.include({ firstValue: 'value_1' });
     });
 
