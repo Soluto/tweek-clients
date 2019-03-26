@@ -45,12 +45,6 @@ const missingKey: MissingKey = {
   isScan: false,
 };
 
-const createMockRepository = (unsubscribe = jest.fn(), listen = jest.fn()): any => ({
-  listen: listen.mockReturnValue(unsubscribe),
-  getCached: jest.fn(),
-  prepare: jest.fn(),
-});
-
 describe('createWithTweekValues', () => {
   let repository: TweekRepository;
   let TweekContext: Context<TweekRepository>;
@@ -65,19 +59,15 @@ describe('createWithTweekValues', () => {
   });
 
   test('renders only if all keys are present', () => {
-    const mockRepository = createMockRepository();
     const enhance = withTweekValues<TweekProps>(mapping);
+    const listen = jest.spyOn(repository, 'listen');
 
     Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
 
     const EnhancedComponent = enhance(Child);
-    const component = renderer.create(
-      <TweekContext.Provider value={mockRepository}>
-        <EnhancedComponent />
-      </TweekContext.Provider>,
-    );
+    const component = renderer.create(<EnhancedComponent />);
 
-    expect(mockRepository.listen).toHaveBeenCalledTimes(1);
+    expect(listen).toHaveBeenCalledTimes(1);
 
     const tree = component.toJSON();
     expect(tree).toBeNull();
@@ -154,15 +144,11 @@ describe('createWithTweekValues', () => {
 
   test('unsubscribe when unloads', () => {
     const unsubscribe = jest.fn();
-    const mockRepository = createMockRepository(unsubscribe);
+    jest.spyOn(repository, 'listen').mockReturnValue(unsubscribe);
     const enhance = withTweekValues<TweekProps>(mapping);
 
     const EnhancedComponent = enhance(Child);
-    const component = renderer.create(
-      <TweekContext.Provider value={mockRepository}>
-        <EnhancedComponent />
-      </TweekContext.Provider>,
-    );
+    const component = renderer.create(<EnhancedComponent />);
     component.unmount();
 
     expect(unsubscribe).toHaveBeenCalled();
@@ -222,26 +208,28 @@ describe('createWithTweekValues', () => {
 
   test('unsubscribe and resubscribe when changing repository', () => {
     const unsubscribe = jest.fn();
-    const listen = jest.fn();
+    let listen: jest.Mock;
     const enhance = withTweekValues<TweekProps>(mapping);
 
     const EnhancedComponent = enhance(Child);
 
-    const render = () => (
-      <TweekContext.Provider value={createMockRepository(unsubscribe, listen)}>
-        <EnhancedComponent />
-      </TweekContext.Provider>
-    );
+    const render = () => {
+      const repository = new TweekRepository({ client: {} as any });
+      listen = jest.spyOn(repository, 'listen').mockReturnValue(unsubscribe);
+      return (
+        <TweekContext.Provider value={repository}>
+          <EnhancedComponent />
+        </TweekContext.Provider>
+      );
+    };
 
     const component = renderer.create(render());
-    expect(listen).toHaveBeenCalledTimes(1);
+    expect(listen!).toHaveBeenCalledTimes(1);
     expect(unsubscribe).not.toHaveBeenCalled();
-
-    listen.mockClear();
 
     component.update(render());
 
-    expect(listen).toHaveBeenCalledTimes(1);
+    expect(listen!).toHaveBeenCalledTimes(1);
     expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 });

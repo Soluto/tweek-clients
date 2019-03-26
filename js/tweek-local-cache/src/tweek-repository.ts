@@ -1,14 +1,17 @@
 import { Context, GetValuesConfig, ITweekClient } from 'tweek-client';
 import { createChangeEmitter } from 'change-emitter';
+import isEqual from 'lodash.isequal';
 import $$observable from 'symbol-observable';
 import Observable from 'zen-observable';
 import Trie from './trie';
 import {
   delay,
+  deprecated,
   distinct,
   flatMap,
   getAllPrefixes,
   getKeyPrefix,
+  getValueOrOptional,
   isScanKey,
   once,
   partitionByIndex,
@@ -19,32 +22,27 @@ import MemoryStore from './memory-store';
 import {
   Expiration,
   FlatKeys,
-  StoredKey,
   ITweekStore,
   RefreshErrorPolicy,
-  RepositoryKeyState,
-  TweekRepositoryConfig,
-  CachedSingleKey,
   RepositoryKey,
+  RepositoryKeyState,
+  StoredKey,
+  TweekRepositoryConfig,
 } from './types';
 import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 import * as StoredKeyUtils from './stored-key-utils';
-
-export const TweekKeySplitJoin = {
-  split: (key: string) => {
-    return key.toLowerCase().split('/');
-  },
-  join: (fragments: string[]) => fragments.join('/'),
-};
+import { TweekKeySplitJoin } from './split-join';
 
 type KeyValues = { [key: string]: any };
 
 export type Unlisten = () => void;
-export type RepositoryListener = (updatedKeys: string[]) => void;
+export type RepositoryListener = (updatedKeys: Set<string>) => void;
 export type Listen = (listen: RepositoryListener) => Unlisten;
 
+const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeyState.cached, RepositoryKeyState.missing]);
+
 export class TweekRepository {
-  private _emitter = createChangeEmitter<string[]>();
+  private _emitter = createChangeEmitter<Set<string>>();
   private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
@@ -84,28 +82,51 @@ export class TweekRepository {
   }
 
   public addKeys(keys: FlatKeys) {
-    Object.entries(keys).forEach(([key, value]) => this._cache.set(key, StoredKeyUtils.cached(false, value)));
-    this._emitter.emit(Object.keys(keys));
+    const updatedKeys: string[] = [];
+
+    Object.entries(keys).forEach(([key, value]) => {
+      if (this._updateNode(key, value)) {
+        updatedKeys.push(key);
+      }
+    });
+
+    this._emit(updatedKeys);
   }
 
   public useStore(store: ITweekStore) {
     this._store = store;
-    const storedKeys: string[] = [];
-    return this._store
-      .load()
-      .then(keys => {
-        keys = keys || {};
-        Object.entries(keys).forEach(([key, value]: [string, StoredKey<any>]) => {
-          if (value.expiration) {
-            this._isDirty = true;
-            this._checkRefresh();
-            value = StoredKeyUtils.expire(value);
+
+    return this._store.load().then(keys => {
+      keys = keys || {};
+      const entries = Object.entries(keys);
+
+      for (const [key, value] of entries) {
+        if (!allowedKeyStates.has(value.state) || isScanKey(key) !== value.isScan) {
+          throw new Error('stored cache is corrupted. not loading');
+        }
+      }
+
+      const updatedKeys: string[] = [];
+
+      for (let [key, value] of entries) {
+        if (value.expiration) {
+          this._isDirty = true;
+          this._checkRefresh();
+          value = StoredKeyUtils.expire(value);
+        }
+
+        if (!value.isScan) {
+          const cached = this._cache.get(key);
+          if (!cached || cached.state !== value.state || !isEqual(cached.value, value.value)) {
+            updatedKeys.push(key);
           }
-          this._cache.set(key, value);
-          storedKeys.push(key);
-        });
-      })
-      .then(() => this._emitter.emit(storedKeys));
+        }
+
+        this._cache.set(key, value);
+      }
+
+      this._emit(updatedKeys);
+    });
   }
 
   public prepare(key: string) {
@@ -118,23 +139,62 @@ export class TweekRepository {
     }
   }
 
-  public get<T = any>(key: string): Promise<never | Optional<T> | T>;
-  public get(key: string): Promise<never | Optional<any> | any> {
-    return new Promise((resolve, reject) => {
-      const observer = this.observe(key);
-      const subscription = observer.subscribe(
-        value => {
-          subscription.unsubscribe();
-          resolve(value);
-        },
-        error => {
-          subscription.unsubscribe();
-          reject(error);
-        },
-      );
+  /**
+   * @deprecated Please use `getValue`
+   */
+  @deprecated('TweekRepository', 'getValue')
+  public get<T = any>(key: string): Promise<Optional<T> | T> {
+    const cached = this.getCached(key);
+
+    if (!cached) {
+      this.prepare(key);
+    } else if (cached.state !== RepositoryKeyState.requested) {
+      return Promise.resolve(getValueOrOptional(cached));
+    }
+
+    return new Promise<T>((resolve, reject) => {
+      const unlisten = this.listen(updatedKeys => {
+        if (updatedKeys.has(key)) {
+          unlisten();
+          const cached = this.getCached(key);
+          if (!cached || cached.state === RepositoryKeyState.requested) {
+            reject(new Error('repository state is corrupted'));
+          } else {
+            resolve(getValueOrOptional(cached));
+          }
+        }
+      });
     });
   }
 
+  public getValue<T = any>(key: string): Promise<T> {
+    const cached = this.getCached(key);
+
+    if (!cached) {
+      this.prepare(key);
+    } else if (cached.state !== RepositoryKeyState.requested) {
+      return Promise.resolve(cached.value);
+    }
+
+    return new Promise<T>((resolve, reject) => {
+      const unlisten = this.listen(updatedKeys => {
+        if (updatedKeys.has(key)) {
+          unlisten();
+          const cached = this.getCached(key);
+          if (!cached || cached.state === RepositoryKeyState.requested) {
+            reject(new Error('repository state is corrupted'));
+          } else {
+            resolve(cached.value);
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * @deprecated Please use `expire`
+   */
+  @deprecated('TweekRepository', 'expire')
   public refresh(keysToRefresh?: string[]) {
     this.expire(keysToRefresh);
   }
@@ -158,20 +218,19 @@ export class TweekRepository {
     this._checkRefresh();
   }
 
-  public observe<T = any>(key: string): Observable<T>;
-  public observe(key: string) {
+  /**
+   * @deprecated Please use `observeValue`
+   */
+  @deprecated('TweekRepository', 'observeValue')
+  public observe<T = any>(key: string): Observable<T> {
     const isScan = isScanKey(key);
-    const prefixes = getAllPrefixes(key).map(k => `${k}/_`);
-    const prefix = key.substr(0, key.length - 1);
-
-    const self = this;
 
     return new Observable<any>(observer => {
-      function onKey() {
-        const cached = self.getCached(key);
+      const onKey = () => {
+        const cached = this.getCached(key);
 
         if (!cached) {
-          self.prepare(key);
+          this.prepare(key);
           return;
         }
 
@@ -188,17 +247,12 @@ export class TweekRepository {
         if (cached.state === RepositoryKeyState.missing) {
           observer.next(Optional.none());
         }
-      }
+      };
 
       onKey();
 
-      return self.listen(updatedKeys => {
-        const keysSet = new Set(updatedKeys);
-        if (
-          !keysSet.has(key) &&
-          !prefixes.some(p => keysSet.has(p)) &&
-          (!isScan || !updatedKeys.some(k => k.startsWith(prefix)))
-        ) {
+      return this.listen(updatedKeys => {
+        if (!updatedKeys.has(key)) {
           return;
         }
 
@@ -207,8 +261,36 @@ export class TweekRepository {
     });
   }
 
-  public getCached<T = any>(key: string): RepositoryKey<T> | undefined;
-  public getCached(key: string): RepositoryKey<any> | undefined {
+  public observeValue<T = any>(key: string): Observable<T> {
+    return new Observable<any>(observer => {
+      const onKey = () => {
+        const cached = this.getCached(key);
+
+        if (!cached) {
+          this.prepare(key);
+          return;
+        }
+
+        if (cached.state === RepositoryKeyState.requested) {
+          return;
+        }
+
+        observer.next(cached.value);
+      };
+
+      onKey();
+
+      return this.listen(updatedKeys => {
+        if (!updatedKeys.has(key)) {
+          return;
+        }
+
+        onKey();
+      });
+    });
+  }
+
+  public getCached<T = any>(key: string): RepositoryKey<T> | undefined {
     const node = this._cache.get(key);
     if (!node) {
       return undefined;
@@ -218,8 +300,8 @@ export class TweekRepository {
 
     if (state === RepositoryKeyState.cached && isScan) {
       const prefix = getKeyPrefix(key);
-      const relative = Object.entries(this._cache.listRelative(prefix));
-      if (relative.some(([_, v]) => v.state === RepositoryKeyState.requested && !v.isScan)) {
+      const relative = Object.values(this._cache.list(prefix));
+      if (relative.some(v => !v.isScan && v.state === RepositoryKeyState.requested)) {
         state = RepositoryKeyState.requested;
         value = undefined;
       } else {
@@ -227,7 +309,7 @@ export class TweekRepository {
       }
     }
 
-    return <RepositoryKey<any>>{
+    return <RepositoryKey<T>>{
       state,
       isScan,
       value,
@@ -237,7 +319,7 @@ export class TweekRepository {
   public listen: Listen = this._emitter.listen;
 
   public [$$observable]() {
-    return this.observe('_');
+    return this.observeValue('_');
   }
 
   private _waitRefreshCycle() {
@@ -309,80 +391,103 @@ export class TweekRepository {
         throw err;
       })
       .then(keyValues => this._updateTrieKeys(keysToRefresh, keyValues))
-      .then(() => this._store.save(this._cache.list()))
-      .then(() => this._emitter.emit(keysToRefresh));
+      .then(updatedKeys => this._store.save(this._cache.list()).then(() => this._emit(updatedKeys)));
   }
 
-  private _updateTrieKeys(keys: string[], keyValues: KeyValues) {
+  private _updateTrieKeys(keys: string[], keyValues: KeyValues): string[] {
     let valuesTrie: Trie<any> | undefined;
+    const updatedKeys = [];
     for (const keyToUpdate of keys) {
       const isScan = isScanKey(keyToUpdate);
       if (isScan) {
         if (!valuesTrie) {
           valuesTrie = Trie.from(TweekKeySplitJoin, keyValues);
         }
-        this._updateTrieScanKey(keyToUpdate, keyValues, valuesTrie);
-      } else {
-        this._updateNode(keyToUpdate, keyValues[keyToUpdate]);
+        Array.prototype.push.apply(updatedKeys, this._updateTrieScanKey(keyToUpdate, keyValues, valuesTrie));
+      } else if (this._updateNode(keyToUpdate, keyValues[keyToUpdate])) {
+        updatedKeys.push(keyToUpdate);
       }
     }
+    return updatedKeys;
   }
 
-  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<any>) {
-    const prefix = getKeyPrefix(key);
+  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<any>): string[] {
+    this._cache.set(key, StoredKeyUtils.cached(true));
 
-    const entries = Object.entries(this._cache.list(prefix));
-    entries.forEach(([subKey, valueNode]) => {
-      if (!valueNode.isScan) {
-        this._updateNode(subKey, keyValues[subKey]);
-        return;
+    const prefix = getKeyPrefix(key);
+    const updatedKeys: string[] = [];
+
+    const keysToUpdate = distinct(this._cache.listEntries(prefix).concat(valuesTrie.listEntries(prefix)));
+
+    keysToUpdate.forEach(subKey => {
+      if (isScanKey(subKey)) {
+        this._cache.set(subKey, StoredKeyUtils.cached(true));
+
+        const fullPrefix = getKeyPrefix(subKey);
+        const entries = valuesTrie.listEntries(fullPrefix);
+
+        this._setScanNodes(entries);
+      } else if (this._updateNode(subKey, keyValues[subKey])) {
+        updatedKeys.push(subKey);
       }
-
-      this._cache.set(subKey, StoredKeyUtils.cached(true));
-
-      const fullPrefix = getKeyPrefix(subKey);
-      const nodes = fullPrefix ? valuesTrie.listRelative(fullPrefix) : valuesTrie.list();
-
-      this._setScanNodes(fullPrefix, Object.keys(nodes));
-
-      Object.entries(nodes).forEach(([n, value]) => {
-        const fullKey = fullPrefix ? `${fullPrefix}/${n}` : n;
-        const isScan = isScanKey(n);
-        // @ts-ignore
-        this._cache.set(fullKey, StoredKeyUtils.cached(isScan, isScan ? undefined : value));
-      });
     });
+
+    return updatedKeys;
   }
 
-  private _extractScanResult(key: string) {
-    const prefix = getKeyPrefix(key);
-
-    return Object.entries(this._cache.listRelative(prefix))
-      .filter(([_, valueNode]) => valueNode.state === RepositoryKeyState.cached && !valueNode.isScan)
-      .reduce((acc, [key, valueNode]) => {
-        const [fragments, [name]] = partitionByIndex(key.split('/').map(snakeToCamelCase), -1);
-        const node = fragments.reduce((x: KeyValues, fragment) => {
-          if (!x[fragment]) {
-            x[fragment] = {};
-          }
-          return x[fragment];
-        }, acc);
-        node[name] = (<CachedSingleKey<any>>valueNode).value;
-        return acc;
-      }, {});
-  }
-
-  private _setScanNodes(prefix: string, keys: string[]) {
+  private _setScanNodes(keys: string[]) {
     distinct(flatMap(keys, key => getAllPrefixes(key)))
-      .map(path => (prefix ? `${prefix}/` : '') + `${path}/_`)
+      .map(path => `${path}/_`)
+      .filter(path => !this._cache.get(path))
       .forEach(key => this._cache.set(key, StoredKeyUtils.cached(true)));
   }
 
-  private _updateNode(key: string, value: any) {
+  private _updateNode(key: string, value: any): boolean {
+    const cached = this._cache.get(key);
+    const updated = !cached || cached.state === RepositoryKeyState.requested || !isEqual(cached.value, value);
+
     if (value === undefined) {
       this._cache.set(key, StoredKeyUtils.missing());
     } else {
       this._cache.set(key, StoredKeyUtils.cached(false, value));
     }
+
+    return updated;
+  }
+
+  private _extractScanResult(key: string) {
+    const prefix = getKeyPrefix(key);
+
+    const result = {};
+
+    for (const [key, valueNode] of Object.entries(this._cache.listRelative(prefix))) {
+      if (valueNode.isScan || valueNode.state !== RepositoryKeyState.cached) {
+        continue;
+      }
+
+      const [fragments, [name]] = partitionByIndex(TweekKeySplitJoin.split(key).map(snakeToCamelCase), -1);
+      let node: any = result;
+      for (const fragment of fragments) {
+        if (!(fragment in node)) {
+          node[fragment] = {};
+        }
+        node = node[fragment];
+      }
+      node[name] = valueNode.value;
+    }
+
+    return result;
+  }
+
+  private _emit(keys: string[]) {
+    if (!keys.length) {
+      return;
+    }
+
+    const relative = flatMap(keys, k => getAllPrefixes(k).map(scan => `${scan}/_`));
+    const affectedKeys = new Set(keys.concat(relative));
+    affectedKeys.add('_');
+
+    this._emitter.emit(affectedKeys);
   }
 }

@@ -9,12 +9,6 @@ type Props = {
 };
 const Empty = (_: Props) => null;
 
-const createMockRepository = (unsubscribe = jest.fn(), listen = jest.fn()): any => ({
-  listen: listen.mockReturnValue(unsubscribe),
-  getCached: jest.fn(),
-  prepare: jest.fn(),
-});
-
 describe('createUseTweekValue', () => {
   const keyPath = 'some/key/path';
   const defaultValue = 'some default value';
@@ -36,21 +30,17 @@ describe('createUseTweekValue', () => {
   });
 
   test('prepares key and returns default value if key is not prepared', () => {
-    const mockRepository = createMockRepository();
+    const prepare = jest.spyOn(repository, 'prepare');
 
     let component: ReactTestRenderer;
     act(() => {
-      component = renderer.create(
-        <TweekContext.Provider value={mockRepository}>
-          <Component />
-        </TweekContext.Provider>,
-      );
+      component = renderer.create(<Component />);
     });
 
     const child = component!.root.findByType(Empty);
 
     expect(child.props).toEqual({ value: defaultValue });
-    expect(mockRepository.prepare).toHaveBeenCalledWith(keyPath);
+    expect(prepare).toHaveBeenCalledWith(keyPath);
   });
 
   test('returns default value if key is requested', async () => {
@@ -114,15 +104,11 @@ describe('createUseTweekValue', () => {
 
   test('unsubscribe when unloads', () => {
     const unsubscribe = jest.fn();
-    const mockRepository = createMockRepository(unsubscribe);
+    jest.spyOn(repository, 'listen').mockReturnValue(unsubscribe);
 
     let component: ReactTestRenderer;
     act(() => {
-      component = renderer.create(
-        <TweekContext.Provider value={mockRepository}>
-          <Component />
-        </TweekContext.Provider>,
-      );
+      component = renderer.create(<Component />);
     });
 
     act(() => {
@@ -134,29 +120,31 @@ describe('createUseTweekValue', () => {
 
   test('unsubscribe and resubscribe when changing repository', () => {
     const unsubscribe = jest.fn();
-    const listen = jest.fn();
+    let listen: jest.Mock;
 
-    const render = () => (
-      <TweekContext.Provider value={createMockRepository(unsubscribe, listen)}>
-        <Component />
-      </TweekContext.Provider>
-    );
+    const render = () => {
+      const repository = new TweekRepository({ client: {} as any });
+      listen = jest.spyOn(repository, 'listen').mockReturnValue(unsubscribe);
+      return (
+        <TweekContext.Provider value={repository}>
+          <Component />
+        </TweekContext.Provider>
+      );
+    };
 
     let component: ReactTestRenderer;
     act(() => {
       component = renderer.create(render());
     });
 
-    expect(listen).toHaveBeenCalledTimes(1);
+    expect(listen!).toHaveBeenCalledTimes(1);
     expect(unsubscribe).not.toHaveBeenCalled();
-
-    listen.mockClear();
 
     act(() => {
       component.update(render());
     });
 
-    expect(listen).toHaveBeenCalledTimes(1);
+    expect(listen!).toHaveBeenCalledTimes(1);
     expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "tweek-local-cache",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Local cache to be used with tweek-client",
   "author": "Soluto",
   "license": "MIT",
@@ -10,6 +10,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "change-emitter": "^0.1.6",
+    "lodash.isequal": "^4.5.0",
     "object.entries": "^1.1.0",
     "object.values": "^1.1.0",
     "symbol-observable": "^1.0.4",
