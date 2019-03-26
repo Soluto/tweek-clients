@@ -1,6 +1,6 @@
 import { SplitJoin } from './split-join';
 
-export type TrieNode = { [key: string]: TrieNode | undefined };
+export type TrieNode = { [key: string]: TrieNode };
 
 export type Walker<TValue> = (key: string, value: TValue) => void;
 
@@ -65,7 +65,7 @@ export default class Trie<TValue> {
     }
 
     for (const [name, subNode] of Object.entries(node)) {
-      this._walkNode(subNode!, [...fragments, name], walker);
+      this._walkNode(subNode, [...fragments, name], walker);
     }
   }
 
