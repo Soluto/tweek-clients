@@ -90,16 +90,17 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
   }
 
   componentDidUpdate(prevProps: TweekValuesProps<T>) {
-    if (prevProps.tweekRepository !== this.props.tweekRepository) {
-      this._unsubscribe();
-      this._subscribeToKeys();
-      this._setKeysState();
-    }
     if (prevProps.valuesMapping !== this.props.valuesMapping) {
       this.setState(({ tweekKeys: currentKeys }, props) => {
         const tweekKeys: string[] = Object.values(props.valuesMapping);
         return isEqual(currentKeys, tweekKeys) ? null : { tweekKeys };
       });
+    }
+
+    if (prevProps.tweekRepository !== this.props.tweekRepository) {
+      this._unsubscribe();
+      this._subscribeToKeys();
+      this._setKeysState();
     }
   }
 
@@ -113,11 +114,7 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
       return;
     }
 
-    this._dispose = tweekRepository.listen(updatedKeys => {
-      if (this.state.tweekKeys.some(key => updatedKeys.has(key))) {
-        this._setKeysState();
-      }
-    });
+    this._dispose = tweekRepository.listen(this._setKeysState);
   }
 
   private _unsubscribe() {
@@ -125,7 +122,11 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
     this._dispose = null;
   }
 
-  private _setKeysState = () => {
+  private _setKeysState = (updatedKeys?: Set<string>) => {
+    if (updatedKeys && !this.state.tweekKeys.some(key => updatedKeys.has(key))) {
+      return;
+    }
+
     this.setState(({ tweekValues: currentValues }, props) => {
       const tweekValues = extractTweekValues(props, currentValues);
       return isEqual(tweekValues, currentValues) ? null : { tweekValues };
