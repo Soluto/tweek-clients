@@ -47,7 +47,11 @@ export const createUseTweekValue = (
     const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>, null>(valueReducer, null, getTweekValue);
 
     React.useEffect(() => {
-      setTweekValue(getTweekValue());
+      const newTweekValue = getTweekValue();
+      if (!isEqual(newTweekValue, tweekValue)) {
+        setTweekValue(newTweekValue);
+      }
+
       return (
         tweekRepository &&
         tweekRepository.listen(updatedKeys => {
