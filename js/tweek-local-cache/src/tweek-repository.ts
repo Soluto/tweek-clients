@@ -115,9 +115,9 @@ export class TweekRepository {
           value = StoredKeyUtils.expire(value);
         }
 
-        if (!value.isScan) {
+        if (!value.isScan && value.state !== RepositoryKeyState.requested) {
           const cached = this._cache.get(key);
-          if (!cached || cached.state !== value.state || !isEqual(cached.value, value.value)) {
+          if (!cached || !isEqual(cached.value, value.value)) {
             updatedKeys.push(key);
           }
         }
