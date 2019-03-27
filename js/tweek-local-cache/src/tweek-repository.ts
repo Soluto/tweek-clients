@@ -115,9 +115,9 @@ export class TweekRepository {
           value = StoredKeyUtils.expire(value);
         }
 
-        if (!value.isScan) {
+        if (!value.isScan && value.state !== RepositoryKeyState.requested) {
           const cached = this._cache.get(key);
-          if (!cached || cached.state !== value.state || !isEqual(cached.value, value.value)) {
+          if (!cached || !isEqual(cached.value, value.value)) {
             updatedKeys.push(key);
           }
         }
@@ -142,7 +142,7 @@ export class TweekRepository {
   /**
    * @deprecated Please use `getValue`
    */
-  @deprecated('TweekRepository', 'getValue')
+  @deprecated('getValue')
   public get<T = any>(key: string): Promise<Optional<T> | T> {
     const cached = this.getCached(key);
 
@@ -194,7 +194,7 @@ export class TweekRepository {
   /**
    * @deprecated Please use `expire`
    */
-  @deprecated('TweekRepository', 'expire')
+  @deprecated('expire')
   public refresh(keysToRefresh?: string[]) {
     this.expire(keysToRefresh);
   }
@@ -221,7 +221,7 @@ export class TweekRepository {
   /**
    * @deprecated Please use `observeValue`
    */
-  @deprecated('TweekRepository', 'observeValue')
+  @deprecated('observeValue')
   public observe<T = any>(key: string): Observable<T> {
     const isScan = isScanKey(key);
 

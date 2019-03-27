@@ -26,14 +26,15 @@ export function getValueOrOptional<T>(cached: RepositoryCachedKey<T> | MissingKe
   return cached.state === RepositoryKeyState.missing ? Optional.none() : Optional.some(cached.value);
 }
 
-export function deprecated(target: string, newMethod: string) {
-  return function(_: any, propertyKey: string, descriptor: PropertyDescriptor) {
+export function deprecated(newMethod: string) {
+  let notified = false;
+  return function(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalValue = descriptor.value;
-    let notified = false;
     descriptor.value = function() {
       if (!notified) {
         if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-          console.warn(`the ${target}.${propertyKey} method is deprecated, please use ${target}.${newMethod} instead`);
+          const name = target.constructor.name;
+          console.warn(`the ${name}.${propertyKey} method is deprecated, please use ${name}.${newMethod} instead`);
         }
         notified = true;
       }
