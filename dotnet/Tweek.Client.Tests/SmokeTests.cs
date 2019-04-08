@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Tweek.Client.Tests
 {
-    public class SmokeTests
+    public class SmokeTests : IDisposable
     {
         private ITweekClient mTweekClient;
         private ITweekManagementClient mTweekManagementClient;
@@ -153,5 +153,10 @@ namespace Tweek.Client.Tests
             AssertJTokenEqual(expected, result);
         }
 
+        public void Dispose()
+        {
+            mTweekClient?.Dispose();
+            mTweekManagementClient?.Dispose();
+        }
     }
 }
