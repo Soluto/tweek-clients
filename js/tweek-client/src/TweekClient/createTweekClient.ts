@@ -1,6 +1,7 @@
-import { Context, TweekClient } from './TweekClient';
-import { createFetchClient } from './utils';
-import { CreateClientConfig } from './types';
+import { createFetchClient } from '../utils';
+import { CreateClientConfig } from '../types';
+import { Context } from './types';
+import TweekClient from './TweekClient';
 
 export type CreateTweekClientConfig = CreateClientConfig & {
   context?: Context;

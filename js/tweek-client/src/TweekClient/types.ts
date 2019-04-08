@@ -18,3 +18,12 @@ type ClientConfig = {
 export type GetValuesConfig = ClientConfig & RequestConfig;
 
 export type TweekClientConfig = TweekInitConfig & ClientConfig;
+
+export interface ITweekClient {
+  getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
+
+  /**
+   * @deprecated use `getValues` instead
+   */
+  fetch<T>(path: string, config?: GetValuesConfig): Promise<T>;
+}
