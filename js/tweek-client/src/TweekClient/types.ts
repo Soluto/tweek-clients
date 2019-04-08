@@ -1,4 +1,4 @@
-import { IdentityContext, TweekInitConfig } from '../types';
+import { FetchClientConfig, IdentityContext, TweekInitConfig } from '../types';
 
 export type Context = {
   [identityType: string]: string | ({ id?: string } & IdentityContext);
@@ -18,6 +18,11 @@ type ClientConfig = {
 export type GetValuesConfig = ClientConfig & RequestConfig;
 
 export type TweekClientConfig = TweekInitConfig & ClientConfig;
+
+export type BaseCreateTweekClientConfig = FetchClientConfig & {
+  context?: Context;
+  useLegacyEndpoint?: boolean;
+};
 
 export interface ITweekClient {
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
