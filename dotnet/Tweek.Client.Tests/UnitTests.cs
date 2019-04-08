@@ -35,7 +35,7 @@ namespace Tweek.Client.Tests
             var client = new TweekApiFallbackClient(clients);
             Exception actualException = null;
 
-            client.ApiCallErrorHandler += (sender, args) =>
+            client.OnError += (sender, args) =>
             {
                 failureCount++;
                 actualException = args.Exception;
