@@ -8,11 +8,14 @@ type RequestConfig = {
   include?: string[];
 };
 
+export type KeyValuesErrorHandler = (errors: { [keyPath: string]: string }) => void;
+
 type ClientConfig = {
   context?: Context;
   flatten?: boolean;
   ignoreKeyTypes?: boolean;
   maxChunkSize?: number;
+  onKeyError?: KeyValuesErrorHandler;
 };
 
 export type GetValuesConfig = ClientConfig & RequestConfig;
@@ -22,6 +25,7 @@ export type TweekClientConfig = TweekInitConfig & ClientConfig;
 export type BaseCreateTweekClientConfig = FetchClientConfig & {
   context?: Context;
   useLegacyEndpoint?: boolean;
+  onKeyError?: KeyValuesErrorHandler;
 };
 
 export interface ITweekClient {
