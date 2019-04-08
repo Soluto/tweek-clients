@@ -10,7 +10,6 @@ export function createTweekClient({
   baseServiceUrl,
   context = {},
   useLegacyEndpoint,
-  onKeyError,
   ...fetchClientConfig
 }: CreateTweekClientConfig) {
   return new TweekClient(
@@ -18,7 +17,6 @@ export function createTweekClient({
       baseServiceUrl,
       context,
       fetch: createFetchClient(fetchClientConfig),
-      onKeyError,
     },
     useLegacyEndpoint,
   );

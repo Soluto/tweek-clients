@@ -4,6 +4,7 @@ import { deprecated, normalizeBaseUrl, optimizeInclude, toQueryString } from '..
 import { TweekInitConfig } from '../types';
 import { FetchError } from '../FetchError';
 import { Context, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
+import { KeyValuesError } from './KeyValuesError';
 
 export default class TweekClient implements ITweekClient {
   config: TweekClientConfig;
@@ -44,7 +45,7 @@ export default class TweekClient implements ITweekClient {
   }
 
   private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<T> {
-    const { flatten, baseServiceUrl, context, include, ignoreKeyTypes, onKeyError } = _config;
+    const { flatten, baseServiceUrl, context, include, ignoreKeyTypes, onKeyError, throwOnError } = _config;
 
     const queryParamsObject = this._contextToQueryParams(context);
 
@@ -67,9 +68,15 @@ export default class TweekClient implements ITweekClient {
     return this.config.fetch(url).then(response => {
       if (response.ok) {
         return response.json().then(({ data, errors }) => {
-          if (errors && onKeyError && Object.keys(errors).length > 0) {
-            onKeyError(errors);
+          if (errors && Object.keys(errors).length > 0) {
+            if (onKeyError) {
+              onKeyError(errors);
+            }
+            if (throwOnError) {
+              return Promise.reject(new KeyValuesError(errors, 'Tweek values had errors'));
+            }
           }
+
           return data;
         });
       } else {
