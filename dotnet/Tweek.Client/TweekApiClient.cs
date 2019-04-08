@@ -10,38 +10,22 @@ using Newtonsoft.Json.Linq;
 
 namespace Tweek.Client
 {
-    public class TweekApiClient : ITweekApiClient
+    public class TweekApiClient : BaseTweekClient, ITweekApiClient
     {
-        private HttpClient mClient;
         private const string JSON_MEDIATYPE = "application/json";
 
-        private string mApiClientName;
-
-        public string ApiClientName
+        public TweekApiClient(Uri baseUri) : base(baseUri)
         {
-            get => mApiClientName;
-            set
-            {
-                mApiClientName = value;
-                mClient.DefaultRequestHeaders.Remove("X-Api-Client");
-                mClient.DefaultRequestHeaders.Add("X-Api-Client", mApiClientName);
-            }
         }
 
-        public TweekApiClient(Uri baseUri)
+        public TweekApiClient(HttpClient client) : base(client)
         {
-            mClient = new HttpClient { BaseAddress = baseUri };
-        }
-
-        public TweekApiClient(HttpClient client)
-        {
-            mClient = client;
         }
 
         public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
         {
             var content = new StringContent(JsonConvert.SerializeObject(context), Encoding.UTF8, JSON_MEDIATYPE);
-            var result = await mClient.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
+            var result = await Client.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
             result.EnsureSuccessStatusCode();
         }
 
@@ -60,7 +44,7 @@ namespace Tweek.Client
             }
 
             var queryString = (parameters == null) ? "" : string.Join("&", parameters.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
-            using (var stream = await mClient.GetStreamAsync($"/api/v1/keys/{keyPath}?{queryString}"))
+            using (var stream = await Client.GetStreamAsync($"/api/v1/keys/{keyPath}?{queryString}"))
             using (var sr = new StreamReader(stream))
             using (var jr = new JsonTextReader(sr))
                 return await JToken.LoadAsync(jr);
@@ -68,13 +52,8 @@ namespace Tweek.Client
 
         public async Task DeleteContextProperty(string identityType, string identityId, string property)
         {
-            var result = await mClient.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
+            var result = await Client.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
             result.EnsureSuccessStatusCode();
-        }
-
-        public void Dispose()
-        {
-            mClient.Dispose();
         }
     }
 }
