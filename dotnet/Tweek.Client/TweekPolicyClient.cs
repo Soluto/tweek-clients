@@ -6,12 +6,12 @@ using Polly;
 
 namespace Tweek.Client
 {
-    public class TweekApiPolicyClient: ITweekApiClient
+    public class TweekPolicyClient: ITweekClient
     {
-        private readonly ITweekApiClient _client;
+        private readonly ITweekClient _client;
         private readonly Policy<JToken> _policy;
 
-        public TweekApiPolicyClient(ITweekApiClient client, Policy<JToken> policy)
+        public TweekPolicyClient(ITweekClient client, Policy<JToken> policy)
         {
             _client = client;
             _policy = policy;

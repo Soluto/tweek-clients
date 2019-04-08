@@ -11,14 +11,14 @@ namespace Tweek.Client.Tests
 {
     public class SmokeTests
     {
-        private ITweekApiClient mTweekClient;
+        private ITweekClient mTweekClient;
         private ITweekManagementClient mTweekManagementClient;
         private static readonly IEqualityComparer<JToken> JTOKEN_COMPARER = new JTokenEqualityComparer();
 
         public SmokeTests()
         {
             var baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_LOCAL_API") ?? "http://tweek-api");
-            mTweekClient = new TweekApiClient(new HttpClient { BaseAddress = baseUri });
+            mTweekClient = new TweekClient(new HttpClient { BaseAddress = baseUri });
             mTweekManagementClient = new TweekManagementClient(new HttpClient { BaseAddress = baseUri });
         }
 
@@ -99,7 +99,7 @@ namespace Tweek.Client.Tests
 
             // Act
             var contextForGet = new Dictionary<string, string> { { identityType, identityId } };
-            var actual = await mTweekClient.Get<TestClass>(keyPath, contextForGet);
+            var actual = await mTweekClient.GetValues<TestClass>(keyPath, contextForGet);
 
             // Assert
             AssertJTokenEqual(JsonConvert.SerializeObject(expected), JsonConvert.SerializeObject(actual));

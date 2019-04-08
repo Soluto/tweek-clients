@@ -4,9 +4,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Tweek.Client
 {
-    public class TweekApiFallbackClient : BaseTweekFallbackClient<ITweekApiClient>, ITweekApiClient
+    public class TweekFallbackClient : BaseTweekFallbackClient<ITweekClient>, ITweekClient
     {
-        public TweekApiFallbackClient(ICollection<ITweekApiClient> clients) : base(clients)
+        public TweekFallbackClient(ICollection<ITweekClient> clients) : base(clients)
         {
         }
 

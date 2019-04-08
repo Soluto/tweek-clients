@@ -5,20 +5,11 @@ using System.Threading.Tasks;
 using FakeItEasy;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Xunit.Abstractions;
-
 
 namespace Tweek.Client.Tests
 {
     public class UnitTests
     {
-        private readonly ITestOutputHelper mOutput;
-
-        public UnitTests(ITestOutputHelper output)
-        {
-            mOutput = output;
-        }
-
         [Fact(DisplayName = "Fallback client proceeds to the next endpoint when some endpoint fails")]
         public async Task GivenFallbackClient_WhenSomeEndpointFails_TheClientProceedsToTheNextOne()
         {
@@ -26,13 +17,13 @@ namespace Tweek.Client.Tests
             var expectedResult = JToken.FromObject("Good result");
             var expectedException = new HttpRequestException("Bad endpoint");
             int failureCount = 0;
-            var clients = new List<ITweekApiClient>
+            var clients = new List<ITweekClient>
             {
                 CreateBadFakeClient(expectedException),
                 CreateGoodFakeClient(expectedResult),
                 CreateBadFakeClient(expectedException)
              };
-            var client = new TweekApiFallbackClient(clients);
+            var client = new TweekFallbackClient(clients);
             Exception actualException = null;
 
             client.OnError += (sender, args) =>
@@ -50,17 +41,17 @@ namespace Tweek.Client.Tests
             Assert.Equal(expectedException, actualException);
         }
 
-        private ITweekApiClient CreateGoodFakeClient(JToken returnResult)
+        private ITweekClient CreateGoodFakeClient(JToken returnResult)
         {
-            var goodClient = A.Fake<ITweekApiClient>();
+            var goodClient = A.Fake<ITweekClient>();
             A.CallTo(() => goodClient.GetValues(A<string>._, A<IDictionary<string,string>>._, A<GetRequestOptions>._))
                 .ReturnsLazily(() => returnResult);
             return goodClient;
         }
 
-        private ITweekApiClient CreateBadFakeClient(Exception exceptionToThrow)
+        private ITweekClient CreateBadFakeClient(Exception exceptionToThrow)
         {
-            var badClient = A.Fake<ITweekApiClient>();
+            var badClient = A.Fake<ITweekClient>();
             A.CallTo(() => badClient.GetValues(A<string>._, A<IDictionary<string,string>>._, A<GetRequestOptions>._))
                 .ThrowsAsync(exceptionToThrow);
             return badClient;

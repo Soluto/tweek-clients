@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Tweek.Client
 {
-    public interface ITweekApiClient : IDisposable
+    public interface ITweekClient : IDisposable
     {
         Task<JToken> GetValues(string keyPath, IDictionary<string, string> context, GetRequestOptions options = null);
     }

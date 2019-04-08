@@ -5,11 +5,11 @@ namespace Tweek.Client
 {
     public class AuthenticatedClientFactory
     {
-        public static ITweekApiClient CreateAuthenticatedApiClient(Uri baseUri,
+        public static ITweekClient CreateAuthenticatedClient(Uri baseUri,
             AuthenticatedMessageHandler.BearerTokenProvider bearerTokenProvider)
         {
             var messageHanlder = new AuthenticatedMessageHandler(bearerTokenProvider);
-            return new TweekApiClient(new HttpClient(messageHanlder) { BaseAddress = baseUri });
+            return new TweekClient(new HttpClient(messageHanlder) { BaseAddress = baseUri });
         }
     }
 }

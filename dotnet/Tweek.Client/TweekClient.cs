@@ -8,13 +8,13 @@ using Tweek.Client.Extensions;
 
 namespace Tweek.Client
 {
-    public class TweekApiClient : BaseTweekClient, ITweekApiClient
+    public class TweekClient : BaseTweekClient, ITweekClient
     {
-        public TweekApiClient(Uri baseUri) : base(baseUri)
+        public TweekClient(Uri baseUri) : base(baseUri)
         {
         }
 
-        public TweekApiClient(HttpClient client) : base(client)
+        public TweekClient(HttpClient client) : base(client)
         {
         }
 
