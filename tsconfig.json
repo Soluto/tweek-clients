@@ -24,6 +24,7 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Module Resolution Options */
+    "experimentalDecorators": true,
     "esModuleInterop": true
   }
 }

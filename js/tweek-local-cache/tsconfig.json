@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "experimentalDecorators": true,
     /* Basic Options */
     "lib": ["dom", "esnext"],
     "outDir": "./dist"

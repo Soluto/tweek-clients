@@ -1,6 +1,6 @@
 import { InputParams } from 'query-string';
 import chunk from 'lodash.chunk';
-import { normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
+import { deprecated, normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
 import { TweekInitConfig } from '../types';
 import { FetchError } from '../FetchError';
 import { Context, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
@@ -38,7 +38,10 @@ export default class TweekClient implements ITweekClient {
     return <Promise<T>>Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
   }
 
-  fetch = this.getValues;
+  @deprecated('getValues')
+  fetch<T>(path: string, config?: GetValuesConfig): Promise<T> {
+    return this.getValues(path, config);
+  }
 
   private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<T> {
     const { flatten, baseServiceUrl, context, include, ignoreKeyTypes } = _config;
