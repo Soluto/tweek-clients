@@ -52,7 +52,7 @@ jobs:
           name: Run dotNet tests
           command: |
             docker build -t dotnet_tests ./dotnet
-            docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api --name=dotnet_tests dotnet_tests
+            docker run -d --network=blackbox_default -e TWEEK_GATEWAY_URL=http://gateway --name=dotnet_tests dotnet_tests
             for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
             docker exec -e "VersionSuffix=0.3.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/ && dotnet build -c release"
             docker exec -e "VersionSuffix=0.3.$CIRCLE_BUILD_NUM" dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"

@@ -1,0 +1,14 @@
+{
+  "policies": [
+    {
+      "group": "*",
+      "user": "*",
+      "contexts": {
+        "*": "*"
+      },
+      "object": "*",
+      "action": "*",
+      "effect": "allow"
+    }
+  ]
+}

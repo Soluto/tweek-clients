@@ -24,4 +24,5 @@ services:
     depends_on:
       - tweek-blackbox
     environment:
-      - TWEEK_LOCAL_API=http://api
+      - TWEEK_GATEWAY_URL=http://gateway
+    command: bash -c "cd Tweek.Client.Tests && dotnet test"

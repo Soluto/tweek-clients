@@ -17,9 +17,9 @@ namespace Tweek.Client.Tests
 
         public SmokeTests()
         {
-            var baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_LOCAL_API") ?? "http://tweek-api");
+            var baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_GATEWAY_URL") ?? "http://localhost:1111");
             mTweekClient = new TweekClient(new HttpClient { BaseAddress = baseUri });
-            mTweekManagementClient = new TweekManagementClient(new HttpClient { BaseAddress = baseUri });
+            mTweekManagementClient = new TweekManagementClient(new HttpClient { BaseAddress = baseUri});
         }
 
         private static void AssertJTokenEqual(JToken expected, JToken actual)

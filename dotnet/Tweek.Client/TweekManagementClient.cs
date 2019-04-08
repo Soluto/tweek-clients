@@ -23,14 +23,14 @@ namespace Tweek.Client
         public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
         {
             var content = new StringContent(JsonConvert.SerializeObject(context), Encoding.UTF8, JSON_MEDIATYPE);
-            var result = await Client.PostAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}"), content);
+            var result = await Client.PostAsync(Uri.EscapeUriString($"/api/v2/context/{identityType}/{identityId}"), content);
             result.EnsureSuccessStatusCode();
         }
 
   
         public async Task DeleteContextProperty(string identityType, string identityId, string property)
         {
-            var result = await Client.DeleteAsync(Uri.EscapeUriString($"/api/v1/context/{identityType}/{identityId}/{property}"));
+            var result = await Client.DeleteAsync(Uri.EscapeUriString($"/api/v2/context/{identityType}/{identityId}/{property}"));
             result.EnsureSuccessStatusCode();
         }
     }
