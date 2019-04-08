@@ -12,15 +12,15 @@ namespace Tweek.Client.Tests
 {
     public class SmokeTests
     {
-        private ITweekApiClient mTweek;
-        private ITestOutputHelper mOutput;
+        private ITweekApiClient mTweekClient;
+        private ITweekManagementClient mTweekManagementClient;
         private static readonly IEqualityComparer<JToken> JTOKEN_COMPARER = new JTokenEqualityComparer();
 
-        public SmokeTests(ITestOutputHelper output)
+        public SmokeTests()
         {
             Uri baseUri = new Uri(Environment.GetEnvironmentVariable("TWEEK_LOCAL_API") ?? "http://tweek-api");
-            mTweek = new TweekApiClient(new HttpClient { BaseAddress = baseUri });
-            mOutput = output;
+            mTweekClient = new TweekApiClient(new HttpClient { BaseAddress = baseUri });
+            mTweekManagementClient = new TweekManagementClient(new HttpClient { BaseAddress = baseUri });
         }
 
         private static void AssertJTokenEqual(JToken expected, JToken actual)
@@ -35,7 +35,7 @@ namespace Tweek.Client.Tests
             // Arrange
 
             // Act
-            var result = await mTweek.Get(key, context);
+            var result = await mTweekClient.Get(key, context);
 
             // Assert
             AssertJTokenEqual(expected, result);
@@ -48,7 +48,7 @@ namespace Tweek.Client.Tests
             // Arrange
 
             // Act
-            var result = await mTweek.Get(key, context);
+            var result = await mTweekClient.Get(key, context);
 
             // Assert
             AssertJTokenEqual(expected, result);
@@ -62,7 +62,7 @@ namespace Tweek.Client.Tests
             var expectedToken = JToken.FromObject(expected);
 
             // Act
-            var result = await mTweek.Get(key, null);
+            var result = await mTweekClient.Get(key, null);
 
             // Assert
             AssertJTokenEqual(expectedToken, result);
@@ -74,19 +74,19 @@ namespace Tweek.Client.Tests
         {
             // Append
             IDictionary<string, JToken> context = new Dictionary<string, JToken> { { "@fixed:" + keyPath, value } };
-            await mTweek.AppendContext(identityType, identityId, context);
+            await mTweekManagementClient.AppendContext(identityType, identityId, context);
 
             // Get
             var contextForGet = new Dictionary<string, string> { { identityType, identityId } };
-            JToken actual = await mTweek.Get(keyPath, contextForGet);
+            JToken actual = await mTweekClient.Get(keyPath, contextForGet);
 
             AssertJTokenEqual(expected, actual);
 
             // Delete
-            await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
+            await mTweekManagementClient.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
 
             // Make sure it doesn't appear after delete
-            actual = await mTweek.Get(keyPath, contextForGet);
+            actual = await mTweekClient.Get(keyPath, contextForGet);
             AssertJTokenEqual(JValue.CreateNull(), actual);
         }
 
@@ -96,17 +96,17 @@ namespace Tweek.Client.Tests
         {
             // Arrange
             IDictionary<string, JToken> contextForKeyPath = new Dictionary<string, JToken> { { "@fixed:" + keyPath, context } };
-            await mTweek.AppendContext(identityType, identityId, contextForKeyPath);
+            await mTweekClient.AppendContext(identityType, identityId, contextForKeyPath);
 
             // Act
             var contextForGet = new Dictionary<string, string> { { identityType, identityId } };
-            var actual = await mTweek.Get<TestClass>(keyPath, contextForGet);
+            var actual = await mTweekClient.Get<TestClass>(keyPath, contextForGet);
 
             // Assert
             AssertJTokenEqual(JsonConvert.SerializeObject(expected), JsonConvert.SerializeObject(actual));
 
             // Cleanup
-            await mTweek.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
+            await mTweekClient.DeleteContextProperty(identityType, identityId, "@fixed:" + keyPath);
         }
 
         [Theory(DisplayName = "Get produces correct results when include is specified")]
@@ -118,7 +118,7 @@ namespace Tweek.Client.Tests
             IDictionary<string, string> context = null;
 
             // Act
-            var result = await mTweek.Get(key, context, options);
+            var result = await mTweekClient.Get(key, context, options);
 
             // Assert
             AssertJTokenEqual(expected, result);
@@ -133,7 +133,7 @@ namespace Tweek.Client.Tests
             IDictionary<string, string> context = null;
 
             // Act
-            var result = await mTweek.Get(key, context, options);
+            var result = await mTweekClient.Get(key, context, options);
 
             // Assert
             AssertJTokenEqual(expected, result);
@@ -148,7 +148,7 @@ namespace Tweek.Client.Tests
             IDictionary<string, string> context = null;
 
             // Act
-            var result = await mTweek.Get(key, context, options);
+            var result = await mTweekClient.Get(key, context, options);
 
             // Assert
             AssertJTokenEqual(expected, result);
