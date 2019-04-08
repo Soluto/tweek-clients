@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Tweek.Client.Extensions;
 
 namespace Tweek.Client
 {
@@ -37,17 +37,14 @@ namespace Tweek.Client
 
             if(options?.Include != null)
             {
-                foreach (var item in options.Include)
-                {
-                    parameters.Add(new KeyValuePair<string, string>("$include", item));
-                }
+                parameters.AddRange(options.Include.Select(item => new KeyValuePair<string, string>("$include", item)));
             }
 
-            var queryString = (parameters == null) ? "" : string.Join("&", parameters.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
+            var queryString = string.Join("&", parameters.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
             using (var stream = await Client.GetStreamAsync($"/api/v1/keys/{keyPath}?{queryString}"))
-            using (var sr = new StreamReader(stream))
-            using (var jr = new JsonTextReader(sr))
-                return await JToken.LoadAsync(jr);
+            {
+                return await stream.AsJToken();
+            }
         }
 
         public async Task DeleteContextProperty(string identityType, string identityId, string property)
