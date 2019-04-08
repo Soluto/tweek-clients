@@ -10,19 +10,9 @@ namespace Tweek.Client
         {
         }
 
-        public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
+        public async Task<JToken> GetValues(string keyPath, IDictionary<string, string> context, GetRequestOptions options = null)
         {
-            await ExecuteWithFallback(async client => await client.AppendContext(identityType, identityId, context));
-        }
-
-        public async Task DeleteContextProperty(string identityType, string identityId, string property)
-        {
-            await ExecuteWithFallback(async client => await client.DeleteContextProperty(identityType, identityId, property));
-        }
-
-        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, GetRequestOptions options = null)
-        {
-            return await ExecuteWithFallback(async client => await client.Get(keyPath, context, options));
+            return await ExecuteWithFallback(async client => await client.GetValues(keyPath, context, options));
         }
     }
 }

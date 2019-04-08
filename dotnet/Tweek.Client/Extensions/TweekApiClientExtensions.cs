@@ -16,7 +16,7 @@ namespace Tweek.Client.Extensions
             });
         public static async Task<T> Get<T>(this ITweekApiClient client, string keyPath, IDictionary<string,string> context)
         {
-            var token = await client.Get(keyPath, context);
+            var token = await client.GetValues(keyPath, context);
             return token.ToObject<T>(SnakeCaseSerializer);
         }
     }

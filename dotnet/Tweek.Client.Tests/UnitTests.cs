@@ -42,7 +42,7 @@ namespace Tweek.Client.Tests
             };
 
             // Act
-            var actualResult = await client.Get("test/key", new Dictionary<string, string>());
+            var actualResult = await client.GetValues("test/key", new Dictionary<string, string>());
 
             // Assert
             Assert.Equal(1, failureCount);
@@ -53,7 +53,7 @@ namespace Tweek.Client.Tests
         private ITweekApiClient CreateGoodFakeClient(JToken returnResult)
         {
             var goodClient = A.Fake<ITweekApiClient>();
-            A.CallTo(() => goodClient.Get(A<string>._, A<IDictionary<string,string>>._, A<GetRequestOptions>._))
+            A.CallTo(() => goodClient.GetValues(A<string>._, A<IDictionary<string,string>>._, A<GetRequestOptions>._))
                 .ReturnsLazily(() => returnResult);
             return goodClient;
         }
@@ -61,7 +61,7 @@ namespace Tweek.Client.Tests
         private ITweekApiClient CreateBadFakeClient(Exception exceptionToThrow)
         {
             var badClient = A.Fake<ITweekApiClient>();
-            A.CallTo(() => badClient.Get(A<string>._, A<IDictionary<string,string>>._, A<GetRequestOptions>._))
+            A.CallTo(() => badClient.GetValues(A<string>._, A<IDictionary<string,string>>._, A<GetRequestOptions>._))
                 .ThrowsAsync(exceptionToThrow);
             return badClient;
         }

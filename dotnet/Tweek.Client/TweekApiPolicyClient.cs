@@ -8,39 +8,23 @@ namespace Tweek.Client
 {
     public class TweekApiPolicyClient: ITweekApiClient
     {
-        private ITweekApiClient mClient;
-        private Policy<JToken> mPolicy;
+        private readonly ITweekApiClient _client;
+        private readonly Policy<JToken> _policy;
 
         public TweekApiPolicyClient(ITweekApiClient client, Policy<JToken> policy)
         {
-            mClient = client;
-            mPolicy = policy;
+            _client = client;
+            _policy = policy;
         }
 
-        public async Task AppendContext(string identityType, string identityId, IDictionary<string, JToken> context)
+        public async Task<JToken> GetValues(string keyPath, IDictionary<string, string> context, GetRequestOptions options)
         {
-            await mPolicy.ExecuteAsync(
-                async () => await mClient.AppendContext(identityType, identityId, context)
-                    .ContinueWith(_ => (JToken)null)
-            );
-        }
-
-        public async Task DeleteContextProperty(string identityType, string identityId, string property)
-        {
-            await mPolicy.ExecuteAsync(
-                async () => await mClient.DeleteContextProperty(identityType, identityId, property)
-                    .ContinueWith(_ => (JToken)null)
-            );
-        }
-
-        public async Task<JToken> Get(string keyPath, IDictionary<string, string> context, GetRequestOptions options)
-        {
-            return await mPolicy.ExecuteAsync(async () => await mClient.Get(keyPath, context, options));
+            return await _policy.ExecuteAsync(async () => await _client.GetValues(keyPath, context, options));
         }
 
         public void Dispose()
         {
-            mClient.Dispose();
+            _client.Dispose();
         }
     }
 }
