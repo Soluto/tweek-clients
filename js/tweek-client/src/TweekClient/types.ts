@@ -10,7 +10,7 @@ type RequestConfig = {
 
 export type KeyValuesErrors = { [keyPath: string]: string };
 
-export type KeyValuesErrorHandler = (errors: KeyValuesErrors) => void;
+export type KeyValuesErrorHandler = (keyPath: string, error: string) => void;
 
 type ClientConfig = {
   context?: Context;

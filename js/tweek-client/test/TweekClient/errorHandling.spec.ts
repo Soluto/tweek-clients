@@ -38,13 +38,15 @@ describe('TweekClient errorHandling', () => {
     });
 
     it('should call onKeyError if errors object contains errors', async () => {
-      const errors = { some_key: 'some error' };
+      const errors = {
+        some_key: 'some error',
+        other_key: 'other error',
+      };
       fetchStub.resolves(new Response(JSON.stringify({ errors })));
 
       await tweekClient.getValues('');
 
-      sinon.assert.calledOnce(onKeyError);
-      sinon.assert.calledWithExactly(onKeyError, errors);
+      Object.entries(errors).forEach(([keyPath, error]) => sinon.assert.calledWithExactly(onKeyError, keyPath, error));
     });
   });
 
@@ -78,6 +80,9 @@ describe('TweekClient errorHandling', () => {
   });
 
   it('should throw and call onKeyError if both are defined', async () => {
+    const keyPath = 'some_key';
+    const error = 'some error';
+
     tweekClient = new TweekClient({
       baseServiceUrl: '',
       fetch: fetchStub,
@@ -85,12 +90,11 @@ describe('TweekClient errorHandling', () => {
       throwOnError: true,
     });
 
-    const errors = { some_key: 'some error' };
-    fetchStub.resolves(new Response(JSON.stringify({ errors })));
+    fetchStub.resolves(new Response(JSON.stringify({ errors: { [keyPath]: error } })));
 
     await expect(tweekClient.getValues('')).to.be.rejectedWith(KeyValuesError);
 
     sinon.assert.calledOnce(onKeyError);
-    sinon.assert.calledWithExactly(onKeyError, errors);
+    sinon.assert.calledWithExactly(onKeyError, keyPath, error);
   });
 });

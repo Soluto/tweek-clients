@@ -3,7 +3,7 @@ import chunk from 'lodash.chunk';
 import { deprecated, normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
 import { TweekInitConfig } from '../types';
 import { FetchError } from '../FetchError';
-import { Context, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
+import { Context, GetValuesConfig, ITweekClient, KeyValuesErrors, TweekClientConfig } from './types';
 import { KeyValuesError } from './KeyValuesError';
 
 export default class TweekClient implements ITweekClient {
@@ -70,7 +70,7 @@ export default class TweekClient implements ITweekClient {
         return response.json().then(({ data, errors }) => {
           if (errors && Object.keys(errors).length > 0) {
             if (onKeyError) {
-              onKeyError(errors);
+              Object.entries(errors as KeyValuesErrors).forEach(([k, e]) => onKeyError(k, e));
             }
             if (throwOnError) {
               return Promise.reject(new KeyValuesError(errors, 'Tweek values had errors'));
