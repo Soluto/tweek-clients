@@ -17,7 +17,7 @@ type ClientConfig = {
   flatten?: boolean;
   ignoreKeyTypes?: boolean;
   maxChunkSize?: number;
-  onKeyError?: KeyValuesErrorHandler;
+  onKeyValueError?: KeyValuesErrorHandler;
   throwOnError?: boolean;
 };
 

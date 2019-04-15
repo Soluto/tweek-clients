@@ -12,16 +12,16 @@ describe('TweekClient errorHandling', () => {
     onKeyError = sinon.stub();
   });
 
-  describe('onKeyError', () => {
+  describe('onKeyValueError', () => {
     beforeEach(() => {
       tweekClient = new TweekClient({
         baseServiceUrl: '',
         fetch: fetchStub,
-        onKeyError,
+        onKeyValueError: onKeyError,
       });
     });
 
-    it('should not call onKeyError if errors is not in the response body', async () => {
+    it('should not call onKeyValueError if errors is not in the response body', async () => {
       fetchStub.resolves(new Response(JSON.stringify({})));
 
       await tweekClient.getValues('');
@@ -29,7 +29,7 @@ describe('TweekClient errorHandling', () => {
       sinon.assert.notCalled(onKeyError);
     });
 
-    it('should not call onKeyError if errors object is empty', async () => {
+    it('should not call onKeyValueError if errors object is empty', async () => {
       fetchStub.resolves(new Response(JSON.stringify({ errors: {} })));
 
       await tweekClient.getValues('');
@@ -37,7 +37,7 @@ describe('TweekClient errorHandling', () => {
       sinon.assert.notCalled(onKeyError);
     });
 
-    it('should call onKeyError if errors object contains errors', async () => {
+    it('should call onKeyValueError if errors object contains errors', async () => {
       const errors = {
         some_key: 'some error',
         other_key: 'other error',
@@ -79,14 +79,14 @@ describe('TweekClient errorHandling', () => {
     });
   });
 
-  it('should throw and call onKeyError if both are defined', async () => {
+  it('should throw and call onKeyValueError if both are defined', async () => {
     const keyPath = 'some_key';
     const error = 'some error';
 
     tweekClient = new TweekClient({
       baseServiceUrl: '',
       fetch: fetchStub,
-      onKeyError,
+      onKeyValueError: onKeyError,
       throwOnError: true,
     });
 
