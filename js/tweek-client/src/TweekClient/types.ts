@@ -1,4 +1,4 @@
-import { FetchClientConfig, IdentityContext, TweekInitConfig } from '../types';
+import { IdentityContext, TweekInitConfig } from '../types';
 
 export type Context = {
   [identityType: string]: string | ({ id?: string } & IdentityContext);
@@ -8,27 +8,16 @@ type RequestConfig = {
   include?: string[];
 };
 
-export type KeyValuesErrors = { [keyPath: string]: string };
-
-export type KeyValuesErrorHandler = (keyPath: string, error: string) => void;
-
 type ClientConfig = {
   context?: Context;
   flatten?: boolean;
   ignoreKeyTypes?: boolean;
   maxChunkSize?: number;
-  onKeyValueError?: KeyValuesErrorHandler;
-  throwOnError?: boolean;
 };
 
 export type GetValuesConfig = ClientConfig & RequestConfig;
 
 export type TweekClientConfig = TweekInitConfig & ClientConfig;
-
-export type BaseCreateTweekClientConfig = FetchClientConfig & {
-  context?: Context;
-  useLegacyEndpoint?: boolean;
-};
 
 export interface ITweekClient {
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;

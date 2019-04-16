@@ -17,7 +17,7 @@ describe('createTweekClient', () => {
   beforeEach(() => {
     fetchMock.getOnce(
       '*',
-      { data: {} },
+      {},
       {
         name: matcherName,
       },
@@ -90,7 +90,9 @@ describe('createTweekClient', () => {
   it('should return arrays correctly', async () => {
     const expectedResult = [1, 2, 3];
     fetchMock.restore();
-    fetchMock.getOnce('*', { data: expectedResult }, { name: matcherName });
+    fetchMock.getOnce('*', expectedResult, {
+      name: matcherName,
+    });
 
     const tweekClient = createTweekClient({
       baseServiceUrl,

@@ -1,9 +1,11 @@
 import { createFetchClient } from '../utils';
-import { BaseCreateTweekClientConfig } from './types';
+import { CreateClientConfig } from '../types';
+import { Context } from './types';
 import TweekClient from './TweekClient';
 
-export type CreateTweekClientConfig = BaseCreateTweekClientConfig & {
-  baseServiceUrl: string;
+export type CreateTweekClientConfig = CreateClientConfig & {
+  context?: Context;
+  useLegacyEndpoint?: boolean;
 };
 
 export function createTweekClient({

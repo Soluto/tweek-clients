@@ -30,3 +30,7 @@ export type FetchClientConfig = (BearerAuthenticationOptions | ClientCredentials
   requestTimeoutInMillis?: number;
   onError?(response: Response): void;
 };
+
+export type CreateClientConfig = FetchClientConfig & {
+  baseServiceUrl: string;
+};

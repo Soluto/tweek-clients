@@ -1,15 +1,8 @@
 import { createFetchClient } from '../utils';
-import { FetchClientConfig } from '../types';
+import { CreateClientConfig } from '../types';
 import TweekManagementClient from './TweekManagementClient';
 
-export type CreateTweekManagementClientConfig = FetchClientConfig & {
-  baseServiceUrl: string;
-};
-
-export function createTweekManagementClient({
-  baseServiceUrl,
-  ...fetchClientConfig
-}: CreateTweekManagementClientConfig) {
+export function createTweekManagementClient({ baseServiceUrl, ...fetchClientConfig }: CreateClientConfig) {
   return new TweekManagementClient({
     baseServiceUrl,
     fetch: createFetchClient(fetchClientConfig),
