@@ -41,20 +41,30 @@ the config object accepts these properties:
 `tweekClient.getValues<T>(keyPath: string, config?: GetValuesConfig): Promise<T>`
 
 ```javascript
-const myConfiguration = await tweekClient.getValues('/myconfiguration');
+const myConfiguration = await tweekClient.getValues('some_key/path');
 ```
 
 the config object accepts these properties:
 
-| Prop                   | Description                                                                                                                        | Type                                       | Default |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------- |
-| `include`              | the keys to include in the request, used to filter scan keys                                                                       | `string[]`                                 |
-| `context`              | override the client context                                                                                                        | `object`                                   |
-| `flatten`              | if set to true the response will be in the format of a { [keyPath]: value }                                                        | `boolean`                                  | `false` |
-| `ignoreKeyTypes`       | if set to true, all the key types will be ignored and returned as strings                                                          | `boolean`                                  | `false` |
-| `maxChunkSize`         | if the `include` section has a lot of entries, it will split the request into multiple chunks                                      | `number`                                   | 100     |
-| `onKeyValueError`      | **only supported on api versions 1.0-rc3 and above** a callback for key value errors                                               | `(keyPath: string, error: string) => void` |
-| `throwOnKeyValueError` | **only supported on api versions 1.0-rc3 and above** if set to true, the client will throw an error if there was a key value error | `boolean`                                  | false   |
+| Prop             | Description                                                                                   | Type       | Default |
+| ---------------- | --------------------------------------------------------------------------------------------- | ---------- | ------- |
+| `include`        | the keys to include in the request, used to filter scan keys                                  | `string[]` |
+| `context`        | override the client context                                                                   | `object`   |
+| `flatten`        | if set to true the response will be in the format of a { [keyPath]: value }                   | `boolean`  | `false` |
+| `ignoreKeyTypes` | if set to true, all the key types will be ignored and returned as strings                     | `boolean`  | `false` |
+| `maxChunkSize`   | if the `include` section has a lot of entries, it will split the request into multiple chunks | `number`   | 100     |
+
+#### Query configuration with key value error details
+
+**only supported on api versions 1.0-rc3 and above**
+
+`tweekClient.getValuesWithDetails<T>(path: string, config?: GetValuesConfig) : Promise<DetailedTweekResult<T>>`
+
+```javascript
+const myDetaildConfig = await tweekClient.getValuesWithDetails('some_key/path');
+```
+
+the config object has the same properties as `getValues`
 
 ### TweekManagementClient
 

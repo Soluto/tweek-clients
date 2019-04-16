@@ -1,10 +1,14 @@
-import { GetValuesConfig, ITweekClient } from './types';
+import { DetailedTweekResult, GetValuesConfig, ITweekClient } from './types';
 
 export default class TweekClientWithFallback implements ITweekClient {
   constructor(private readonly _clients: ITweekClient[]) {}
 
   getValues<T>(path: string, config: GetValuesConfig): Promise<T> {
     return this._execute(client => client.getValues(path, config));
+  }
+
+  getValuesWithDetails<T>(path: string, config?: GetValuesConfig): Promise<DetailedTweekResult<T>> {
+    return this._execute(client => client.getValuesWithDetails(path, config));
   }
 
   fetch<T>(path: string, config?: GetValuesConfig): Promise<T> {

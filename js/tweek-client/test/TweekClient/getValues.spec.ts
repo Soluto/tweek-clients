@@ -3,8 +3,11 @@ import { expect } from 'chai';
 import qs, { InputParams } from 'query-string';
 import { GetValuesConfig, TweekClient } from '../../src';
 
-export const toQueryString = (query: InputParams | undefined, includeErrors?: boolean) => {
-  const queryString = qs.stringify({ $includeErrors: includeErrors, ...query });
+export const toQueryString = (query: InputParams | undefined) => {
+  if (!query) {
+    return '';
+  }
+  const queryString = qs.stringify(query);
   return queryString ? `?${queryString}` : '';
 };
 

@@ -10,15 +10,11 @@ type RequestConfig = {
 
 export type KeyValuesErrors = { [keyPath: string]: string };
 
-export type KeyValuesErrorHandler = (keyPath: string, error: string) => void;
-
 type ClientConfig = {
   context?: Context;
   flatten?: boolean;
   ignoreKeyTypes?: boolean;
   maxChunkSize?: number;
-  onKeyValueError?: KeyValuesErrorHandler;
-  throwOnKeyValueError?: boolean;
 };
 
 export type GetValuesConfig = ClientConfig & RequestConfig;
@@ -30,8 +26,15 @@ export type BaseCreateTweekClientConfig = FetchClientConfig & {
   useLegacyEndpoint?: boolean;
 };
 
+export type DetailedTweekResult<T> = {
+  data: T;
+  errors: KeyValuesErrors;
+};
+
 export interface ITweekClient {
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
+
+  getValuesWithDetails<T>(path: string, config?: GetValuesConfig): Promise<DetailedTweekResult<T>>;
 
   /**
    * @deprecated use `getValues` instead
