@@ -1,12 +1,12 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import qs, { InputParams } from 'query-string';
 import { GetValuesConfig, TweekClient } from '../../src';
 
-export const toQueryString = (query: InputParams | undefined) => {
-  const queryString = qs.stringify({ $includeErrors: true, ...query });
-  return queryString ? `?${queryString}` : '';
-};
+const ENCODE_$_CHARACTER = encodeURIComponent('$');
+const ENCODE_SLASH_CHARACTER = encodeURIComponent('/');
+
+const queryParamsEncoder = (queryParams: string) =>
+  queryParams.replace(/\$/g, ENCODE_$_CHARACTER).replace(/\//g, ENCODE_SLASH_CHARACTER);
 
 describe('TweekClient getValues', () => {
   const defaultUrl = 'http://test/';
@@ -29,7 +29,7 @@ describe('TweekClient getValues', () => {
 
   const testsDefenitions: {
     pathToFetch: string;
-    expectedQueryParams?: InputParams;
+    expectedQueryParams?: string;
     resultsToResolve?: any;
     config?: GetValuesConfig;
     expectedResult?: any;
@@ -45,7 +45,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $include: 'abc' },
+    expectedQueryParams: `?$include=abc`,
     config: {
       include: ['abc'],
     },
@@ -53,7 +53,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $include: ['path1', 'path2/key', 'path3/_'] },
+    expectedQueryParams: `?$include=path1&$include=path2/key&$include=path3/_`,
     config: {
       include: ['path1', 'path2/key', 'path3/_'],
     },
@@ -61,7 +61,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { user: 'userid', 'user.gender': 'male' },
+    expectedQueryParams: `?user=userid&user.gender=male`,
     config: {
       context: {
         user: {
@@ -74,7 +74,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { user: 'userid' },
+    expectedQueryParams: `?user=userid`,
     config: {
       context: {
         user: 'userid',
@@ -90,7 +90,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $flatten: true },
+    expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': true },
     expectedResult: { 'some_path/some_key': true },
@@ -98,7 +98,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $flatten: true },
+    expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': 'true' },
@@ -106,7 +106,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $flatten: true },
+    expectedQueryParams: `?$flatten=true`,
     config: { flatten: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': 'true' },
@@ -115,7 +115,7 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $flatten: true, $ignoreKeyTypes: true },
+    expectedQueryParams: `?$flatten=true&$ignoreKeyTypes=true`,
     config: { flatten: true, ignoreKeyTypes: true },
     resultsToResolve: { 'some_path/some_key': 'true' },
     expectedResult: { 'some_path/some_key': 'true' },
@@ -123,19 +123,19 @@ describe('TweekClient getValues', () => {
 
   testsDefenitions.push({
     pathToFetch: '_',
-    expectedQueryParams: { $flatten: true },
+    expectedQueryParams: `?$flatten=true`,
     config: { flatten: true, ignoreKeyTypes: false },
     resultsToResolve: { 'some_path/some_key': true },
     expectedResult: { 'some_path/some_key': true },
   });
 
   testsDefenitions.forEach(
-    ({ baseUrl, pathToFetch, config, resultsToResolve = {}, expectedQueryParams, expectedResult }) =>
+    ({ baseUrl, pathToFetch, config, resultsToResolve = {}, expectedQueryParams = '', expectedResult }) =>
       it('should execute getValues correctly', async () => {
         // Arrange
         const { tweekClient, fetchStub } = prepare(baseUrl);
-        fetchStub.resolves(new Response(JSON.stringify({ data: resultsToResolve })));
-        const expectedUrl = `${defaultUrl}api/v2/values/${pathToFetch}` + toQueryString(expectedQueryParams);
+        fetchStub.resolves(new Response(JSON.stringify(resultsToResolve)));
+        const expectedUrl = `${defaultUrl}api/v2/values/${pathToFetch}` + queryParamsEncoder(expectedQueryParams);
 
         // Act
         const result = await tweekClient.getValues(pathToFetch, config);
@@ -158,6 +158,6 @@ describe('TweekClient getValues', () => {
 
     // Assert
     sinon.assert.calledOnce(fetchStub);
-    sinon.assert.calledWithExactly(fetchStub, `${defaultUrl}api/v1/keys/_${toQueryString(undefined)}`);
+    sinon.assert.calledWithExactly(fetchStub, `${defaultUrl}api/v1/keys/_`);
   });
 });

@@ -1,38 +1,9 @@
 import { InputParams } from 'query-string';
 import chunk from 'lodash.chunk';
-import { deprecated, normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
+import { normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
 import { TweekInitConfig } from '../types';
 import { FetchError } from '../FetchError';
-import {
-  Context,
-  GetValuesConfig,
-  ITweekClient,
-  KeyValuesErrorHandler,
-  KeyValuesErrors,
-  TweekClientConfig,
-} from './types';
-import { KeyValuesError } from './KeyValuesError';
-
-type TweekResult<T> = {
-  data: T;
-  errors: KeyValuesErrors;
-};
-
-function extractData<T>(
-  { data, errors }: TweekResult<T>,
-  throwOnError: boolean | undefined,
-  onKeyValueError: KeyValuesErrorHandler | undefined,
-) {
-  if (errors && Object.keys(errors).length > 0) {
-    if (onKeyValueError) {
-      Object.entries(errors as KeyValuesErrors).forEach(([k, e]) => onKeyValueError(k, e));
-    }
-    if (throwOnError) {
-      throw new KeyValuesError(errors, 'Tweek values had errors');
-    }
-  }
-  return data;
-}
+import { Context, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
 
 export default class TweekClient implements ITweekClient {
   config: TweekClientConfig;
@@ -54,36 +25,25 @@ export default class TweekClient implements ITweekClient {
       ..._config,
     };
 
-    const { include, maxChunkSize = 100, throwOnError, onKeyValueError } = cfg;
+    const { include, maxChunkSize = 100 } = cfg;
 
     if (!include) {
-      return this._fetchChunk<T>(path, cfg).then(res => extractData(res, throwOnError, onKeyValueError));
+      return this._fetchChunk(path, cfg);
     }
 
     const optimizedInclude = optimizeInclude(include);
     const includeChunks = chunk(optimizedInclude, maxChunkSize);
     const fetchConfigChunks = includeChunks.map(ic => ({ ...cfg, include: ic }));
-    const fetchPromises = fetchConfigChunks.map(cc => this._fetchChunk<T>(path, cc));
-    return Promise.all(fetchPromises).then(chunks => {
-      const res = chunks.reduce((res, ch) => ({
-        data: { ...res.data, ...ch.data },
-        errors: { ...res.errors, ...ch.errors },
-      }));
-      return extractData(res, throwOnError, onKeyValueError);
-    });
+    const fetchPromises = fetchConfigChunks.map(cc => this._fetchChunk(path, cc));
+    return <Promise<T>>Promise.all(fetchPromises).then(chunks => chunks.reduce((res, ch) => ({ ...res, ...ch }), {}));
   }
 
-  @deprecated('getValues')
-  fetch<T>(path: string, config?: GetValuesConfig): Promise<T> {
-    return this.getValues(path, config);
-  }
+  fetch = this.getValues;
 
-  private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<TweekResult<T>> {
+  private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<T> {
     const { flatten, baseServiceUrl, context, include, ignoreKeyTypes } = _config;
 
     const queryParamsObject = this._contextToQueryParams(context);
-
-    queryParamsObject['$includeErrors'] = true;
 
     if (flatten) {
       queryParamsObject['$flatten'] = true;
