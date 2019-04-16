@@ -69,16 +69,14 @@ describe('tweek repo test', () => {
       .get()
       .to('/api/v2/values/_/*')
       .willReturn({
-        data: {
-          'my_path/string_value': 'my-string',
-          'my_path/inner_path_1/int_value': 55,
-          'my_path/inner_path_1/bool_positive_value': true,
-          'my_path/inner_path_2/bool_negative_value': false,
-          'some_path/inner_path_1/first_value': 'value_1',
-          'some_path/inner_path_1/second_value': 'value_2',
-          'deeply_nested/a/b/c/d/value': 'value_5',
-          'some_other_path/inner_path_2/third_value': 'value_3',
-        },
+        'my_path/string_value': 'my-string',
+        'my_path/inner_path_1/int_value': 55,
+        'my_path/inner_path_1/bool_positive_value': true,
+        'my_path/inner_path_2/bool_negative_value': false,
+        'some_path/inner_path_1/first_value': 'value_1',
+        'some_path/inner_path_1/second_value': 'value_2',
+        'deeply_nested/a/b/c/d/value': 'value_5',
+        'some_other_path/inner_path_2/third_value': 'value_3',
       });
 
     _createClientThatFails = () => {
@@ -475,6 +473,7 @@ describe('tweek repo test', () => {
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
         getValues: <any>fetchStub,
+        getValuesWithDetails: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock });
@@ -494,6 +493,7 @@ describe('tweek repo test', () => {
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
         getValues: <any>fetchStub,
+        getValuesWithDetails: <any>fetchStub,
       };
       const expectedContext = { identity: { prop: 'value' } };
 
@@ -589,6 +589,7 @@ describe('tweek repo test', () => {
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
         getValues: <any>fetchStub,
+        getValuesWithDetails: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });
@@ -618,6 +619,7 @@ describe('tweek repo test', () => {
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
         getValues: <any>fetchStub,
+        getValuesWithDetails: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });
@@ -659,6 +661,7 @@ describe('tweek repo test', () => {
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
         getValues: <any>fetchStub,
+        getValuesWithDetails: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });
@@ -702,6 +705,7 @@ describe('tweek repo test', () => {
       const clientMock: ITweekClient = {
         fetch: <any>fetchStub,
         getValues: <any>fetchStub,
+        getValuesWithDetails: <any>fetchStub,
       };
 
       await initRepository({ client: clientMock, store });

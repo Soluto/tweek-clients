@@ -4,7 +4,10 @@ import qs, { InputParams } from 'query-string';
 import { GetValuesConfig, TweekClient } from '../../src';
 
 export const toQueryString = (query: InputParams | undefined) => {
-  const queryString = qs.stringify({ $includeErrors: true, ...query });
+  if (!query) {
+    return '';
+  }
+  const queryString = qs.stringify(query);
   return queryString ? `?${queryString}` : '';
 };
 
@@ -134,7 +137,7 @@ describe('TweekClient getValues', () => {
       it('should execute getValues correctly', async () => {
         // Arrange
         const { tweekClient, fetchStub } = prepare(baseUrl);
-        fetchStub.resolves(new Response(JSON.stringify({ data: resultsToResolve })));
+        fetchStub.resolves(new Response(JSON.stringify(resultsToResolve)));
         const expectedUrl = `${defaultUrl}api/v2/values/${pathToFetch}` + toQueryString(expectedQueryParams);
 
         // Act
