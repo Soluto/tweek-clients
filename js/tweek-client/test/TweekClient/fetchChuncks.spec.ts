@@ -29,16 +29,16 @@ describe('TweekClient fetchChunks', () => {
       expectedUrl: `${defaultUrl}api/v2/values/_`,
       stubCalls: [
         {
-          requestUrl: 'http://test/api/v2/values/_?%24include=a1&%24include=a2&%24include=a3&%24includeErrors=true',
-          response: new Response('{"data": { "a1": 1, "a2": 2, "a3": 3 } }'),
+          requestUrl: 'http://test/api/v2/values/_?%24include=a1&%24include=a2&%24include=a3',
+          response: new Response('{ "a1": 1, "a2": 2, "a3": 3 }'),
         },
         {
-          requestUrl: 'http://test/api/v2/values/_?%24include=b1&%24include=b2&%24include=b3&%24includeErrors=true',
-          response: new Response('{ "data": { "b1": "a", "b2": "b", "b3": "c" } }'),
+          requestUrl: 'http://test/api/v2/values/_?%24include=b1&%24include=b2&%24include=b3',
+          response: new Response('{ "b1": "a", "b2": "b", "b3": "c" }'),
         },
         {
-          requestUrl: 'http://test/api/v2/values/_?%24include=c5&%24includeErrors=true',
-          response: new Response('{ "data": { "c5": true } }'),
+          requestUrl: 'http://test/api/v2/values/_?%24include=c5',
+          response: new Response('{ "c5": true }'),
         },
       ],
       config: {

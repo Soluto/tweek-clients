@@ -79,11 +79,15 @@ export default class TweekClient implements ITweekClient {
   }
 
   private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<TweekResult<T>> {
-    const { flatten, baseServiceUrl, context, include, ignoreKeyTypes } = _config;
+    const { flatten, baseServiceUrl, context, include, ignoreKeyTypes, throwOnError, onKeyValueError } = _config;
+
+    const includeErrors = Boolean(throwOnError || onKeyValueError);
 
     const queryParamsObject = this._contextToQueryParams(context);
 
-    queryParamsObject['$includeErrors'] = true;
+    if (includeErrors) {
+      queryParamsObject['$includeErrors'] = true;
+    }
 
     if (flatten) {
       queryParamsObject['$flatten'] = true;
@@ -101,7 +105,11 @@ export default class TweekClient implements ITweekClient {
 
     return this.config.fetch(url).then(response => {
       if (response.ok) {
-        return response.json();
+        const result = response.json();
+        if (includeErrors) {
+          return result;
+        }
+        return result.then(data => ({ data }));
       } else {
         return Promise.reject(new FetchError(response, 'Error getting values from tweek'));
       }

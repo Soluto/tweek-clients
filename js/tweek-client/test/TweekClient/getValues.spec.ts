@@ -3,8 +3,8 @@ import { expect } from 'chai';
 import qs, { InputParams } from 'query-string';
 import { GetValuesConfig, TweekClient } from '../../src';
 
-export const toQueryString = (query: InputParams | undefined) => {
-  const queryString = qs.stringify({ $includeErrors: true, ...query });
+export const toQueryString = (query: InputParams | undefined, includeErrors?: boolean) => {
+  const queryString = qs.stringify({ $includeErrors: includeErrors, ...query });
   return queryString ? `?${queryString}` : '';
 };
 
@@ -134,7 +134,7 @@ describe('TweekClient getValues', () => {
       it('should execute getValues correctly', async () => {
         // Arrange
         const { tweekClient, fetchStub } = prepare(baseUrl);
-        fetchStub.resolves(new Response(JSON.stringify({ data: resultsToResolve })));
+        fetchStub.resolves(new Response(JSON.stringify(resultsToResolve)));
         const expectedUrl = `${defaultUrl}api/v2/values/${pathToFetch}` + toQueryString(expectedQueryParams);
 
         // Act
