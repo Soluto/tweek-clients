@@ -18,7 +18,7 @@ type ClientConfig = {
   ignoreKeyTypes?: boolean;
   maxChunkSize?: number;
   onKeyValueError?: KeyValuesErrorHandler;
-  throwOnError?: boolean;
+  throwOnKeyValueError?: boolean;
 };
 
 export type GetValuesConfig = ClientConfig & RequestConfig;

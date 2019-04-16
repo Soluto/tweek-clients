@@ -54,10 +54,10 @@ export default class TweekClient implements ITweekClient {
       ..._config,
     };
 
-    const { include, maxChunkSize = 100, throwOnError, onKeyValueError } = cfg;
+    const { include, maxChunkSize = 100, throwOnKeyValueError, onKeyValueError } = cfg;
 
     if (!include) {
-      return this._fetchChunk<T>(path, cfg).then(res => extractData(res, throwOnError, onKeyValueError));
+      return this._fetchChunk<T>(path, cfg).then(res => extractData(res, throwOnKeyValueError, onKeyValueError));
     }
 
     const optimizedInclude = optimizeInclude(include);
@@ -69,7 +69,7 @@ export default class TweekClient implements ITweekClient {
         data: { ...res.data, ...ch.data },
         errors: { ...res.errors, ...ch.errors },
       }));
-      return extractData(res, throwOnError, onKeyValueError);
+      return extractData(res, throwOnKeyValueError, onKeyValueError);
     });
   }
 
@@ -79,9 +79,17 @@ export default class TweekClient implements ITweekClient {
   }
 
   private _fetchChunk<T>(path: string, _config: TweekInitConfig & GetValuesConfig): Promise<TweekResult<T>> {
-    const { flatten, baseServiceUrl, context, include, ignoreKeyTypes, throwOnError, onKeyValueError } = _config;
+    const {
+      flatten,
+      baseServiceUrl,
+      context,
+      include,
+      ignoreKeyTypes,
+      throwOnKeyValueError,
+      onKeyValueError,
+    } = _config;
 
-    const includeErrors = Boolean(throwOnError || onKeyValueError);
+    const includeErrors = Boolean(throwOnKeyValueError || onKeyValueError);
 
     const queryParamsObject = this._contextToQueryParams(context);
 

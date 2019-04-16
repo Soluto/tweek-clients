@@ -50,12 +50,12 @@ describe('TweekClient errorHandling', () => {
     });
   });
 
-  describe('throwOnError', () => {
+  describe('throwOnKeyValueError', () => {
     beforeEach(() => {
       tweekClient = new TweekClient({
         baseServiceUrl: '',
         fetch: fetchStub,
-        throwOnError: true,
+        throwOnKeyValueError: true,
       });
     });
 
@@ -87,7 +87,7 @@ describe('TweekClient errorHandling', () => {
       baseServiceUrl: '',
       fetch: fetchStub,
       onKeyValueError: onKeyError,
-      throwOnError: true,
+      throwOnKeyValueError: true,
     });
 
     fetchStub.resolves(new Response(JSON.stringify({ errors: { [keyPath]: error } })));
