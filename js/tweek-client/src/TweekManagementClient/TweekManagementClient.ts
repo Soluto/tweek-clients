@@ -12,6 +12,7 @@ import {
   Revision,
   Schema,
   Services,
+  Hook,
 } from './types';
 import { InputParams } from 'query-string';
 import { FetchError } from '../FetchError';
@@ -231,6 +232,45 @@ export default class TweekManagementClient implements ITweekManagementClient {
   getServiceDetails(): Promise<Services> {
     const url = `${this.config.baseServiceUrl}/version`;
     return this._fetch(url).then(toJson);
+  }
+
+  getHooks(): Promise<Hook[]> {
+    const url = `${this.config.baseServiceUrl}/api/v2/hooks`;
+    return this._fetch(url).then(toJson);
+  }
+
+  getHooksForKeyPath(keyPath: string): Promise<Hook[]> {
+    const url = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}`;
+    return this._fetch(url).then(toJson);
+  }
+
+  createHook(keyPath: string, type: string, url: string): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}`;
+    const config = {
+      method: 'POST',
+      headers: jsonHeaders,
+      body: JSON.stringify({ type, url }),
+    };
+
+    return this._fetch(requestUrl, config).then(noop);
+  }
+
+  updateHook(keyPath: string, hookIndex: number, type: string, url: string): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}/?hookIndex=${hookIndex}`;
+    const config = {
+      method: 'PUT',
+      headers: jsonHeaders,
+      body: JSON.stringify({ type, url }),
+    };
+
+    return this._fetch(requestUrl, config).then(noop);
+  }
+
+  deleteHook(keyPath: string, hookIndex: number): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}/?hookIndex=${hookIndex}`;
+    const config = { method: 'DELETE' };
+
+    return this._fetch(requestUrl, config).then(noop);
   }
 
   private _fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {

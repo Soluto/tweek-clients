@@ -360,4 +360,56 @@ describe('TweekManagementClient', () => {
       response: { a: 'b', c: 'd' },
     });
   });
+
+  describe('getHooks', () => {
+    runTest({
+      method: 'getHooks',
+      expectedUrl: '/api/v2/hooks',
+      response: [{ keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url', hookIndex: 0 }],
+    });
+  });
+
+  describe('getHooksForKeyPath', () => {
+    runTest({
+      method: 'getHooksForKeyPath',
+      args: ['a/b/c'],
+      expectedUrl: '/api/v2/hooks/a/b/c',
+      response: [{ keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url', hookIndex: 0 }],
+    });
+  });
+
+  describe('createHook', () => {
+    runTest({
+      method: 'createHook',
+      args: ['a/b/c', 'notification_webhook', 'a url'],
+      expectedUrl: '/api/v2/hooks/a/b/c',
+      expectedRequestInit: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'notification_webhook', url: 'a url' }),
+      },
+    });
+  });
+
+  describe('updateHook', () => {
+    runTest({
+      method: 'updateHook',
+      args: ['a/b/c', 1, 'notification_webhook', 'a url'],
+      expectedUrl: '/api/v2/hooks/a/b/c/?hookIndex=1',
+      expectedRequestInit: {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'notification_webhook', url: 'a url' }),
+      },
+    });
+  });
+
+  describe('deleteHook', () => {
+    runTest({
+      method: 'deleteHook',
+      args: ['a/b/c', 1],
+      expectedUrl: '/api/v2/hooks/a/b/c/?hookIndex=1',
+      expectedRequestInit: { method: 'DELETE' },
+    });
+  });
 });
