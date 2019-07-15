@@ -1,6 +1,6 @@
 import { InputParams } from 'query-string';
 import chunk from 'lodash.chunk';
-import { deprecated, normalizeBaseUrl, optimizeInclude, toQueryString } from '../utils';
+import { deprecated, normalizeBaseUrl, normalizeKeyPath, optimizeInclude, toQueryString } from '../utils';
 import { TweekInitConfig } from '../types';
 import { FetchError } from '../FetchError';
 import { Context, DetailedTweekResult, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
@@ -85,7 +85,7 @@ export default class TweekClient implements ITweekClient {
 
     const queryString = toQueryString(queryParamsObject);
 
-    const url = `${baseServiceUrl}${this._endpoint}${path}${queryString}`;
+    const url = `${baseServiceUrl}${this._endpoint}${normalizeKeyPath(path)}${queryString}`;
 
     return this.config.fetch(url).then(response => {
       if (response.ok) {
