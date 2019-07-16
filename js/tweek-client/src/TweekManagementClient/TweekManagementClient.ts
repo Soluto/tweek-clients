@@ -12,7 +12,7 @@ import {
   Revision,
   Schema,
   Services,
-  Hook,
+  HooksReponse,
 } from './types';
 import { InputParams } from 'query-string';
 import { FetchError } from '../FetchError';
@@ -234,41 +234,54 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  getHooks(): Promise<Hook[]> {
+  async getHooks(): Promise<HooksReponse> {
     const url = `${this.config.baseServiceUrl}/api/v2/hooks`;
-    return this._fetch(url).then(toJson);
+    const res = await this._fetch(url);
+
+    return {
+      hooks: await res.json(),
+      etag: res.headers.get('ETag') as string,
+    };
   }
 
-  getHooksForKeyPath(keyPath: string): Promise<Hook[]> {
+  async getHooksForKeyPath(keyPath: string): Promise<HooksReponse> {
     const url = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}`;
-    return this._fetch(url).then(toJson);
+    const res = await this._fetch(url);
+
+    return {
+      hooks: await res.json(),
+      etag: res.headers.get('ETag') as string,
+    };
   }
 
-  createHook(keyPath: string, type: string, url: string): Promise<void> {
+  createHook(etag: string, keyPath: string, type: string, url: string): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}`;
     const config = {
       method: 'POST',
-      headers: jsonHeaders,
+      headers: { 'If-Match': etag, ...jsonHeaders },
       body: JSON.stringify({ type, url }),
     };
 
     return this._fetch(requestUrl, config).then(noop);
   }
 
-  updateHook(keyPath: string, hookIndex: number, type: string, url: string): Promise<void> {
+  updateHook(etag: string, keyPath: string, hookIndex: number, type: string, url: string): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}/?hookIndex=${hookIndex}`;
     const config = {
       method: 'PUT',
-      headers: jsonHeaders,
+      headers: { 'If-Match': etag, ...jsonHeaders },
       body: JSON.stringify({ type, url }),
     };
 
     return this._fetch(requestUrl, config).then(noop);
   }
 
-  deleteHook(keyPath: string, hookIndex: number): Promise<void> {
+  deleteHook(etag: string, keyPath: string, hookIndex: number): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}/?hookIndex=${hookIndex}`;
-    const config = { method: 'DELETE' };
+    const config = {
+      method: 'DELETE',
+      headers: { 'If-Match': etag },
+    };
 
     return this._fetch(requestUrl, config).then(noop);
   }

@@ -9,6 +9,7 @@ type TestCase = {
   expectedRequestInit?: RequestInit;
   response?: any;
   transformedResult?: any;
+  responseHeaders?: { [key: string]: string };
 };
 
 describe('TweekManagementClient', () => {
@@ -24,11 +25,24 @@ describe('TweekManagementClient', () => {
     });
   });
 
-  const runTest = ({ method, args = [], expectedUrl, expectedRequestInit, response, transformedResult }: TestCase) => {
+  const runTest = ({
+    method,
+    args = [],
+    expectedUrl,
+    expectedRequestInit,
+    response,
+    transformedResult,
+    responseHeaders = {},
+  }: TestCase) => {
     const expectedFetchArgs = [baseServiceUrl + expectedUrl, expectedRequestInit];
 
     it(`should execute ${String(method)} correctly`, async () => {
-      fetchStub.resolves(new Response(response && JSON.stringify(response)));
+      const stubResponse = new Response(response && JSON.stringify(response));
+
+      for (const [name, value] of Object.entries(responseHeaders)) {
+        stubResponse.headers.set(name, value);
+      }
+      fetchStub.resolves(stubResponse);
 
       const result = await (tweekClient[method] as any)(...args);
 
@@ -362,30 +376,40 @@ describe('TweekManagementClient', () => {
   });
 
   describe('getHooks', () => {
+    const response = [{ keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url', hookIndex: 0 }];
+    const etag = 'the_etag';
+
     runTest({
       method: 'getHooks',
       expectedUrl: '/api/v2/hooks',
-      response: [{ keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url', hookIndex: 0 }],
+      response,
+      responseHeaders: { ETag: etag },
+      transformedResult: { hooks: response, etag },
     });
   });
 
   describe('getHooksForKeyPath', () => {
+    const response = [{ keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url', hookIndex: 0 }];
+    const etag = 'the_etag';
+
     runTest({
       method: 'getHooksForKeyPath',
       args: ['a/b/c'],
       expectedUrl: '/api/v2/hooks/a/b/c',
-      response: [{ keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url', hookIndex: 0 }],
+      response,
+      responseHeaders: { ETag: etag },
+      transformedResult: { hooks: response, etag },
     });
   });
 
   describe('createHook', () => {
     runTest({
       method: 'createHook',
-      args: ['a/b/c', 'notification_webhook', 'a url'],
+      args: ['the_etag', 'a/b/c', 'notification_webhook', 'a url'],
       expectedUrl: '/api/v2/hooks/a/b/c',
       expectedRequestInit: {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'If-Match': 'the_etag' },
         body: JSON.stringify({ type: 'notification_webhook', url: 'a url' }),
       },
     });
@@ -394,11 +418,11 @@ describe('TweekManagementClient', () => {
   describe('updateHook', () => {
     runTest({
       method: 'updateHook',
-      args: ['a/b/c', 1, 'notification_webhook', 'a url'],
+      args: ['the_etag', 'a/b/c', 1, 'notification_webhook', 'a url'],
       expectedUrl: '/api/v2/hooks/a/b/c/?hookIndex=1',
       expectedRequestInit: {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'If-Match': 'the_etag' },
         body: JSON.stringify({ type: 'notification_webhook', url: 'a url' }),
       },
     });
@@ -407,9 +431,9 @@ describe('TweekManagementClient', () => {
   describe('deleteHook', () => {
     runTest({
       method: 'deleteHook',
-      args: ['a/b/c', 1],
+      args: ['the_etag', 'a/b/c', 1],
       expectedUrl: '/api/v2/hooks/a/b/c/?hookIndex=1',
-      expectedRequestInit: { method: 'DELETE' },
+      expectedRequestInit: { method: 'DELETE', headers: { 'If-Match': 'the_etag' } },
     });
   });
 });

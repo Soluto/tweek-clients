@@ -95,6 +95,11 @@ export type Hook = {
   hookIndex: number;
 };
 
+export type HooksReponse = {
+  hooks: Hook[];
+  etag: string;
+};
+
 export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
@@ -133,9 +138,9 @@ export interface ITweekManagementClient {
   getJWTExtractionPolicy(): Promise<string>;
   saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
 
-  getHooks(): Promise<Hook[]>;
-  getHooksForKeyPath(keyPath: string): Promise<Hook[]>;
-  createHook(keyPath: string, type: string, url: string): Promise<void>;
-  updateHook(keyPath: string, hookIndex: number, type: string, url: string): Promise<void>;
-  deleteHook(keyPath: string, hookIndex: number): Promise<void>;
+  getHooks(): Promise<HooksReponse>;
+  getHooksForKeyPath(keyPath: string): Promise<HooksReponse>;
+  createHook(etag: string, keyPath: string, type: string, url: string): Promise<void>;
+  updateHook(etag: string, keyPath: string, hookIndex: number, type: string, url: string): Promise<void>;
+  deleteHook(etag: string, keyPath: string, hookIndex: number): Promise<void>;
 }
