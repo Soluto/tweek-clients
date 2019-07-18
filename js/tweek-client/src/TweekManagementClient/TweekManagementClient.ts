@@ -234,40 +234,42 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  getHooks(): Promise<Hook[]> {
-    const url = `${this.config.baseServiceUrl}/api/v2/hooks`;
+  getHooks(keyPathFilter?: string): Promise<Hook[]> {
+    let url = `${this.config.baseServiceUrl}/api/v2/hooks`;
+
+    if (keyPathFilter) {
+      const queryParamsObject: InputParams = { keyPathFilter };
+      const queryString = toQueryString(queryParamsObject);
+      url += `/${queryString}`;
+    }
+
     return this._fetch(url).then(toJson);
   }
 
-  getHooksForKeyPath(keyPath: string): Promise<Hook[]> {
-    const url = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}`;
-    return this._fetch(url).then(toJson);
-  }
-
-  createHook(keyPath: string, type: string, url: string): Promise<void> {
-    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}`;
+  createHook(hookData: { keyPath: string; type: string; url: string }): Promise<Hook> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks`;
     const config = {
       method: 'POST',
       headers: jsonHeaders,
-      body: JSON.stringify({ type, url }),
+      body: JSON.stringify(hookData),
     };
 
-    return this._fetch(requestUrl, config).then(noop);
+    return this._fetch(requestUrl, config).then(toJson);
   }
 
-  updateHook(keyPath: string, hookIndex: number, type: string, url: string): Promise<void> {
-    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}/?hookIndex=${hookIndex}`;
+  updateHook({ id, ...hookData }: Hook): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${id}`;
     const config = {
       method: 'PUT',
       headers: jsonHeaders,
-      body: JSON.stringify({ type, url }),
+      body: JSON.stringify(hookData),
     };
 
     return this._fetch(requestUrl, config).then(noop);
   }
 
-  deleteHook(keyPath: string, hookIndex: number): Promise<void> {
-    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${keyPath}/?hookIndex=${hookIndex}`;
+  deleteHook({ id }: { id: string }): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${id}`;
     const config = { method: 'DELETE' };
 
     return this._fetch(requestUrl, config).then(noop);
