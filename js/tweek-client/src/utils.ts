@@ -91,7 +91,7 @@ export const optimizeInclude = (keys: string[]): string[] => {
   const keysLength = keys.length;
   const result = new Array<string>(keysLength);
 
-  keys.sort();
+  keys = keys.map(normalizeKeyPath).sort();
 
   const handleKey = (key: string) => {
     result[count] = key;
@@ -131,10 +131,11 @@ export const optimizeInclude = (keys: string[]): string[] => {
 };
 
 export const normalizeBaseUrl = (url: string) => {
-  if (url.endsWith('/')) {
-    url = url.substr(0, url.length - 1);
-  }
-  return url;
+  return url.endsWith('/') ? url.substr(0, url.length - 1) : url;
+};
+
+export const normalizeKeyPath = (keyPath: string) => {
+  return keyPath.startsWith('/') ? keyPath.substr(1) : keyPath;
 };
 
 export const toQueryString = (query: InputParams) => {
