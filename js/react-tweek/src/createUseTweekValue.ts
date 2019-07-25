@@ -43,24 +43,24 @@ export const createUseTweekValue = (
     ensureHooks();
 
     const tweekRepository = React.useContext(TweekContext);
-    const dependencies: [OptionalTweekRepository, string, T] = [tweekRepository, keyPath, defaultValue];
-    const storedDependencies = React.useRef(dependencies);
-    const getTweekValue = () => getValueOrDefault(...dependencies);
+    const args: [OptionalTweekRepository, string, T] = [tweekRepository, keyPath, defaultValue];
+    const storedArgs = React.useRef(args);
+    const getTweekValue = () => getValueOrDefault(...args);
     const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>, null>(valueReducer, null, getTweekValue);
 
-    React.useEffect(() => {
-      return (
+    React.useEffect(
+      () =>
         tweekRepository &&
         tweekRepository.listen(updatedKeys => {
           if (updatedKeys.has(keyPath)) {
             setTweekValue(getTweekValue());
           }
-        })
-      );
-    }, dependencies);
+        }),
+      args,
+    );
 
-    if (!isEqual(dependencies, storedDependencies.current)) {
-      storedDependencies.current = dependencies;
+    if (!isEqual(args, storedArgs.current)) {
+      storedArgs.current = args;
 
       const newTweekValue = getTweekValue();
       if (!isEqual(newTweekValue, tweekValue)) {
