@@ -48,25 +48,25 @@ export const createUseTweekValue = (
     const getTweekValue = () => getValueOrDefault(...args);
     const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>, null>(valueReducer, null, getTweekValue);
 
-    React.useEffect(
-      () =>
+    React.useEffect(() => {
+      const newTweekValue = getTweekValue();
+      if (!isEqual(newTweekValue, tweekValue)) {
+        setTweekValue(newTweekValue);
+      }
+
+      return (
         tweekRepository &&
         tweekRepository.listen(updatedKeys => {
           if (updatedKeys.has(keyPath)) {
             setTweekValue(getTweekValue());
           }
-        }),
-      args,
-    );
+        })
+      );
+    }, args);
 
     if (!isEqual(args, storedArgs.current)) {
       storedArgs.current = args;
-
-      const newTweekValue = getTweekValue();
-      if (!isEqual(newTweekValue, tweekValue)) {
-        setTweekValue(newTweekValue);
-        return newTweekValue;
-      }
+      return getTweekValue();
     }
 
     return tweekValue;
