@@ -148,15 +148,15 @@ describe('createUseTweekValue', () => {
     expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 
-  test('returns expected values when changing the repository', () => {
+  test('value from the hook should equal the value from the repository when changing the repository', () => {
     const firstCachedValue = 'Jake the Dog';
     const secondCachedValue = 'Finn the Human';
 
-    let values: string[] = [];
+    let values: { valueFromHook: string; valueFromRepo: string }[] = [];
 
-    const Component = () => {
+    const Component = ({ repository }: { repository: TweekRepository }) => {
       const value = useTweekValue(keyPath, defaultValue);
-      values.push(value);
+      values.push({ valueFromHook: value, valueFromRepo: repository.getCached(keyPath)!.value });
       return <Empty value={value} />;
     };
 
@@ -165,7 +165,7 @@ describe('createUseTweekValue', () => {
       repository.addKeys({ [keyPath]: value });
       return (
         <TweekContext.Provider value={repository}>
-          <Component />
+          <Component repository={repository} />
         </TweekContext.Provider>
       );
     };
@@ -175,8 +175,7 @@ describe('createUseTweekValue', () => {
       testRenderer = renderer.create(render(firstCachedValue));
     });
     act(() => testRenderer.update(render(secondCachedValue)));
-
-    expect(values).toEqual([firstCachedValue, secondCachedValue, secondCachedValue]);
+    values.forEach(({ valueFromHook, valueFromRepo }) => expect(valueFromHook).toEqual(valueFromRepo));
   });
 
   test('create prepared hook', () => {
