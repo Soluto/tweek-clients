@@ -66,7 +66,7 @@ export const createUseTweekValue = (
 
     if (!isEqual(args, storedArgs.current)) {
       storedArgs.current = args;
-      return getTweekValue();
+      return valueReducer(tweekValue, getTweekValue());
     }
 
     return tweekValue;
