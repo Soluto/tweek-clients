@@ -186,6 +186,13 @@ export default class TweekManagementClient implements ITweekManagementClient {
       .then(x => x.policies);
   }
 
+  getResourcePolicies(resource: string): Promise<Policy[]> {
+    const url = `${this.config.baseServiceUrl}/api/v2/resource/policies/${resource}`;
+    return this._fetch(url)
+      .then(toJson)
+      .then(x => x.policies);
+  }
+
   getJWTExtractionPolicy(): Promise<string> {
     const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
     return this._fetch(url)
@@ -215,6 +222,26 @@ export default class TweekManagementClient implements ITweekManagementClient {
 
   patchPolicies(patch: Patch): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/policies`;
+    const config = {
+      method: 'PATCH',
+      headers: jsonHeaders,
+      body: JSON.stringify(patch),
+    };
+    return this._fetch(url, config).then(noop);
+  }
+
+  saveResourcePolicies(resource: string, policies: Policy[]): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/resource/policies/${resource}`;
+    const config = {
+      method: 'PUT',
+      headers: jsonHeaders,
+      body: JSON.stringify({ policies }),
+    };
+    return this._fetch(url, config).then(noop);
+  }
+
+  patchResourcePolicies(resource: string, patch: Patch): Promise<void> {
+    const url = `${this.config.baseServiceUrl}/api/v2/resource/policies/${resource}`;
     const config = {
       method: 'PATCH',
       headers: jsonHeaders,

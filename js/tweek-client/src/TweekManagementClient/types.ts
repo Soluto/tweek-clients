@@ -123,6 +123,10 @@ export interface ITweekManagementClient {
   savePolicies(policies: Policy[]): Promise<void>;
   patchPolicies(patch: Patch): Promise<void>;
 
+  getResourcePolicies(resource: string): Promise<Policy[]>;
+  saveResourcePolicies(resource: string, policies: Policy[]): Promise<void>;
+  patchResourcePolicies(resource: string, patch: Patch): Promise<void>;
+
   getJWTExtractionPolicy(): Promise<string>;
   saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
 }
