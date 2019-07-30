@@ -360,4 +360,61 @@ describe('TweekManagementClient', () => {
       response: { a: 'b', c: 'd' },
     });
   });
+
+  describe('getHooks', () => {
+    runTest({
+      method: 'getHooks',
+      expectedUrl: '/api/v2/hooks',
+      response: [{ id: 'id1', keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url' }],
+    });
+  });
+
+  describe('getHooks with keyPathFilter', () => {
+    runTest({
+      method: 'getHooks',
+      args: ['a/b/c'],
+      expectedUrl: `/api/v2/hooks/?keyPathFilter=${encodeURIComponent('a/b/c')}`,
+      response: [{ id: 'id1', keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url' }],
+    });
+  });
+
+  describe('createHook', () => {
+    const hookData = { keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url' };
+
+    runTest({
+      method: 'createHook',
+      args: [hookData],
+      expectedUrl: '/api/v2/hooks',
+      expectedRequestInit: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(hookData),
+      },
+      response: [{ id: 'id1', ...hookData }],
+    });
+  });
+
+  describe('updateHook', () => {
+    const hookData = { keyPath: 'a/b/c', type: 'notification_webhook', url: 'a url' };
+
+    runTest({
+      method: 'updateHook',
+      args: [{ id: 'id1', ...hookData }],
+      expectedUrl: '/api/v2/hooks/id1',
+      expectedRequestInit: {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(hookData),
+      },
+    });
+  });
+
+  describe('deleteHook', () => {
+    runTest({
+      method: 'deleteHook',
+      args: [{ id: 'id1' }],
+      expectedUrl: '/api/v2/hooks/id1',
+      expectedRequestInit: { method: 'DELETE' },
+    });
+  });
 });
