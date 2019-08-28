@@ -105,10 +105,11 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  search(query: string, count?: number): Promise<string[]> {
+  search(query: string, options: number || {count?:number, type?: 'free' | 'field'} ): Promise<string[]> {
     const queryParamsObject = {
       q: query,
-      count: count || defaultSearchCount,
+      count: options && options.count || options || defaultSearchCount,
+      type: options && options.type || 'field'
     };
     const queryString = toQueryString(queryParamsObject);
     const url = `${this.config.baseServiceUrl}/api/v2/search${queryString}`;
