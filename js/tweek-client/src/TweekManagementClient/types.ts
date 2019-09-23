@@ -88,6 +88,13 @@ export type Policy = {
   effect: Effect;
 };
 
+export type Hook = {
+  id: string;
+  keyPath: string;
+  type: string;
+  url: string;
+};
+
 export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
@@ -129,4 +136,9 @@ export interface ITweekManagementClient {
 
   getJWTExtractionPolicy(): Promise<string>;
   saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
+
+  getHooks(keyPathFilter?: string): Promise<Hook[]>;
+  createHook(hookData: { keyPath: string; type: string; url: string }): Promise<Hook>;
+  updateHook(hook: Hook): Promise<void>;
+  deleteHook(idObject: { id: string }): Promise<void>;
 }

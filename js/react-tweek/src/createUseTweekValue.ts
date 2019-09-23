@@ -43,7 +43,9 @@ export const createUseTweekValue = (
     ensureHooks();
 
     const tweekRepository = React.useContext(TweekContext);
-    const getTweekValue = () => getValueOrDefault(tweekRepository, keyPath, defaultValue);
+    const args: [OptionalTweekRepository, string, T] = [tweekRepository, keyPath, defaultValue];
+    const storedArgs = React.useRef(args);
+    const getTweekValue = () => getValueOrDefault(...args);
     const [tweekValue, setTweekValue] = React.useReducer<Reducer<T, T>, null>(valueReducer, null, getTweekValue);
 
     React.useEffect(() => {
@@ -60,7 +62,12 @@ export const createUseTweekValue = (
           }
         })
       );
-    }, [tweekRepository, keyPath, defaultValue]);
+    }, args);
+
+    if (!isEqual(args, storedArgs.current)) {
+      storedArgs.current = args;
+      return valueReducer(tweekValue, getTweekValue());
+    }
 
     return tweekValue;
   }
