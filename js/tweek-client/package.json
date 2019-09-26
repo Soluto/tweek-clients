@@ -37,6 +37,7 @@
   "scripts": {
     "dev": "tsc -w",
     "test": "mocha -r ts-node/register 'test/**/*.ts'",
-    "build": "rimraf dist && tsc"
+    "build": "rimraf dist && tsc",
+    "prepare": "npm run build"
   }
 }
