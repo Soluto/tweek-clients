@@ -1,5 +1,5 @@
 import { fetch as globalFetch, Response } from 'cross-fetch';
-import qs, { InputParams } from 'query-string';
+import qs from 'query-string';
 import { FetchClientConfig } from './types';
 
 const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
@@ -137,6 +137,8 @@ export const normalizeBaseUrl = (url: string) => {
 export const normalizeKeyPath = (keyPath: string) => {
   return keyPath.startsWith('/') ? keyPath.substr(1) : keyPath;
 };
+
+export type InputParams = { [key: string]: any };
 
 export const toQueryString = (query: InputParams) => {
   const queryString = qs.stringify(query);

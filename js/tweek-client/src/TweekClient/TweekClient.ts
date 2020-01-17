@@ -1,8 +1,7 @@
-import { InputParams } from 'query-string';
 import chunk from 'lodash.chunk';
-import { deprecated, normalizeBaseUrl, normalizeKeyPath, optimizeInclude, toQueryString } from '../utils';
-import { TweekInitConfig } from '../types';
 import { FetchError } from '../FetchError';
+import { TweekInitConfig } from '../types';
+import { deprecated, InputParams, normalizeBaseUrl, normalizeKeyPath, optimizeInclude, toQueryString } from '../utils';
 import { Context, DetailedTweekResult, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
 
 export default class TweekClient implements ITweekClient {

@@ -1,8 +1,10 @@
+import { FetchError } from '../FetchError';
 import { IdentityContext, TweekInitConfig } from '../types';
-import { normalizeBaseUrl, toQueryString } from '../utils';
+import { InputParams, normalizeBaseUrl, toQueryString } from '../utils';
 import {
   AuthProvider,
   CurrentUser,
+  Hook,
   ITweekManagementClient,
   KeyDefinition,
   KeyDependents,
@@ -12,10 +14,7 @@ import {
   Revision,
   Schema,
   Services,
-  Hook,
 } from './types';
-import { InputParams } from 'query-string';
-import { FetchError } from '../FetchError';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
 
