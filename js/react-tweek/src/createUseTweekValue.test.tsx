@@ -120,7 +120,7 @@ describe('createUseTweekValue', () => {
 
   test('unsubscribe and resubscribe when changing repository', () => {
     const unsubscribe = jest.fn();
-    let listen: jest.Mock;
+    let listen: jest.SpyInstance;
 
     const render = () => {
       const repository = new TweekRepository({ client: {} as any });
