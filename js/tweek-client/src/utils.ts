@@ -1,7 +1,7 @@
 import { fetch as globalFetch, Response } from 'cross-fetch';
 import qs from 'query-string';
 import { FetchClientConfig } from './types';
-import { TweekFetchError } from './TweekFetchError';
+import { FetchError } from './FetchError';
 
 const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
   input: RequestInfo,
@@ -59,8 +59,13 @@ export const createFetchClient = ({
       });
 
       if (onError && !response.ok) {
-        const error = await parseTweekErrorResponse(response);
-        onError(error);
+        setImmediate(() => {
+          try {
+            onError(new FetchError(response, 'tweek server responded with an error'));
+          } catch (err) {
+            onError(err);
+          }
+        });
       }
 
       return response;
@@ -160,14 +165,4 @@ export function deprecated(newMethod: string) {
       return originalValue.apply(this, arguments);
     };
   };
-}
-
-async function parseTweekErrorResponse(res: Response): Promise<TweekFetchError> {
-  try {
-    const text = await res.clone().text();
-
-    return new TweekFetchError(res.status, res.url, text);
-  } catch (er) {
-    return new TweekFetchError(res.status, res.url);
-  }
 }

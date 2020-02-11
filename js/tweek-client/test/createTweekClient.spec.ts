@@ -119,13 +119,13 @@ describe('createTweekClient', () => {
 
     await expect(tweekClient.getValues(url)).to.be.rejected;
     await new Promise(res => setImmediate(res));
+
     sinon.assert.calledOnce(onError);
 
     const actualError = onError.args[0][0];
 
-    expect(actualError.status).to.eq(500);
-    expect(actualError.url).to.eq('http://test/api/v2/values/expected_url');
-    expect(actualError.responseText).to.eq('response text');
+    expect(actualError.response.status).to.eq(500);
+    expect(actualError.response.url).to.eq('http://test/api/v2/values/expected_url');
   });
 
   it('should call onError if fetch throws error', async () => {
