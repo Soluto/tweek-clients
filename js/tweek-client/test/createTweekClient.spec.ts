@@ -1,4 +1,4 @@
-import fetchMock from 'fetch-mock';
+import fetchMock, { MockResponseObject } from 'fetch-mock';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { createTweekClient } from '../src';
@@ -103,7 +103,11 @@ describe('createTweekClient', () => {
 
   it('should call onError if fetch returned an error', async () => {
     const onError = sinon.stub();
-    const response = new Response(null, { status: 500 });
+    const response: MockResponseObject = {
+      body: 'response text',
+      status: 500,
+    };
+
     fetchMock.restore();
     fetchMock.getOnce('*', response, { name: matcherName });
 
@@ -116,6 +120,34 @@ describe('createTweekClient', () => {
     await expect(tweekClient.getValues(url)).to.be.rejected;
     await new Promise(res => setImmediate(res));
     sinon.assert.calledOnce(onError);
-    sinon.assert.calledWithExactly(onError, response);
+
+    const actualError = onError.args[0][0];
+
+    expect(actualError.status).to.eq(500);
+    expect(actualError.url).to.eq('http://test/api/v2/values/expected_url');
+    expect(actualError.responseText).to.eq('response text');
+  });
+
+  it('should call onError if fetch throws error', async () => {
+    const onError = sinon.stub();
+    const expectedError = new Error('error error');
+    const response: MockResponseObject = {
+      throws: expectedError,
+    };
+
+    fetchMock.restore();
+    fetchMock.getOnce('*', response, { name: matcherName });
+
+    const tweekClient = createTweekClient({
+      baseServiceUrl,
+      fetch,
+      onError,
+    });
+
+    await expect(tweekClient.getValues(url)).to.be.rejected;
+    await new Promise(res => setImmediate(res));
+
+    sinon.assert.calledOnce(onError);
+    sinon.assert.calledWithExactly(onError, expectedError);
   });
 });
