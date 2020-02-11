@@ -59,7 +59,8 @@ export const createFetchClient = ({
       });
 
       if (onError && !response.ok) {
-        setImmediate(async () => onError(await parseTweekErrorResponse(response)));
+        const error = await parseTweekErrorResponse(response);
+        onError(error);
       }
 
       return response;
