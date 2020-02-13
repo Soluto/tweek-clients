@@ -1,6 +1,7 @@
 import { fetch as globalFetch, Response } from 'cross-fetch';
 import qs from 'query-string';
 import { FetchClientConfig } from './types';
+import { FetchError } from './FetchError';
 
 const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
   input: RequestInfo,
@@ -37,39 +38,42 @@ export const createFetchClient = ({
   clientSecret,
   requestTimeoutInMillis = 8000,
   onError,
-}: FetchClientConfig) => {
-  const fetchClient = (input: RequestInfo, init: RequestInit = {}) => {
-    let headersPromise: Promise<Record<string, string>>;
+}: FetchClientConfig): ((input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>) => {
+  const fetchClient = async (input: RequestInfo, init: RequestInit = {}) => {
+    let authHeaders: Record<string, string> | undefined;
 
     if (getAuthenticationToken) {
-      headersPromise = Promise.resolve(getAuthenticationToken()).then(t => ({ Authorization: `Bearer ${t}` }));
+      const token = await getAuthenticationToken();
+      authHeaders = { Authorization: `Bearer ${token}` };
     } else if (clientId && clientSecret) {
-      headersPromise = Promise.resolve({ 'X-Client-Id': clientId, 'X-Client-Secret': clientSecret });
-    } else {
-      headersPromise = Promise.resolve({});
+      authHeaders = { 'X-Client-Id': clientId, 'X-Client-Secret': clientSecret };
     }
 
-    let fetchPromise = headersPromise.then(authHeaders =>
-      fetch(input, {
+    try {
+      const response = await fetch(input, {
         ...init,
         headers: {
           ...init.headers,
           ...authHeaders,
         },
-      }),
-    );
-
-    if (onError) {
-      fetchPromise = fetchPromise.then(response => {
-        if (!response.ok) {
-          setImmediate(() => onError(response));
-        }
-
-        return response;
       });
-    }
 
-    return fetchPromise;
+      if (onError && !response.ok) {
+        setImmediate(() => {
+          try {
+            onError(new FetchError(response, 'tweek server responded with an error'));
+          } catch (err) {
+            onError(err);
+          }
+        });
+      }
+
+      return response;
+    } catch (err) {
+      onError && onError(err);
+
+      throw err;
+    }
   };
 
   if (!requestTimeoutInMillis) {
