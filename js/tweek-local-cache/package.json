@@ -35,7 +35,7 @@
     "simple-fake-server": "^3.1.0",
     "sinon": "^8.1.0",
     "ts-node": "^8.0.2",
-    "tweek-client": "^1.0.0",
+    "tweek-client": "^2.0.0",
     "typescript": "^3.3.1",
     "wait-port": "^0.2.2"
   },
