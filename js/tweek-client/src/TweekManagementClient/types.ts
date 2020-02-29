@@ -12,6 +12,7 @@ export type KeyMetadata = {
   description: string;
   readOnly?: boolean;
   archived?: boolean;
+  tags?: string[];
 };
 
 export type KeyManifest = {
