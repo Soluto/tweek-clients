@@ -28,7 +28,7 @@ jobs:
           name: npm
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              docker run -v $PWD:/usr/src -w /usr/src -e NPM_TOKEN node:10.13.0-slim bash ./.circleci/publish.sh
+              docker run -v $PWD:/usr/src -w /usr/src -e NPM_TOKEN node:14-slim bash ./.circleci/publish.sh
             else
               echo "not deploying on non master branches"
             fi
