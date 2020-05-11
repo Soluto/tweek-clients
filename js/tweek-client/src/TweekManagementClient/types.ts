@@ -2,7 +2,7 @@ import { Operation } from 'fast-json-patch';
 import { IdentityContext } from '../types';
 
 export type KeyImplementation = {
-  format: string;
+  format?: string;
   type: string;
   [s: string]: any;
 };
