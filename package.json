@@ -8,8 +8,8 @@
   "devDependencies": {
     "husky": "^4.0.10",
     "lerna": "^3.10.8",
-    "lint-staged": "^9.5.0",
-    "prettier": "^1.16.4"
+    "lint-staged": "^10.2.2",
+    "prettier": "^2.0.5"
   },
   "scripts": {
     "build": "lerna run build",
