@@ -96,7 +96,7 @@ export class TweekRepository {
   public useStore(store: ITweekStore) {
     this._store = store;
 
-    return this._store.load().then(keys => {
+    return this._store.load().then((keys) => {
       keys = keys || {};
       const entries = Object.entries(keys);
 
@@ -153,7 +153,7 @@ export class TweekRepository {
     }
 
     return new Promise<T>((resolve, reject) => {
-      const unlisten = this.listen(updatedKeys => {
+      const unlisten = this.listen((updatedKeys) => {
         if (updatedKeys.has(key)) {
           unlisten();
           const cached = this.getCached(key);
@@ -177,7 +177,7 @@ export class TweekRepository {
     }
 
     return new Promise<T>((resolve, reject) => {
-      const unlisten = this.listen(updatedKeys => {
+      const unlisten = this.listen((updatedKeys) => {
         if (updatedKeys.has(key)) {
           unlisten();
           const cached = this.getCached(key);
@@ -225,7 +225,7 @@ export class TweekRepository {
   public observe<T = any>(key: string): Observable<T> {
     const isScan = isScanKey(key);
 
-    return new Observable<any>(observer => {
+    return new Observable<any>((observer) => {
       const onKey = () => {
         const cached = this.getCached(key);
 
@@ -251,7 +251,7 @@ export class TweekRepository {
 
       onKey();
 
-      return this.listen(updatedKeys => {
+      return this.listen((updatedKeys) => {
         if (!updatedKeys.has(key)) {
           return;
         }
@@ -262,7 +262,7 @@ export class TweekRepository {
   }
 
   public observeValue<T = any>(key: string): Observable<T> {
-    return new Observable<any>(observer => {
+    return new Observable<any>((observer) => {
       const onKey = () => {
         const cached = this.getCached(key);
 
@@ -280,7 +280,7 @@ export class TweekRepository {
 
       onKey();
 
-      return this.listen(updatedKeys => {
+      return this.listen((updatedKeys) => {
         if (!updatedKeys.has(key)) {
           return;
         }
@@ -301,7 +301,7 @@ export class TweekRepository {
     if (state === RepositoryKeyState.cached && isScan) {
       const prefix = getKeyPrefix(key);
       const relative = Object.values(this._cache.list(prefix));
-      if (relative.some(v => !v.isScan && v.state === RepositoryKeyState.requested)) {
+      if (relative.some((v) => !v.isScan && v.state === RepositoryKeyState.requested)) {
         state = RepositoryKeyState.requested;
         value = undefined;
       } else {
@@ -349,7 +349,7 @@ export class TweekRepository {
         this._refreshInProgress = false;
         this._retryCount = 0;
       })
-      .catch(ex => {
+      .catch((ex) => {
         this._refreshErrorPolicy(
           once(() => {
             this._rollRefresh();
@@ -383,15 +383,14 @@ export class TweekRepository {
       include: keysToRefresh,
     };
 
-    return this._client
-      .fetch<any>('_', fetchConfig)
-      .catch(err => {
+    return this._getValues(fetchConfig)
+      .catch((err) => {
         expiredKeys.forEach(([key, valueNode]) => this._cache.set(key, StoredKeyUtils.expire(valueNode)));
         this._isDirty = true;
         throw err;
       })
-      .then(keyValues => this._updateTrieKeys(keysToRefresh, keyValues))
-      .then(updatedKeys => this._store.save(this._cache.list()).then(() => this._emit(updatedKeys)));
+      .then((keyValues) => this._updateTrieKeys(keysToRefresh, keyValues))
+      .then((updatedKeys) => this._store.save(this._cache.list()).then(() => this._emit(updatedKeys)));
   }
 
   private _updateTrieKeys(keys: string[], keyValues: KeyValues): string[] {
@@ -419,7 +418,7 @@ export class TweekRepository {
 
     const keysToUpdate = distinct(this._cache.listEntries(prefix).concat(valuesTrie.listEntries(prefix)));
 
-    keysToUpdate.forEach(subKey => {
+    keysToUpdate.forEach((subKey) => {
       if (isScanKey(subKey)) {
         this._cache.set(subKey, StoredKeyUtils.cached(true));
 
@@ -436,10 +435,10 @@ export class TweekRepository {
   }
 
   private _setScanNodes(keys: string[]) {
-    distinct(flatMap(keys, key => getAllPrefixes(key)))
-      .map(path => `${path}/_`)
-      .filter(path => !this._cache.get(path))
-      .forEach(key => this._cache.set(key, StoredKeyUtils.cached(true)));
+    distinct(flatMap(keys, (key) => getAllPrefixes(key)))
+      .map((path) => `${path}/_`)
+      .filter((path) => !this._cache.get(path))
+      .forEach((key) => this._cache.set(key, StoredKeyUtils.cached(true)));
   }
 
   private _updateNode(key: string, value: any): boolean {
@@ -484,10 +483,19 @@ export class TweekRepository {
       return;
     }
 
-    const relative = flatMap(keys, k => getAllPrefixes(k).map(scan => `${scan}/_`));
+    const relative = flatMap(keys, (k) => getAllPrefixes(k).map((scan) => `${scan}/_`));
     const affectedKeys = new Set(keys.concat(relative));
     affectedKeys.add('_');
 
     this._emitter.emit(affectedKeys);
+  }
+
+  private _getValues(fetchConfig: GetValuesConfig) {
+    // check if using an older version of the client
+    if (this._client.getValues) {
+      return this._client.getValues<any>('_', fetchConfig);
+    }
+
+    return this._client.fetch<any>('_', fetchConfig);
   }
 }
