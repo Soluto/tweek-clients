@@ -96,6 +96,10 @@ export type Hook = {
   url: string;
 };
 
+export type ExternalApp = {
+  name: string;
+};
+
 export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
@@ -138,4 +142,12 @@ export interface ITweekManagementClient {
   createHook(hookData: { keyPath: string; type: string; url: string }): Promise<Hook>;
   updateHook(hook: Hook): Promise<void>;
   deleteHook(idObject: { id: string }): Promise<void>;
+
+  getExternalApps(): Promise<ExternalApp[]>;
+  getExternalApp({ appId }: { appId: string }): Promise<ExternalApp>;
+  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<{ secret: string; appId: string }>;
+  updateExternalApp(appData: { appId: string; name?: string; permissions?: Array<string> }): Promise<void>;
+  deleteExternalApp({ appId }: { appId: string }): Promise<void>;
+  createExternalAppSecretKey({ appId }: { appId: string }): Promise<{ keyId: string; secret: string }>;
+  deleteExternalAppSecretKey({ appId, keyId }: { appId: string; keyId: string }): Promise<void>;
 }
