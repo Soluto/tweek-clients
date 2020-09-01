@@ -105,6 +105,11 @@ export type CreateExternalAppResponse = {
   secret: string;
 };
 
+export type ExternalAppData = {
+  name: string;
+  permissions: string[];
+};
+
 export type CreateExternalAppSecretKeyResponse = {
   keyId: string;
   secret: string;
@@ -155,8 +160,8 @@ export interface ITweekManagementClient {
 
   getExternalApps(): Promise<ExternalApp[]>;
   getExternalApp(appId: string): Promise<ExternalApp>;
-  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<CreateExternalAppResponse>;
-  updateExternalApp(appId: string, appData: { name?: string; permissions?: Array<string> }): Promise<void>;
+  createExternalApp(appData: ExternalAppData): Promise<CreateExternalAppResponse>;
+  updateExternalApp(appId: string, appData: Partial<ExternalAppData>): Promise<void>;
   deleteExternalApp(appId: string): Promise<void>;
   createExternalAppSecretKey(appId: string): Promise<CreateExternalAppSecretKeyResponse>;
   deleteExternalAppSecretKey(appId: string, keyId: string): Promise<void>;

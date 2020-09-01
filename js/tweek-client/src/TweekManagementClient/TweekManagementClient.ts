@@ -17,6 +17,7 @@ import {
   Services,
   CreateExternalAppResponse,
   CreateExternalAppSecretKeyResponse,
+  ExternalAppData,
 } from './types';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -287,7 +288,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<CreateExternalAppResponse> {
+  createExternalApp(appData: ExternalAppData): Promise<CreateExternalAppResponse> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps`;
     const config = {
       method: 'POST',
@@ -298,7 +299,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(requestUrl, config).then(toJson);
   }
 
-  updateExternalApp(appId: string, appData: { name?: string; permissions?: Array<string> }): Promise<void> {
+  updateExternalApp(appId: string, appData: Partial<ExternalAppData>): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
     const config = {
       method: 'PATCH',
