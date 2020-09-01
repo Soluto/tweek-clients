@@ -445,7 +445,7 @@ describe('TweekManagementClient', () => {
   describe('getExternalApp', () => {
     runTest({
       method: 'getExternalApp',
-      args: [{ appId: 'appId1' }],
+      args: ['appId1'],
       expectedUrl: '/api/v2/apps/appId1',
       response: [],
     });
@@ -469,18 +469,16 @@ describe('TweekManagementClient', () => {
   describe('deleteExternalApp', () => {
     runTest({
       method: 'deleteExternalApp',
-      args: [{ appId: 'appId1' }],
+      args: ['appId1'],
       expectedUrl: '/api/v2/apps/appId1',
       expectedRequestInit: { method: 'DELETE' },
     });
   });
 
   describe('createExternalAppSecretKey', () => {
-    const keyData = { appId: 'appId1' };
-
     runTest({
       method: 'createExternalAppSecretKey',
-      args: [keyData],
+      args: ['appId1'],
       expectedUrl: '/api/v2/apps/appId1/keys',
       expectedRequestInit: {
         method: 'POST',
@@ -493,7 +491,7 @@ describe('TweekManagementClient', () => {
   describe('deleteExternalAppSecretKey', () => {
     runTest({
       method: 'deleteExternalAppSecretKey',
-      args: [{ appId: 'appId1', keyId: 'keyId1' }],
+      args: ['appId1', 'keyId1'],
       expectedUrl: '/api/v2/apps/appId1/keys/keyId1',
       expectedRequestInit: { method: 'DELETE' },
     });

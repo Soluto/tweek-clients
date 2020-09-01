@@ -100,6 +100,16 @@ export type ExternalApp = {
   name: string;
 };
 
+export type CreateExternalAppResponse = {
+  appId: string;
+  secret: string;
+};
+
+export type CreateExternalAppSecretKeyResponse = {
+  keyId: string;
+  secret: string;
+};
+
 export type Services = { [s: string]: ServiceDetails };
 
 export interface ITweekManagementClient {
@@ -144,10 +154,10 @@ export interface ITweekManagementClient {
   deleteHook(idObject: { id: string }): Promise<void>;
 
   getExternalApps(): Promise<ExternalApp[]>;
-  getExternalApp({ appId }: { appId: string }): Promise<ExternalApp>;
-  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<{ secret: string; appId: string }>;
+  getExternalApp(appId: string): Promise<ExternalApp>;
+  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<CreateExternalAppResponse>;
   updateExternalApp(appData: { appId: string; name?: string; permissions?: Array<string> }): Promise<void>;
-  deleteExternalApp({ appId }: { appId: string }): Promise<void>;
-  createExternalAppSecretKey({ appId }: { appId: string }): Promise<{ keyId: string; secret: string }>;
-  deleteExternalAppSecretKey({ appId, keyId }: { appId: string; keyId: string }): Promise<void>;
+  deleteExternalApp(appId: string): Promise<void>;
+  createExternalAppSecretKey(appId: string): Promise<CreateExternalAppSecretKeyResponse>;
+  deleteExternalAppSecretKey(appId: string, keyId: string): Promise<void>;
 }

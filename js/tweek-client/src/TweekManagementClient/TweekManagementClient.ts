@@ -15,6 +15,8 @@ import {
   Revision,
   Schema,
   Services,
+  CreateExternalAppResponse,
+  CreateExternalAppSecretKeyResponse,
 } from './types';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -280,12 +282,12 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  getExternalApp({ appId }: { appId: string }): Promise<ExternalApp> {
+  getExternalApp(appId: string): Promise<ExternalApp> {
     const url = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
     return this._fetch(url).then(toJson);
   }
 
-  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<{ secret: string; appId: string }> {
+  createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<CreateExternalAppResponse> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps`;
     const config = {
       method: 'POST',
@@ -308,14 +310,14 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(requestUrl, config).then(noop);
   }
 
-  deleteExternalApp({ appId }: { appId: string }): Promise<void> {
+  deleteExternalApp(appId: string): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
     const config = { method: 'DELETE' };
 
     return this._fetch(requestUrl, config).then(noop);
   }
 
-  createExternalAppSecretKey({ appId }: { appId: string }): Promise<{ keyId: string; secret: string }> {
+  createExternalAppSecretKey(appId: string): Promise<CreateExternalAppSecretKeyResponse> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}/keys`;
     const config = {
       method: 'POST',
@@ -325,7 +327,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(requestUrl, config).then(toJson);
   }
 
-  deleteExternalAppSecretKey({ appId, keyId }: { appId: string; keyId: string }): Promise<void> {
+  deleteExternalAppSecretKey(appId: string, keyId: string): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}/keys/${keyId}`;
     const config = { method: 'DELETE' };
 
