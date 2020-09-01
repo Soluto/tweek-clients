@@ -156,7 +156,7 @@ export interface ITweekManagementClient {
   getExternalApps(): Promise<ExternalApp[]>;
   getExternalApp(appId: string): Promise<ExternalApp>;
   createExternalApp(appData: { name: string; permissions: Array<string> }): Promise<CreateExternalAppResponse>;
-  updateExternalApp(appData: { appId: string; name?: string; permissions?: Array<string> }): Promise<void>;
+  updateExternalApp(appId: string, appData: { name?: string; permissions?: Array<string> }): Promise<void>;
   deleteExternalApp(appId: string): Promise<void>;
   createExternalAppSecretKey(appId: string): Promise<CreateExternalAppSecretKeyResponse>;
   deleteExternalAppSecretKey(appId: string, keyId: string): Promise<void>;

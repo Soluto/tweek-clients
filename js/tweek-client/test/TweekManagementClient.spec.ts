@@ -456,7 +456,7 @@ describe('TweekManagementClient', () => {
 
     runTest({
       method: 'updateExternalApp',
-      args: [{ appId: 'appId1', ...appData }],
+      args: ['appId1', appData],
       expectedUrl: '/api/v2/apps/appId1',
       expectedRequestInit: {
         method: 'PATCH',

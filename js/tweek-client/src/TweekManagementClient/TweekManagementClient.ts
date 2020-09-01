@@ -298,13 +298,12 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(requestUrl, config).then(toJson);
   }
 
-  updateExternalApp(appData: { appId: string; name?: string; permissions?: Array<string> }): Promise<void> {
-    const { appId, ...changes } = appData;
+  updateExternalApp(appId: string, appData: { name?: string; permissions?: Array<string> }): Promise<void> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
     const config = {
       method: 'PATCH',
       headers: jsonHeaders,
-      body: JSON.stringify(changes),
+      body: JSON.stringify(appData),
     };
 
     return this._fetch(requestUrl, config).then(noop);
