@@ -96,8 +96,17 @@ export type Hook = {
   url: string;
 };
 
+export type ExternalAppSecret = {
+  id: string;
+  creationDate: Date;
+};
+
 export type ExternalApp = {
+  id: string;
   name: string;
+  version: string;
+  permissions?: string[];
+  secrets?: ExternalAppSecret[];
 };
 
 export type CreateExternalAppResponse = {
