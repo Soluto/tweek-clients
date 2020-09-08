@@ -1,0 +1,132 @@
+name: Main
+
+on:
+  push:
+    paths-ignore:
+      - README.md
+
+jobs:
+  test_js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build test image
+        env:
+          NODE_ENV: development
+        run: docker build -t js_tests .
+
+      - name: Pull tweek-blackbox image
+        run: docker pull soluto/tweek-blackbox:latest
+
+      - name: Run tests
+        env:
+          NODE_ENV: development
+        run: |
+          docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/testRepoData:/repo --name tweek_environment soluto/tweek-blackbox
+          for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
+          docker run --network=blackbox_default -e TWEEK_GATEWAY_URL=http://gateway js_tests
+
+  deploy_js:
+    needs: test_js
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Build modules
+        run: |
+          yarn
+          yarn build
+
+      - name: Publish tweek-client
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ `cat ./js/tweek-client/package.json | jq -r .version` != `npm show tweek-client version` ]]; then
+            echo "publish tweek-client"
+            cd js/tweek-client && npm publish && cd ../..
+          fi
+
+      - name: Publish tweek-local-cache
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ `cat ./js/tweek-local-cache/package.json | jq -r .version` != `npm show tweek-local-cache version` ]]; then
+            echo "publish tweek-local-cache"
+            cd js/tweek-local-cache && npm publish && cd ../..
+          fi
+
+      - name: Publish react-tweek
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ `cat ./js/react-tweek/package.json | jq -r .version` != `npm show react-tweek version` ]]; then
+            echo "publish react-tweek"
+            cd js/react-tweek && npm publish && cd ../..
+          fi
+
+  test_dotnet:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_RUN_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build test image
+        run: docker build -t dotnet_tests ./dotnet
+
+      - name: Pull tweek-blackbox image
+        run: docker pull soluto/tweek-blackbox:latest
+
+      - name: Set package version
+        run: |
+          VersionSuffix=0.3.$GITHUB_RUN_NUMBER
+          echo $VersionSuffix > version.txt
+
+      - name: Run tests
+        run: |
+          docker run -d -v /var/run/docker.sock:/var/run/docker.sock -v $PWD/testRepoData:/repo --name tweek_environment soluto/tweek-blackbox
+          for RETRY in {1..180}; do docker inspect -f {{.State.Health.Status}} tweek_environment | grep -w "healthy" && break || sleep 1 ; done
+          docker run -d --network=blackbox_default -e TWEEK_LOCAL_API=http://api --name=dotnet_tests dotnet_tests
+          docker exec -e "VersionSuffix=$VersionSuffix" dotnet_tests /bin/bash -c "cd /test-environment/ && dotnet build -c release"
+          docker exec -e "VersionSuffix=$VersionSuffix" dotnet_tests /bin/bash -c "cd /test-environment/Tweek.Client.Tests && dotnet test"
+
+      - name: Upload version
+        uses: actions/upload-artifact@v2
+        with:
+          name: version
+          path: version.txt
+
+  deploy_dotnet:
+    needs: test_dotnet
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' &&  }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download version
+        uses: actions/download-artifact@v2
+        with:
+          name: version
+          path: ./dotnet
+
+      - name: Build project
+        run: |
+          echo "Building version $VersionSuffix..."
+          VersionSuffix=`cat version.txt` dotnet build -c release
+        working-directory: ./dotnet
+
+      - name: Publish Tweek.Client nuget
+        env:
+          NUGET_APIKEY: ${{ secrets.NUGET_APIKEY }}
+        run: |
+          echo "Publishing version ..."
+          dotnet nuget push ./Tweek.Client/bin/Release/Tweek.Client\*.nupkg -s nuget.org -k $NUGET_APIKEY
+        working-directory: ./dotnet
