@@ -1,6 +1,6 @@
 {
   "name": "tweek-client",
-  "version": "2.2.0",
+  "version": "2.2.1-rc0",
   "description": "Tweek client for JavaScript",
   "author": "Soluto",
   "license": "MIT",
