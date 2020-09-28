@@ -17,15 +17,15 @@
     "lodash.isequal": "^4.5.0"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.13",
+    "@types/jest": "^25.2.1",
     "@types/lodash.isequal": "^4.5.3",
     "@types/react": "^16.8.1",
     "@types/react-test-renderer": "^16.0.3",
-    "jest": "^23.6.0",
+    "jest": "^26.0.1",
     "react": "^16.3.0",
     "react-test-renderer": "^16.3.0",
-    "rimraf": "^2.6.3",
-    "ts-jest": "^23.10.5",
+    "rimraf": "^3.0.0",
+    "ts-jest": "^25.5.1",
     "tweek-local-cache": "^0.6.0",
     "typescript": "^3.3.1"
   },

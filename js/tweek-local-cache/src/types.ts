@@ -59,7 +59,7 @@ export type FlatKeys = {
 
 export interface ITweekStore {
   save: (keys: TweekStoredKeys) => Promise<void>;
-  load: () => Promise<TweekStoredKeys>;
+  load: () => Promise<TweekStoredKeys | undefined | null>;
 }
 
 export type TweekRepositoryConfig = {

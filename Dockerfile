@@ -1,4 +1,4 @@
-FROM node:10.13.0-slim
+FROM node:14-slim
 WORKDIR /opt
 
 COPY lerna.json package.json yarn.lock ./

@@ -417,4 +417,83 @@ describe('TweekManagementClient', () => {
       expectedRequestInit: { method: 'DELETE' },
     });
   });
+
+  describe('getExternalApps', () => {
+    runTest({
+      method: 'getExternalApps',
+      expectedUrl: '/api/v2/apps',
+      response: [],
+    });
+  });
+
+  describe('createExternalApp', () => {
+    const appData = { name: 'test-app' };
+
+    runTest({
+      method: 'createExternalApp',
+      args: [appData],
+      expectedUrl: '/api/v2/apps',
+      expectedRequestInit: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appData),
+      },
+      response: [{ appId: 'id1', secret: 'SECRET' }],
+    });
+  });
+
+  describe('getExternalApp', () => {
+    runTest({
+      method: 'getExternalApp',
+      args: ['appId1'],
+      expectedUrl: '/api/v2/apps/appId1',
+      response: [],
+    });
+  });
+
+  describe('updateExternalApp', () => {
+    const appData = { name: 'test-app-new' };
+
+    runTest({
+      method: 'updateExternalApp',
+      args: ['appId1', appData],
+      expectedUrl: '/api/v2/apps/appId1',
+      expectedRequestInit: {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appData),
+      },
+    });
+  });
+
+  describe('deleteExternalApp', () => {
+    runTest({
+      method: 'deleteExternalApp',
+      args: ['appId1'],
+      expectedUrl: '/api/v2/apps/appId1',
+      expectedRequestInit: { method: 'DELETE' },
+    });
+  });
+
+  describe('createExternalAppSecretKey', () => {
+    runTest({
+      method: 'createExternalAppSecretKey',
+      args: ['appId1'],
+      expectedUrl: '/api/v2/apps/appId1/keys',
+      expectedRequestInit: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      },
+      response: [{ keyId: 'keyId1', secret: 'SECRET' }],
+    });
+  });
+
+  describe('deleteExternalAppSecretKey', () => {
+    runTest({
+      method: 'deleteExternalAppSecretKey',
+      args: ['appId1', 'keyId1'],
+      expectedUrl: '/api/v2/apps/appId1/keys/keyId1',
+      expectedRequestInit: { method: 'DELETE' },
+    });
+  });
 });

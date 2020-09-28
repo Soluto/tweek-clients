@@ -1,7 +1,8 @@
-import sinon from 'sinon';
 import { expect } from 'chai';
-import qs, { InputParams } from 'query-string';
+import qs from 'query-string';
+import sinon from 'sinon';
 import { GetValuesConfig, TweekClient } from '../../src';
+import { InputParams } from '../../src/utils';
 
 export const toQueryString = (query: InputParams | undefined) => {
   if (!query) {

@@ -31,7 +31,7 @@ the config object accepts these properties:
 | `useLegacyEndpoint`      | if set to true, will use `v1` version of the api       | `boolean`                                         | `false`     |
 | `fetch`                  | a fetch client to use to make the requests             | `(RequestInfo, RequestInit) => Promise<Response>` | cross-fetch |
 | `requestTimeoutInMillis` | request timeout in ms                                  | `number`                                          | 8000        |
-| `onError`                | callback to be called for request errors               | `(Response) => void`                              |
+| `onError`                | callback to be called for request errors               | `(Error) => void`                                 |
 | `getAuthenticationToken` | a function that returns a token for jwt authentication | `() => Promise<string> \| string`                 |
 | `clientId`               | client id for basic auth authentication                | `string`                                          |
 | `clientSecret`           | client secret for basic auth authentication            | `string`                                          |
@@ -87,7 +87,7 @@ the config object accepts these properties:
 | `baseServiceUrl`         | Required - the url for tweek gateway                   | `string`                                          |
 | `fetch`                  | a fetch client to use to make the requests             | `(RequestInfo, RequestInit) => Promise<Response>` | cross-fetch |
 | `requestTimeoutInMillis` | request timeout in ms                                  | `number`                                          | 8000        |
-| `onError`                | callback to be called for request errors               | `(Response) => void`                              |
+| `onError`                | callback to be called for request errors               | `(Error) => void`                                 |
 | `getAuthenticationToken` | a function that returns a token for jwt authentication | `() => Promise<string> \| string`                 |
 | `clientId`               | client id for basic auth authentication                | `string`                                          |
 | `clientSecret`           | client secret for basic auth authentication            | `string`                                          |

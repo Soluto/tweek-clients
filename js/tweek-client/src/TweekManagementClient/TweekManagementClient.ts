@@ -1,8 +1,11 @@
+import { FetchError } from '../FetchError';
 import { IdentityContext, TweekInitConfig } from '../types';
-import { normalizeBaseUrl, toQueryString } from '../utils';
+import { InputParams, normalizeBaseUrl, toQueryString } from '../utils';
 import {
   AuthProvider,
   CurrentUser,
+  ExternalApp,
+  Hook,
   ITweekManagementClient,
   KeyDefinition,
   KeyDependents,
@@ -12,10 +15,10 @@ import {
   Revision,
   Schema,
   Services,
-  Hook,
+  CreateExternalAppResponse,
+  CreateExternalAppSecretKeyResponse,
+  ExternalAppData,
 } from './types';
-import { InputParams } from 'query-string';
-import { FetchError } from '../FetchError';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
 
@@ -186,14 +189,14 @@ export default class TweekManagementClient implements ITweekManagementClient {
     const url = `${this.config.baseServiceUrl}/api/v2/policies`;
     return this._fetch(url)
       .then(toJson)
-      .then(x => x.policies);
+      .then((x) => x.policies);
   }
 
   getJWTExtractionPolicy(): Promise<string> {
     const url = `${this.config.baseServiceUrl}/api/v2/jwt-extraction-policy`;
     return this._fetch(url)
       .then(toJson)
-      .then(x => x.data);
+      .then((x) => x.data);
   }
 
   saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void> {
@@ -277,8 +280,64 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(requestUrl, config).then(noop);
   }
 
+  getExternalApps(): Promise<ExternalApp[]> {
+    const url = `${this.config.baseServiceUrl}/api/v2/apps`;
+    return this._fetch(url).then(toJson);
+  }
+
+  getExternalApp(appId: string): Promise<ExternalApp> {
+    const url = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
+    return this._fetch(url).then(toJson);
+  }
+
+  createExternalApp(appData: ExternalAppData): Promise<CreateExternalAppResponse> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps`;
+    const config = {
+      method: 'POST',
+      headers: jsonHeaders,
+      body: JSON.stringify(appData),
+    };
+
+    return this._fetch(requestUrl, config).then(toJson);
+  }
+
+  updateExternalApp(appId: string, appData: Partial<ExternalAppData>): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
+    const config = {
+      method: 'PATCH',
+      headers: jsonHeaders,
+      body: JSON.stringify(appData),
+    };
+
+    return this._fetch(requestUrl, config).then(noop);
+  }
+
+  deleteExternalApp(appId: string): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}`;
+    const config = { method: 'DELETE' };
+
+    return this._fetch(requestUrl, config).then(noop);
+  }
+
+  createExternalAppSecretKey(appId: string): Promise<CreateExternalAppSecretKeyResponse> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}/keys`;
+    const config = {
+      method: 'POST',
+      headers: jsonHeaders,
+    };
+
+    return this._fetch(requestUrl, config).then(toJson);
+  }
+
+  deleteExternalAppSecretKey(appId: string, keyId: string): Promise<void> {
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/apps/${appId}/keys/${keyId}`;
+    const config = { method: 'DELETE' };
+
+    return this._fetch(requestUrl, config).then(noop);
+  }
+
   private _fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-    return this.config.fetch(input, init).then<Response>(response => {
+    return this.config.fetch(input, init).then<Response>((response) => {
       if (!response.ok) {
         return Promise.reject(new FetchError(response, 'tweek server responded with an error'));
       }

@@ -208,7 +208,7 @@ describe('createWithTweekValues', () => {
 
   test('unsubscribe and resubscribe when changing repository', () => {
     const unsubscribe = jest.fn();
-    let listen: jest.Mock;
+    let listen: jest.SpyInstance;
     const enhance = withTweekValues<TweekProps>(mapping);
 
     const EnhancedComponent = enhance(Child);
