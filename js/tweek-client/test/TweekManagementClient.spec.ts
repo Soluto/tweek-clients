@@ -172,14 +172,14 @@ describe('TweekManagementClient', () => {
     runTest({
       method: 'search',
       args: ['a/b'],
-      expectedUrl: '/api/v2/search?count=25&q=a%2Fb',
+      expectedUrl: '/api/v2/search?count=25&q=a%2Fb&type=field',
       response: ['a', 'b'],
     });
 
     runTest({
       method: 'search',
       args: ['c/d', 50],
-      expectedUrl: '/api/v2/search?count=50&q=c%2Fd',
+      expectedUrl: '/api/v2/search?count=50&q=c%2Fd&type=field',
       response: ['c', 'd'],
     });
   });
