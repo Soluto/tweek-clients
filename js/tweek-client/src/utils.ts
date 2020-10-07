@@ -142,7 +142,7 @@ export const normalizeKeyPath = (keyPath: string) => {
   return keyPath.startsWith('/') ? keyPath.substr(1) : keyPath;
 };
 
-export type InputParams = { [key: string]: any };
+export type InputParams = Record<string, unknown>;
 
 export const toQueryString = (query: InputParams) => {
   const queryString = qs.stringify(query);

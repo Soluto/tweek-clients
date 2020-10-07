@@ -26,7 +26,7 @@ export function missing(): MissingKey {
 export function cached(isScan: true): CachedScanKey;
 export function cached<T>(isScan: false, value: T): CachedSingleKey<T>;
 export function cached<T>(isScan: boolean, value?: T): CachedKey<T> {
-  return <any>{
+  return <CachedKey<T>>{
     state: RepositoryKeyState.cached,
     isScan,
     value,

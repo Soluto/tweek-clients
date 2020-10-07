@@ -4,7 +4,7 @@ import { IdentityContext } from '../types';
 export type KeyImplementation = {
   format?: string;
   type: string;
-  [s: string]: any;
+  [s: string]: unknown;
 };
 
 export type KeyMetadata = {
@@ -33,7 +33,7 @@ export type KeyDependents = {
   aliases: string[];
 };
 
-export type Schema = { [s: string]: any };
+export type Schema = Record<string, unknown>;
 
 export type Patch = Operation[];
 
@@ -52,7 +52,7 @@ export type CurrentUser = {
 
 export type AuthLoginInfo = {
   login_type: string;
-  additional_info: { [s: string]: any };
+  additional_info: Record<string, unknown>;
   scope: string;
   response_type: string;
 };

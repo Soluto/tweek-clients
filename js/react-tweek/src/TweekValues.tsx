@@ -3,7 +3,7 @@ import { RepositoryKeyState, Unlisten } from 'tweek-local-cache';
 import isEqual from 'lodash.isequal';
 import { OptionalTweekRepository } from './types';
 
-type Values = { [s: string]: any };
+type Values = Record<string, unknown>;
 
 export type ResetOptions = {
   resetOnRepoChange?: boolean;
@@ -15,7 +15,7 @@ export type TweekValuesProps<T extends {}> = ResetOptions & {
   tweekRepository: OptionalTweekRepository;
   valuesMapping: ValuesMapping<T>;
   defaultValues?: T;
-  children: (values: T) => ReactElement<any> | null;
+  children: (values: T) => ReactElement | null;
 };
 
 function filterDefaultValues<T>(keyMapping: ValuesMapping<T>, defaultValues: T | undefined): T | null {
@@ -40,7 +40,7 @@ function extractTweekValues<T>(
 
   const newValues: Values = filteredDefaultValues || {};
 
-  for (const [prop, keyPath] of Object.entries(valuesMapping as Values)) {
+  for (const [prop, keyPath] of Object.entries(valuesMapping as Record<string, string>)) {
     const cachedKey = tweekRepository.getCached(keyPath);
 
     if (!cachedKey) {

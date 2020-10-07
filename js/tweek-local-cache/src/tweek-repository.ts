@@ -33,7 +33,7 @@ import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 import * as StoredKeyUtils from './stored-key-utils';
 import { TweekKeySplitJoin } from './split-join';
 
-type KeyValues = { [key: string]: any };
+type KeyValues = { [key: string]: unknown };
 
 export type Unlisten = () => void;
 export type RepositoryListener = (updatedKeys: Set<string>) => void;
@@ -43,7 +43,7 @@ const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeySta
 
 export class TweekRepository {
   private _emitter = createChangeEmitter<Set<string>>();
-  private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
+  private _cache = new Trie<StoredKey<unknown>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
   private _context: Context;
@@ -404,7 +404,7 @@ export class TweekRepository {
   }
 
   private _updateTrieKeys(keys: string[], keyValues: KeyValues): string[] {
-    let valuesTrie: Trie<any> | undefined;
+    let valuesTrie: Trie<unknown> | undefined;
     const updatedKeys = [];
     for (const keyToUpdate of keys) {
       const isScan = isScanKey(keyToUpdate);
@@ -420,7 +420,7 @@ export class TweekRepository {
     return updatedKeys;
   }
 
-  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<any>): string[] {
+  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<unknown>): string[] {
     this._cache.set(key, StoredKeyUtils.cached(true));
 
     const prefix = getKeyPrefix(key);
@@ -451,7 +451,7 @@ export class TweekRepository {
       .forEach((key) => this._cache.set(key, StoredKeyUtils.cached(true)));
   }
 
-  private _updateNode(key: string, value: any): boolean {
+  private _updateNode(key: string, value: unknown): boolean {
     const cached = this._cache.get(key);
     const updated = !cached || cached.state === RepositoryKeyState.requested || !isEqual(cached.value, value);
 
@@ -503,9 +503,9 @@ export class TweekRepository {
   private _getValues(fetchConfig: GetValuesConfig) {
     // check if using an older version of the client
     if (this._client.getValues) {
-      return this._client.getValues<any>('_', fetchConfig);
+      return this._client.getValues<KeyValues>('_', fetchConfig);
     }
 
-    return this._client.fetch<any>('_', fetchConfig);
+    return this._client.fetch<KeyValues>('_', fetchConfig);
   }
 }
