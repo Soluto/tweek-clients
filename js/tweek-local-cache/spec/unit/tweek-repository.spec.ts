@@ -465,7 +465,6 @@ describe('tweek repo test', () => {
       // Arrange
       const fetchStub = sinon.stub();
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
         getValues: <any>fetchStub,
         getValuesWithDetails: <any>fetchStub,
       };
@@ -485,7 +484,6 @@ describe('tweek repo test', () => {
       // Arrange
       const fetchStub = sinon.stub().resolves({});
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
         getValues: <any>fetchStub,
         getValuesWithDetails: <any>fetchStub,
       };
@@ -581,7 +579,6 @@ describe('tweek repo test', () => {
       fetchStub.resolves(fetchPromise());
 
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
         getValues: <any>fetchStub,
         getValuesWithDetails: <any>fetchStub,
       };
@@ -611,7 +608,6 @@ describe('tweek repo test', () => {
       fetchStub.resolves(Object.keys(persistedNodes).reduce((acc, key) => ({ ...acc, [key]: 2 }), {}));
 
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
         getValues: <any>fetchStub,
         getValuesWithDetails: <any>fetchStub,
       };
@@ -653,7 +649,6 @@ describe('tweek repo test', () => {
       fetchStub.onCall(4).resolves({ test1: 2 });
 
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
         getValues: <any>fetchStub,
         getValuesWithDetails: <any>fetchStub,
       };
@@ -697,7 +692,6 @@ describe('tweek repo test', () => {
       fetchStub.onCall(1).resolves({ test1: 1 });
 
       const clientMock: ITweekClient = {
-        fetch: <any>fetchStub,
         getValues: <any>fetchStub,
         getValuesWithDetails: <any>fetchStub,
       };

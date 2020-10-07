@@ -11,10 +11,6 @@ export default class TweekClientWithFallback implements ITweekClient {
     return this._execute((client) => client.getValuesWithDetails(path, config));
   }
 
-  fetch<T>(path: string, config?: GetValuesConfig): Promise<T> {
-    return this._execute((client) => client.fetch(path, config));
-  }
-
   private _execute<T>(fn: (client: ITweekClient) => Promise<T>): Promise<T> {
     return this._clients.reduce(
       (acc, client) => acc.catch(() => fn(client)),

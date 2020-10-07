@@ -1,7 +1,7 @@
 import chunk from 'lodash.chunk';
 import { FetchError } from '../FetchError';
 import { TweekInitConfig } from '../types';
-import { deprecated, InputParams, normalizeBaseUrl, normalizeKeyPath, optimizeInclude, toQueryString } from '../utils';
+import { InputParams, normalizeBaseUrl, normalizeKeyPath, optimizeInclude, toQueryString } from '../utils';
 import { Context, DetailedTweekResult, GetValuesConfig, ITweekClient, TweekClientConfig } from './types';
 
 export default class TweekClient implements ITweekClient {
@@ -24,11 +24,6 @@ export default class TweekClient implements ITweekClient {
 
   getValuesWithDetails<T>(path: string, config?: GetValuesConfig): Promise<DetailedTweekResult<T>> {
     return this._splitToChunks<T>(path, config, true);
-  }
-
-  @deprecated('getValues')
-  fetch<T>(path: string, config?: GetValuesConfig): Promise<T> {
-    return this.getValues(path, config);
   }
 
   private _splitToChunks<T>(

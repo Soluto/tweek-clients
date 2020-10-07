@@ -501,11 +501,6 @@ export class TweekRepository {
   }
 
   private _getValues(fetchConfig: GetValuesConfig) {
-    // check if using an older version of the client
-    if (this._client.getValues) {
-      return this._client.getValues<KeyValues>('_', fetchConfig);
-    }
-
-    return this._client.fetch<KeyValues>('_', fetchConfig);
+    return this._client.getValues<KeyValues>('_', fetchConfig);
   }
 }
