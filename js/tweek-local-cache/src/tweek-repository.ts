@@ -6,18 +6,15 @@ import Observable from 'zen-observable';
 import Trie from './trie';
 import {
   delay,
-  deprecated,
   distinct,
   flatMap,
   getAllPrefixes,
   getKeyPrefix,
-  getValueOrOptional,
   isScanKey,
   once,
   partitionByIndex,
   snakeToCamelCase,
 } from './utils';
-import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
   Expiration,
@@ -139,34 +136,6 @@ export class TweekRepository {
     }
   }
 
-  /**
-   * @deprecated Please use `getValue`
-   */
-  @deprecated('getValue')
-  public get<T = any>(key: string): Promise<Optional<T> | T> {
-    const cached = this.getCached(key);
-
-    if (!cached) {
-      this.prepare(key);
-    } else if (cached.state !== RepositoryKeyState.requested) {
-      return Promise.resolve(getValueOrOptional(cached));
-    }
-
-    return new Promise<T>((resolve, reject) => {
-      const unlisten = this.listen((updatedKeys) => {
-        if (updatedKeys.has(key)) {
-          unlisten();
-          const cached = this.getCached(key);
-          if (!cached || cached.state === RepositoryKeyState.requested) {
-            reject(new Error('repository state is corrupted'));
-          } else {
-            resolve(getValueOrOptional(cached));
-          }
-        }
-      });
-    });
-  }
-
   public getValue<T = any>(key: string): Promise<T> {
     const cached = this.getCached(key);
 
@@ -191,14 +160,6 @@ export class TweekRepository {
     });
   }
 
-  /**
-   * @deprecated Please use `expire`
-   */
-  @deprecated('expire')
-  public refresh(keysToRefresh?: string[]) {
-    this.expire(keysToRefresh);
-  }
-
   public expire(keysToRefresh = Object.keys(this._cache.list())) {
     for (const key of keysToRefresh) {
       const node = this._cache.get(key);
@@ -216,49 +177,6 @@ export class TweekRepository {
       }
     }
     this._checkRefresh();
-  }
-
-  /**
-   * @deprecated Please use `observeValue`
-   */
-  @deprecated('observeValue')
-  public observe<T = any>(key: string): Observable<T> {
-    const isScan = isScanKey(key);
-
-    return new Observable<any>((observer) => {
-      const onKey = () => {
-        const cached = this.getCached(key);
-
-        if (!cached) {
-          this.prepare(key);
-          return;
-        }
-
-        if (isScan !== cached.isScan) {
-          observer.error(new Error('corrupted cache'));
-          return;
-        }
-
-        if (cached.state === RepositoryKeyState.cached) {
-          observer.next(isScan ? cached.value : Optional.some(cached.value));
-          return;
-        }
-
-        if (cached.state === RepositoryKeyState.missing) {
-          observer.next(Optional.none());
-        }
-      };
-
-      onKey();
-
-      return this.listen((updatedKeys) => {
-        if (!updatedKeys.has(key)) {
-          return;
-        }
-
-        onKey();
-      });
-    });
   }
 
   public observeValue<T = any>(key: string): Observable<T> {
