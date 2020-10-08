@@ -423,7 +423,13 @@ export class TweekRepository {
     this._emitter.emit(affectedKeys);
   }
 
-  private _getValues(fetchConfig: GetValuesConfig) {
-    return this._client.getValues<KeyValues>('_', fetchConfig);
+  private _getValues(fetchConfig: GetValuesConfig): Promise<any> {
+    // check if using an older version of the client
+    if (this._client.getValues) {
+      return this._client.getValues<any>('_', fetchConfig);
+    }
+
+    // @ts-ignore
+    return this._client.fetch<any>('_', fetchConfig);
   }
 }
