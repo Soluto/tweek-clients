@@ -163,9 +163,9 @@ export interface ITweekManagementClient {
   saveJWTExtractionPolicy(jwtRegoPolicy: string): Promise<void>;
 
   getHooks(keyPathFilter?: string): Promise<Hook[]>;
-  createHook(hookData: { keyPath: string; type: string; url: string }): Promise<Hook>;
+  createHook(hookData: Omit<Hook, 'id'>): Promise<Hook>;
   updateHook(hook: Hook): Promise<void>;
-  deleteHook(idObject: { id: string }): Promise<void>;
+  deleteHook(hookId: string): Promise<void>;
 
   getExternalApps(): Promise<ExternalApp[]>;
   getExternalApp(appId: string): Promise<ExternalApp>;

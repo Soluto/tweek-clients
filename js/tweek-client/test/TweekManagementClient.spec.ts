@@ -416,6 +416,13 @@ describe('TweekManagementClient', () => {
       expectedUrl: '/api/v2/hooks/id1',
       expectedRequestInit: { method: 'DELETE' },
     });
+
+    runTest({
+      method: 'deleteHook',
+      args: ['id2'],
+      expectedUrl: '/api/v2/hooks/id2',
+      expectedRequestInit: { method: 'DELETE' },
+    });
   });
 
   describe('getExternalApps', () => {
