@@ -873,6 +873,27 @@ describe('tweek repo test', () => {
       );
     });
 
+    it('should notify requested scan keys', async () => {
+      // Arrange
+      await initRepository();
+      _tweekRepo.addKeys({
+        'my_path/string_value': 'my-string',
+        'my_path/inner_path_1/int_value': 55,
+        'my_path/inner_path_1/bool_positive_value': true,
+        'my_path/inner_path_2/bool_negative_value': false,
+      });
+      const callback = sinon.stub();
+      const unlisten = _tweekRepo.listen(callback);
+
+      // Act
+      await refreshAndWait(['my_path/_']);
+      unlisten();
+
+      // Assert
+      sinon.assert.calledOnce(callback);
+      sinon.assert.calledWithExactly(callback, sinon.match.set.deepEquals(new Set(['my_path/_', '_'])));
+    });
+
     it('should stop notifying after unlisten', async () => {
       // Arrange
       await initRepository();

@@ -339,10 +339,15 @@ export class TweekRepository {
   }
 
   private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<unknown>): string[] {
+    const cached = this._cache.get(key);
     this._cache.set(key, StoredKeyUtils.cached(true));
 
     const prefix = getKeyPrefix(key);
     const updatedKeys: string[] = [];
+
+    if (!cached || cached.state === RepositoryKeyState.requested) {
+      updatedKeys.push(key);
+    }
 
     const keysToUpdate = distinct(this._cache.listEntries(prefix).concat(valuesTrie.listEntries(prefix)));
 
