@@ -28,7 +28,7 @@ const cachedItem = (value?: any, expiration?: Expiration): StoredKey<any> =>
   };
 
 function delay(timeout: number) {
-  return new Promise(resolve => setTimeout(resolve, timeout));
+  return new Promise((resolve) => setTimeout(resolve, timeout));
 }
 
 type InitRepoConfig = {
@@ -45,7 +45,7 @@ describe('tweek repo test', () => {
 
   async function refreshAndWait(keys?: string[]) {
     _tweekRepo.expire(keys);
-    await (<any>_tweekRepo)._waitRefreshCycle();
+    await _tweekRepo.waitRefreshCycle();
   }
 
   async function initRepository({ store, client = _defaultClient, context }: InitRepoConfig = {}) {
@@ -64,26 +64,20 @@ describe('tweek repo test', () => {
     _tweekServer.stop();
   });
 
-  beforeEach(done => {
-    _tweekServer.http
-      .get()
-      .to('/api/v2/values/_/*')
-      .willReturn({
-        'my_path/string_value': 'my-string',
-        'my_path/inner_path_1/int_value': 55,
-        'my_path/inner_path_1/bool_positive_value': true,
-        'my_path/inner_path_2/bool_negative_value': false,
-        'some_path/inner_path_1/first_value': 'value_1',
-        'some_path/inner_path_1/second_value': 'value_2',
-        'deeply_nested/a/b/c/d/value': 'value_5',
-        'some_other_path/inner_path_2/third_value': 'value_3',
-      });
+  beforeEach((done) => {
+    _tweekServer.http.get().to('/api/v2/values/_/*').willReturn({
+      'my_path/string_value': 'my-string',
+      'my_path/inner_path_1/int_value': 55,
+      'my_path/inner_path_1/bool_positive_value': true,
+      'my_path/inner_path_2/bool_negative_value': false,
+      'some_path/inner_path_1/first_value': 'value_1',
+      'some_path/inner_path_1/second_value': 'value_2',
+      'deeply_nested/a/b/c/d/value': 'value_5',
+      'some_other_path/inner_path_2/third_value': 'value_3',
+    });
 
     _createClientThatFails = () => {
-      _tweekServer.http
-        .get()
-        .to('/api/v2/values/_/*')
-        .willFail(500);
+      _tweekServer.http.get().to('/api/v2/values/_/*').willFail(500);
       return createTweekClient({ baseServiceUrl: 'http://localhost:1234/' });
     };
 
@@ -229,7 +223,7 @@ describe('tweek repo test', () => {
           'my_path/inner_path_2/bool_negative_value': false,
         };
 
-        await Promise.all(Object.keys(expected).map(key => _tweekRepo.prepare(key)));
+        await Promise.all(Object.keys(expected).map((key) => _tweekRepo.prepare(key)));
 
         await refreshAndWait();
 
@@ -500,7 +494,7 @@ describe('tweek repo test', () => {
       await initRepository({ client: clientMock, context: expectedContext });
 
       const expectedKeys = ['some_path1/_', 'some_path2/key1', 'some_path3/key2'];
-      expectedKeys.forEach(key => _tweekRepo.prepare(key));
+      expectedKeys.forEach((key) => _tweekRepo.prepare(key));
 
       const expectedFetchConfig: GetValuesConfig = {
         flatten: true,
@@ -631,17 +625,17 @@ describe('tweek repo test', () => {
       await refreshAndWait();
 
       await Promise.all(
-        Object.keys(persistedNodes).map(async key => {
+        Object.keys(persistedNodes).map(async (key) => {
           const keyValue = await _tweekRepo.getValue(key);
           expect(keyValue).to.equal(1);
         }),
       );
 
       recover!();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       await Promise.all(
-        Object.keys(persistedNodes).map(async key => {
+        Object.keys(persistedNodes).map(async (key) => {
           const keyValue = await _tweekRepo.getValue(key);
           expect(keyValue).to.equal(2);
         }),
@@ -713,7 +707,7 @@ describe('tweek repo test', () => {
 
       let calls = 0;
       let recover: Function;
-      let policy: RefreshErrorPolicy = resume => {
+      let policy: RefreshErrorPolicy = (resume) => {
         recover = resume;
         calls++;
       };
@@ -755,14 +749,14 @@ describe('tweek repo test', () => {
       return new Promise((resolve, reject) => {
         const items: any[] = [];
         const subscription = _tweekRepo.observe(key).subscribe({
-          next: value => {
+          next: (value) => {
             items.push(value);
             if (items.length === count) {
               subscription.unsubscribe();
               resolve(items);
             }
           },
-          error: err => {
+          error: (err) => {
             subscription.unsubscribe();
             reject(err);
           },
@@ -867,7 +861,7 @@ describe('tweek repo test', () => {
 
       const keys = await keysPromise;
       expect(keys).to.have.lengthOf(2);
-      expect(keys.map(x => x.value)).to.deep.equal(['old-value', 'my-string']);
+      expect(keys.map((x) => x.value)).to.deep.equal(['old-value', 'my-string']);
     });
 
     it('should stop notifying after unsubscribe', async () => {
@@ -879,7 +873,7 @@ describe('tweek repo test', () => {
 
       const items: any[] = [];
       const subscription: ZenObservable.Subscription = _tweekRepo.observe('my_path/string_value').subscribe(
-        x => {
+        (x) => {
           items.push(x.value);
           subscription.unsubscribe();
         },
@@ -898,14 +892,14 @@ describe('tweek repo test', () => {
       return new Promise((resolve, reject) => {
         const items: any[] = [];
         const subscription = _tweekRepo.observeValue(key).subscribe({
-          next: value => {
+          next: (value) => {
             items.push(value);
             if (items.length === count) {
               subscription.unsubscribe();
               resolve(items);
             }
           },
-          error: err => {
+          error: (err) => {
             subscription.unsubscribe();
             reject(err);
           },
@@ -924,7 +918,7 @@ describe('tweek repo test', () => {
         'my_path/inner_path_2/bool_negative_value': false,
       };
 
-      await Promise.all(Object.keys(expected).map(key => _tweekRepo.prepare(key)));
+      await Promise.all(Object.keys(expected).map((key) => _tweekRepo.prepare(key)));
 
       await refreshAndWait();
 
@@ -1029,7 +1023,7 @@ describe('tweek repo test', () => {
 
       const items: any[] = [];
       const subscription: ZenObservable.Subscription = _tweekRepo.observeValue('my_path/string_value').subscribe(
-        x => {
+        (x) => {
           items.push(x);
           subscription.unsubscribe();
         },

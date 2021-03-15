@@ -11,7 +11,7 @@
   "peerDependencies": {
     "prop-types": "^15.0.0",
     "react": "^16.3.0",
-    "tweek-local-cache": "^0.6.0"
+    "tweek-local-cache": "^0.7.0"
   },
   "dependencies": {
     "lodash.isequal": "^4.5.0"
@@ -26,7 +26,7 @@
     "react-test-renderer": "^16.3.0",
     "rimraf": "^3.0.0",
     "ts-jest": "^25.5.1",
-    "tweek-local-cache": "^0.6.0",
+    "tweek-local-cache": "^0.7.0",
     "typescript": "^3.3.1"
   },
   "scripts": {

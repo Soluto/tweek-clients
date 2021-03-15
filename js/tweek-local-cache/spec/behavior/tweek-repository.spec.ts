@@ -7,7 +7,7 @@ import { delay } from '../../src/utils';
 
 const TWEEK_GATEWAY_URL = getenv.string('TWEEK_GATEWAY_URL', 'http://127.0.0.1:1111');
 
-describe('tweek repo behavior test', function(this: Mocha.Suite) {
+describe('tweek repo behavior test', function (this: Mocha.Suite) {
   this.timeout(180000);
 
   let _tweekRepo: TweekRepository;
@@ -121,20 +121,20 @@ describe('tweek repo behavior test', function(this: Mocha.Suite) {
     ],
   });
 
-  testDefenitions.forEach(test =>
+  testDefenitions.forEach((test) =>
     it('should succeed get keys values', async () => {
       // Arrange
       await initTweekRepository(test.context);
 
-      test.pathsToPrepare.forEach(x => _tweekRepo.prepare(x));
+      test.pathsToPrepare.forEach((x) => _tweekRepo.prepare(x));
 
       // Act
       _tweekRepo.expire();
-      await (<any>_tweekRepo)._waitRefreshCycle();
-      const values = await Promise.all(test.expectedKeys.map(x => _tweekRepo.getValue(x.keyName)));
+      await _tweekRepo.waitRefreshCycle();
+      const values = await Promise.all(test.expectedKeys.map((x) => _tweekRepo.getValue(x.keyName)));
 
       // Assert
-      expect(values).to.deep.equal(test.expectedKeys.map(x => x.value));
+      expect(values).to.deep.equal(test.expectedKeys.map((x) => x.value));
     }),
   );
 });

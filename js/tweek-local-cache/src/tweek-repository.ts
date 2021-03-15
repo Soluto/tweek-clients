@@ -75,7 +75,7 @@ export class TweekRepository {
         return;
       }
     }
-    this._waitRefreshCycle().then(() => {
+    this.waitRefreshCycle().then(() => {
       this._context = <Context>valueOrMapper;
       this.expire();
     });
@@ -322,9 +322,19 @@ export class TweekRepository {
     return this.observeValue('_');
   }
 
-  private _waitRefreshCycle() {
+  public waitRefreshCycle() {
     if (!this._refreshInProgress) return Promise.resolve();
     return this._refreshPromise;
+  }
+
+  public invalidate(keysToInvalidate = Object.keys(this._cache.list())) {
+    for (const key of keysToInvalidate) {
+      const isScan = isScanKey(key);
+      this._cache.set(key, StoredKeyUtils.request(isScan));
+    }
+
+    this._isDirty = true;
+    this._checkRefresh();
   }
 
   private _checkRefresh() {
