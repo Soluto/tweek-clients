@@ -41,9 +41,7 @@ export type StoredKey<T> = (CachedKey<T> | MissingKey | RequestedKey) & {
   expiration?: Expiration;
 };
 
-export type TweekStoredKeys = {
-  [key: string]: StoredKey<any>;
-};
+export type TweekStoredKeys = Record<string, StoredKey<unknown>>;
 
 export type RepositoryCachedKey<T> = {
   state: RepositoryKeyState.cached;
@@ -53,9 +51,7 @@ export type RepositoryCachedKey<T> = {
 
 export type RepositoryKey<T> = RepositoryCachedKey<T> | MissingKey | RequestedKey;
 
-export type FlatKeys = {
-  [key: string]: any;
-};
+export type FlatKeys = Record<string, unknown>;
 
 export interface ITweekStore {
   save: (keys: TweekStoredKeys) => Promise<void>;

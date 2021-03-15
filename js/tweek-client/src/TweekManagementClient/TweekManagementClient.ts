@@ -251,7 +251,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  createHook(hookData: { keyPath: string; type: string; url: string }): Promise<Hook> {
+  createHook(hookData: Omit<Hook, 'id'>): Promise<Hook> {
     const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks`;
     const config = {
       method: 'POST',
@@ -273,8 +273,13 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(requestUrl, config).then(noop);
   }
 
-  deleteHook({ id }: { id: string }): Promise<void> {
-    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${id}`;
+  deleteHook(hookId: string): Promise<void> {
+    if (typeof hookId === 'object') {
+      // @ts-ignore
+      // backward compatibility for users without typechecking
+      hookId = hookId.id;
+    }
+    const requestUrl = `${this.config.baseServiceUrl}/api/v2/hooks/${hookId}`;
     const config = { method: 'DELETE' };
 
     return this._fetch(requestUrl, config).then(noop);

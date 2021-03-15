@@ -6,18 +6,15 @@ import Observable from 'zen-observable';
 import Trie from './trie';
 import {
   delay,
-  deprecated,
   distinct,
   flatMap,
   getAllPrefixes,
   getKeyPrefix,
-  getValueOrOptional,
   isScanKey,
   once,
   partitionByIndex,
   snakeToCamelCase,
 } from './utils';
-import Optional from './optional';
 import MemoryStore from './memory-store';
 import {
   Expiration,
@@ -33,7 +30,7 @@ import exponentIntervalFailurePolicy from './exponent-refresh-error-policy';
 import * as StoredKeyUtils from './stored-key-utils';
 import { TweekKeySplitJoin } from './split-join';
 
-type KeyValues = { [key: string]: any };
+type KeyValues = { [key: string]: unknown };
 
 export type Unlisten = () => void;
 export type RepositoryListener = (updatedKeys: Set<string>) => void;
@@ -43,7 +40,7 @@ const allowedKeyStates = new Set([RepositoryKeyState.requested, RepositoryKeySta
 
 export class TweekRepository {
   private _emitter = createChangeEmitter<Set<string>>();
-  private _cache = new Trie<StoredKey<any>>(TweekKeySplitJoin);
+  private _cache = new Trie<StoredKey<unknown>>(TweekKeySplitJoin);
   private _store: ITweekStore;
   private _client: ITweekClient;
   private _context: Context;
@@ -139,34 +136,6 @@ export class TweekRepository {
     }
   }
 
-  /**
-   * @deprecated Please use `getValue`
-   */
-  @deprecated('getValue')
-  public get<T = any>(key: string): Promise<Optional<T> | T> {
-    const cached = this.getCached(key);
-
-    if (!cached) {
-      this.prepare(key);
-    } else if (cached.state !== RepositoryKeyState.requested) {
-      return Promise.resolve(getValueOrOptional(cached));
-    }
-
-    return new Promise<T>((resolve, reject) => {
-      const unlisten = this.listen((updatedKeys) => {
-        if (updatedKeys.has(key)) {
-          unlisten();
-          const cached = this.getCached(key);
-          if (!cached || cached.state === RepositoryKeyState.requested) {
-            reject(new Error('repository state is corrupted'));
-          } else {
-            resolve(getValueOrOptional(cached));
-          }
-        }
-      });
-    });
-  }
-
   public getValue<T = any>(key: string): Promise<T> {
     const cached = this.getCached(key);
 
@@ -191,14 +160,6 @@ export class TweekRepository {
     });
   }
 
-  /**
-   * @deprecated Please use `expire`
-   */
-  @deprecated('expire')
-  public refresh(keysToRefresh?: string[]) {
-    this.expire(keysToRefresh);
-  }
-
   public expire(keysToRefresh = Object.keys(this._cache.list())) {
     for (const key of keysToRefresh) {
       const node = this._cache.get(key);
@@ -216,49 +177,6 @@ export class TweekRepository {
       }
     }
     this._checkRefresh();
-  }
-
-  /**
-   * @deprecated Please use `observeValue`
-   */
-  @deprecated('observeValue')
-  public observe<T = any>(key: string): Observable<T> {
-    const isScan = isScanKey(key);
-
-    return new Observable<any>((observer) => {
-      const onKey = () => {
-        const cached = this.getCached(key);
-
-        if (!cached) {
-          this.prepare(key);
-          return;
-        }
-
-        if (isScan !== cached.isScan) {
-          observer.error(new Error('corrupted cache'));
-          return;
-        }
-
-        if (cached.state === RepositoryKeyState.cached) {
-          observer.next(isScan ? cached.value : Optional.some(cached.value));
-          return;
-        }
-
-        if (cached.state === RepositoryKeyState.missing) {
-          observer.next(Optional.none());
-        }
-      };
-
-      onKey();
-
-      return this.listen((updatedKeys) => {
-        if (!updatedKeys.has(key)) {
-          return;
-        }
-
-        onKey();
-      });
-    });
   }
 
   public observeValue<T = any>(key: string): Observable<T> {
@@ -404,7 +322,7 @@ export class TweekRepository {
   }
 
   private _updateTrieKeys(keys: string[], keyValues: KeyValues): string[] {
-    let valuesTrie: Trie<any> | undefined;
+    let valuesTrie: Trie<unknown> | undefined;
     const updatedKeys = [];
     for (const keyToUpdate of keys) {
       const isScan = isScanKey(keyToUpdate);
@@ -420,11 +338,16 @@ export class TweekRepository {
     return updatedKeys;
   }
 
-  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<any>): string[] {
+  private _updateTrieScanKey(key: string, keyValues: KeyValues, valuesTrie: Trie<unknown>): string[] {
+    const cached = this._cache.get(key);
     this._cache.set(key, StoredKeyUtils.cached(true));
 
     const prefix = getKeyPrefix(key);
     const updatedKeys: string[] = [];
+
+    if (!cached || cached.state === RepositoryKeyState.requested) {
+      updatedKeys.push(key);
+    }
 
     const keysToUpdate = distinct(this._cache.listEntries(prefix).concat(valuesTrie.listEntries(prefix)));
 
@@ -451,7 +374,7 @@ export class TweekRepository {
       .forEach((key) => this._cache.set(key, StoredKeyUtils.cached(true)));
   }
 
-  private _updateNode(key: string, value: any): boolean {
+  private _updateNode(key: string, value: unknown): boolean {
     const cached = this._cache.get(key);
     const updated = !cached || cached.state === RepositoryKeyState.requested || !isEqual(cached.value, value);
 
@@ -500,12 +423,13 @@ export class TweekRepository {
     this._emitter.emit(affectedKeys);
   }
 
-  private _getValues(fetchConfig: GetValuesConfig) {
+  private _getValues(fetchConfig: GetValuesConfig): Promise<any> {
     // check if using an older version of the client
     if (this._client.getValues) {
       return this._client.getValues<any>('_', fetchConfig);
     }
 
+    // @ts-ignore
     return this._client.fetch<any>('_', fetchConfig);
   }
 }

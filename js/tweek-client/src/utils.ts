@@ -142,27 +142,9 @@ export const normalizeKeyPath = (keyPath: string) => {
   return keyPath.startsWith('/') ? keyPath.substr(1) : keyPath;
 };
 
-export type InputParams = { [key: string]: any };
+export type InputParams = Record<string, unknown>;
 
 export const toQueryString = (query: InputParams) => {
   const queryString = qs.stringify(query);
   return queryString ? `?${queryString}` : '';
 };
-
-export function deprecated(newMethod: string) {
-  let notified = false;
-  return function (target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalValue = descriptor.value;
-    descriptor.value = function () {
-      if (!notified) {
-        if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-          const name = target.constructor.name;
-          console.warn(`the ${name}.${propertyKey} method is deprecated, please use ${name}.${newMethod} instead`);
-        }
-        notified = true;
-      }
-
-      return originalValue.apply(this, arguments);
-    };
-  };
-}

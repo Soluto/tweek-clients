@@ -35,9 +35,4 @@ export interface ITweekClient {
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T>;
 
   getValuesWithDetails<T>(path: string, config?: GetValuesConfig): Promise<DetailedTweekResult<T>>;
-
-  /**
-   * @deprecated use `getValues` instead
-   */
-  fetch<T>(path: string, config?: GetValuesConfig): Promise<T>;
 }
