@@ -26,7 +26,7 @@ export class VersionWatcher extends Observable<string> {
   private _currentVersion: string | undefined;
 
   constructor(baseServiceUrl: string, private readonly _sampleInterval: number = 30) {
-    super(observer => {
+    super((observer) => {
       if (this._isDisposed) {
         observer.complete();
       }

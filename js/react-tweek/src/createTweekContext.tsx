@@ -18,7 +18,7 @@ export type TweekContext = {
 export const createTweekContext = (defaultRepo?: TweekRepository): TweekContext => {
   const keysToPrepare: string[] = [];
   const emitter = createChangeEmitter<string>();
-  emitter.listen(key => {
+  emitter.listen((key) => {
     defaultRepo && defaultRepo.prepare(key);
     keysToPrepare.push(key);
   });

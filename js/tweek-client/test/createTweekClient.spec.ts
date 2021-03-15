@@ -118,7 +118,7 @@ describe('createTweekClient', () => {
     });
 
     await expect(tweekClient.getValues(url)).to.be.rejected;
-    await new Promise(res => setImmediate(res));
+    await new Promise((res) => setImmediate(res));
 
     sinon.assert.calledOnce(onError);
 
@@ -145,7 +145,7 @@ describe('createTweekClient', () => {
     });
 
     await expect(tweekClient.getValues(url)).to.be.rejected;
-    await new Promise(res => setImmediate(res));
+    await new Promise((res) => setImmediate(res));
 
     sinon.assert.calledOnce(onError);
     sinon.assert.calledWithExactly(onError, expectedError);

@@ -11,13 +11,13 @@ describe('VersionWatcher', () => {
     return new Promise((resolve, reject) => {
       const result: any[] = [];
       watcher.subscribe({
-        next: v => {
+        next: (v) => {
           result.push(v);
           if (count !== undefined && result.length >= count) {
             watcher.dispose();
           }
         },
-        error: err => {
+        error: (err) => {
           reject(err);
         },
         complete: () => {

@@ -7,6 +7,6 @@ export type CreateTweekClientConfigWithFallback = BaseCreateTweekClientConfig & 
 };
 
 export function createTweekClientWithFallback({ urls, ...config }: CreateTweekClientConfigWithFallback) {
-  const clients = urls.map(baseServiceUrl => createTweekClient({ baseServiceUrl, ...config }));
+  const clients = urls.map((baseServiceUrl) => createTweekClient({ baseServiceUrl, ...config }));
   return new TweekClientWithFallback(clients);
 }

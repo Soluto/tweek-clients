@@ -16,11 +16,11 @@ export const createWithTweekValues = (
   TweekContext: Context<OptionalTweekRepository>,
   prepare: PrepareKey,
 ): WithTweekValues =>
-  function<T>(
+  function <T>(
     valuesMapping: ValuesMapping<T>,
     { defaultValues, resetOnRepoChange: staticResetOnRepoChange }: WithTweekValuesOptions<T> = {},
   ) {
-    (Object.values(valuesMapping) as string[]).forEach(key => prepare(key));
+    (Object.values(valuesMapping) as string[]).forEach((key) => prepare(key));
 
     return <TProps extends T>(BaseComponent: ReactType<TProps>) => {
       const EnhancedComponent: FunctionComponent<Omit<TProps, T> & ResetOptions> = ({
@@ -28,14 +28,14 @@ export const createWithTweekValues = (
         ...props
       }) => (
         <TweekContext.Consumer>
-          {repo => (
+          {(repo) => (
             <TweekValues
               tweekRepository={repo}
               valuesMapping={valuesMapping}
               defaultValues={defaultValues}
               resetOnRepoChange={resetOnRepoChange}
             >
-              {values => {
+              {(values) => {
                 // @ts-ignore
                 return <BaseComponent {...props} {...values} />;
               }}

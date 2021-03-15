@@ -45,7 +45,7 @@ export default class Trie<TValue> {
 
   listEntries(key?: string, index = 0): string[] {
     const result: string[] = [];
-    this.walk(key => result.push(key), key, index);
+    this.walk((key) => result.push(key), key, index);
     return result;
   }
 

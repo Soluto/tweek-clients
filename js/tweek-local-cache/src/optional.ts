@@ -15,7 +15,7 @@ export default class Optional<T> {
 
   static none = <T>() => new Optional<T>();
 
-  map = <U>(fn: (value: T) => U): Optional<U> => this.flatMap(v => Optional.some(fn(v)));
+  map = <U>(fn: (value: T) => U): Optional<U> => this.flatMap((v) => Optional.some(fn(v)));
 
   flatMap = <U>(fn: (value: T) => Optional<U>) => (this.hasValue ? fn(this.value!) : Optional.none<U>());
 

@@ -24,7 +24,7 @@ function filterDefaultValues<T>(keyMapping: ValuesMapping<T>, defaultValues: T |
   }
 
   const defaultState: Values = {};
-  Object.keys(keyMapping).forEach(prop => (defaultState[prop] = (defaultValues as Values)[prop]));
+  Object.keys(keyMapping).forEach((prop) => (defaultState[prop] = (defaultValues as Values)[prop]));
   return defaultState as T;
 }
 
@@ -123,7 +123,7 @@ export class TweekValues<T> extends Component<TweekValuesProps<T>, TweekValuesSt
   }
 
   private _setKeysState = (updatedKeys?: Set<string>) => {
-    if (updatedKeys && !this.state.tweekKeys.some(key => updatedKeys.has(key))) {
+    if (updatedKeys && !this.state.tweekKeys.some((key) => updatedKeys.has(key))) {
       return;
     }
 

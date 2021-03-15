@@ -11,18 +11,18 @@ const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch):
 
   return Promise.race([
     fetchFn(input, init),
-    new Promise<Response>(res => {
+    new Promise<Response>((res) => {
       timeout = setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis);
     }),
   ])
-    .then(response => {
+    .then((response) => {
       if (timeout) {
         clearTimeout(timeout);
       }
 
       return response;
     })
-    .catch(error => {
+    .catch((error) => {
       if (timeout) {
         clearTimeout(timeout);
       }
@@ -84,7 +84,7 @@ export const createFetchClient = ({
 };
 
 export function delay(timeout: number) {
-  return new Promise(resolve => setTimeout(resolve, timeout));
+  return new Promise((resolve) => setTimeout(resolve, timeout));
 }
 
 export const isScanKey = (key: string) => key === '_' || key.endsWith('/_');
@@ -151,9 +151,9 @@ export const toQueryString = (query: InputParams) => {
 
 export function deprecated(newMethod: string) {
   let notified = false;
-  return function(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalValue = descriptor.value;
-    descriptor.value = function() {
+    descriptor.value = function () {
       if (!notified) {
         if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
           const name = target.constructor.name;
