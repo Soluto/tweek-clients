@@ -56,7 +56,7 @@ export const createUseTweekValue = (
 
       return (
         tweekRepository &&
-        tweekRepository.listen(updatedKeys => {
+        tweekRepository.listen((updatedKeys) => {
           if (updatedKeys.has(keyPath)) {
             setTweekValue(getTweekValue());
           }

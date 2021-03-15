@@ -70,7 +70,7 @@ describe('TweekClient fetchChunks', () => {
   it('getValues should execute fetchChunks correctly', async () => {
     // Arrange
     const { tweekClient, fetchStub, test } = prepare(false);
-    test.stubCalls.forEach(stub => {
+    test.stubCalls.forEach((stub) => {
       fetchStub.withArgs(stub.requestUrl).resolves(stub.response);
     });
 
@@ -85,7 +85,7 @@ describe('TweekClient fetchChunks', () => {
   it('getValuesWithDetails should execute fetchChunks correctly', async () => {
     // Arrange
     const { tweekClient, fetchStub, test } = prepare(true);
-    test.stubCalls.forEach(stub => {
+    test.stubCalls.forEach((stub) => {
       fetchStub.withArgs(stub.requestUrl).resolves(stub.response);
     });
 

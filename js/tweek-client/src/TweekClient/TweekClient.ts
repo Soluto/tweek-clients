@@ -19,7 +19,7 @@ export default class TweekClient implements ITweekClient {
   }
 
   getValues<T>(path: string, config?: GetValuesConfig): Promise<T> {
-    return this._splitToChunks<T>(path, config, false).then(res => res.data);
+    return this._splitToChunks<T>(path, config, false).then((res) => res.data);
   }
 
   getValuesWithDetails<T>(path: string, config?: GetValuesConfig): Promise<DetailedTweekResult<T>> {
@@ -49,9 +49,9 @@ export default class TweekClient implements ITweekClient {
 
     const optimizedInclude = optimizeInclude(include);
     const includeChunks = chunk(optimizedInclude, maxChunkSize);
-    const fetchConfigChunks = includeChunks.map(ic => ({ ...cfg, include: ic }));
-    const fetchPromises = fetchConfigChunks.map(cc => this._fetchChunk<T>(path, cc, includeErrors));
-    return Promise.all(fetchPromises).then(chunks => {
+    const fetchConfigChunks = includeChunks.map((ic) => ({ ...cfg, include: ic }));
+    const fetchPromises = fetchConfigChunks.map((cc) => this._fetchChunk<T>(path, cc, includeErrors));
+    return Promise.all(fetchPromises).then((chunks) => {
       return chunks.reduce((res, ch) => ({
         data: { ...res.data, ...ch.data },
         errors: { ...res.errors, ...ch.errors },
@@ -86,13 +86,13 @@ export default class TweekClient implements ITweekClient {
 
     const url = `${baseServiceUrl}${this._endpoint}${normalizeKeyPath(path)}${queryString}`;
 
-    return this.config.fetch(url).then(response => {
+    return this.config.fetch(url).then((response) => {
       if (response.ok) {
         const result = response.json();
         if (includeErrors) {
           return result;
         }
-        return result.then(data => ({ data }));
+        return result.then((data) => ({ data }));
       } else {
         return Promise.reject(new FetchError(response, 'Error getting values from tweek'));
       }

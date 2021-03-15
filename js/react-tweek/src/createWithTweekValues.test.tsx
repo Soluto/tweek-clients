@@ -62,7 +62,7 @@ describe('createWithTweekValues', () => {
     const enhance = withTweekValues<TweekProps>(mapping);
     const listen = jest.spyOn(repository, 'listen');
 
-    Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
+    Object.values(mapping).forEach((key) => expect(prepareMock).toHaveBeenCalledWith(key));
 
     const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent />);
@@ -94,7 +94,7 @@ describe('createWithTweekValues', () => {
 
     const enhance = withTweekValues<TweekProps>(mapping);
 
-    Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
+    Object.values(mapping).forEach((key) => expect(prepareMock).toHaveBeenCalledWith(key));
 
     const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent someProp={expectedProps.someProp} />);
@@ -124,7 +124,7 @@ describe('createWithTweekValues', () => {
 
     const enhance = withTweekValues<TweekProps>(mapping);
 
-    Object.values(mapping).forEach(key => expect(prepareMock).toHaveBeenCalledWith(key));
+    Object.values(mapping).forEach((key) => expect(prepareMock).toHaveBeenCalledWith(key));
 
     const EnhancedComponent = enhance(Child);
     const component = renderer.create(<EnhancedComponent />);
