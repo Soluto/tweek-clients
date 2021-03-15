@@ -327,6 +327,16 @@ export class TweekRepository {
     return this._refreshPromise;
   }
 
+  public invalidate(keysToInvalidate = Object.keys(this._cache.list())) {
+    for (const key of keysToInvalidate) {
+      const isScan = isScanKey(key);
+      this._cache.set(key, StoredKeyUtils.request(isScan));
+    }
+
+    this._isDirty = true;
+    this._checkRefresh();
+  }
+
   private _checkRefresh() {
     this._refreshPromise = this._refreshInProgress
       ? this._refreshPromise.then(() => {
