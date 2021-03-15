@@ -75,7 +75,7 @@ export class TweekRepository {
         return;
       }
     }
-    this._waitRefreshCycle().then(() => {
+    this.waitRefreshCycle().then(() => {
       this._context = <Context>valueOrMapper;
       this.expire();
     });
@@ -322,7 +322,7 @@ export class TweekRepository {
     return this.observeValue('_');
   }
 
-  private _waitRefreshCycle() {
+  public waitRefreshCycle() {
     if (!this._refreshInProgress) return Promise.resolve();
     return this._refreshPromise;
   }
