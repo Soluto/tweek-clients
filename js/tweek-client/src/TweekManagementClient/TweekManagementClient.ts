@@ -18,6 +18,7 @@ import {
   CreateExternalAppResponse,
   CreateExternalAppSecretKeyResponse,
   ExternalAppData,
+  Schemas,
 } from './types';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -149,7 +150,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  getAllSchemas(): Promise<Schema[]> {
+  getAllSchemas(): Promise<Schemas> {
     const url = `${this.config.baseServiceUrl}/api/v2/schemas`;
     return this._fetch(url).then(toJson);
   }
@@ -229,7 +230,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url, config).then(noop);
   }
 
-  getAuthProviders(): Promise<AuthProvider[]> {
+  getAuthProviders(): Promise<Record<string, AuthProvider>> {
     const url = `${this.config.baseServiceUrl}/auth/providers`;
     return this._fetch(url).then(toJson);
   }
