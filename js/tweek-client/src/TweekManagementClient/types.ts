@@ -33,12 +33,12 @@ export type KeyDependents = {
   aliases: string[];
 };
 
-export type ValueType = {
+export type ValueType<T = any> = {
   name?: string;
   base?: string;
-  allowedValues?: unknown[];
+  allowedValues?: T[];
   comparer?: string;
-  emptyValue?: any;
+  emptyValue?: T;
   ofType?: ValueType;
 };
 
