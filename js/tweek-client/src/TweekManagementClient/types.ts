@@ -33,7 +33,22 @@ export type KeyDependents = {
   aliases: string[];
 };
 
-export type Schema = Record<string, unknown>;
+export type ValueType = {
+  name?: string;
+  base?: string;
+  allowedValues?: unknown[];
+  comparer?: string;
+  emptyValue?: any;
+  ofType?: ValueType;
+};
+
+export type SchemaProperty = {
+  type: string | ValueType;
+};
+
+export type Schema = Record<string, SchemaProperty>;
+
+export type Schemas = Record<string, Schema>;
 
 export type Patch = Operation[];
 
@@ -146,13 +161,13 @@ export interface ITweekManagementClient {
   deleteContextProperty(identityType: string, identityId: string, property: string): Promise<void>;
   deleteContext(identityType: string, identityId: string): Promise<void>;
 
-  getAllSchemas(): Promise<Schema[]>;
+  getAllSchemas(): Promise<Schemas>;
   deleteIdentity(identityType: string): Promise<void>;
   saveIdentity(identityType: string, schema: Schema): Promise<void>;
   patchIdentity(identityType: string, patch: Patch): Promise<void>;
 
   currentUser(): Promise<CurrentUser>;
-  getAuthProviders(): Promise<AuthProvider[]>;
+  getAuthProviders(): Promise<Record<string, AuthProvider>>;
   getServiceDetails(): Promise<Services>;
 
   getPolicies(): Promise<Policy[]>;
