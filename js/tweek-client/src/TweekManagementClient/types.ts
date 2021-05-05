@@ -58,6 +58,10 @@ export type Revision = {
   author: string;
 };
 
+export type Tag = {
+  name: string;
+};
+
 export type CurrentUser = {
   Email: string;
   Group: string;
@@ -150,7 +154,7 @@ export interface ITweekManagementClient {
   deleteKey(keyPath: string, additionalKeyPaths?: string[]): Promise<void>;
   getKeyRevisionHistory(keyPath: string, since?: string): Promise<Revision[]>;
 
-  getAllTags(): Promise<string[]>;
+  getAllTags(): Promise<Tag[]>;
   appendTags(tags: string[]): Promise<void>;
 
   getSuggestions(query: string, count?: number): Promise<string[]>;

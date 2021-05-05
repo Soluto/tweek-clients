@@ -19,6 +19,7 @@ import {
   CreateExternalAppSecretKeyResponse,
   ExternalAppData,
   Schemas,
+  Tag,
 } from './types';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -83,7 +84,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  getAllTags(): Promise<string[]> {
+  getAllTags(): Promise<Tag[]> {
     const url = `${this.config.baseServiceUrl}/api/v2/tags`;
     return this._fetch(url).then(toJson);
   }
