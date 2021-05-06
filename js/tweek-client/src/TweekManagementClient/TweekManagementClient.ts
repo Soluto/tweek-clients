@@ -20,6 +20,7 @@ import {
   ExternalAppData,
   Schemas,
   Tag,
+  SearchOptions,
 } from './types';
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -110,7 +111,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     return this._fetch(url).then(toJson);
   }
 
-  search(query: string, options: number | { count?: number; type?: 'free' | 'field' } = {}): Promise<string[]> {
+  search(query: string, options: number | SearchOptions = {}): Promise<string[]> {
     options = typeof options === 'number' ? { count: options, type: 'field' } : options;
     const queryParamsObject = {
       q: query,

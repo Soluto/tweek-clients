@@ -145,6 +145,8 @@ export type CreateExternalAppSecretKeyResponse = {
 
 export type Services = { [s: string]: ServiceDetails };
 
+export type SearchOptions = { count?: number; type?: 'free' | 'field' };
+
 export interface ITweekManagementClient {
   getAllKeyManifests(): Promise<KeyManifest[]>;
   getKeyManifest(keyPath: string): Promise<KeyManifest>;
@@ -158,7 +160,7 @@ export interface ITweekManagementClient {
   appendTags(tags: string[]): Promise<void>;
 
   getSuggestions(query: string, count?: number): Promise<string[]>;
-  search(query: string, count?: number): Promise<string[]>;
+  search(query: string, options?: number | SearchOptions): Promise<string[]>;
 
   getContext(identityType: string, identityId: string): Promise<IdentityContext>;
   appendContext(identityType: string, identityId: string, context: IdentityContext): Promise<void>;
