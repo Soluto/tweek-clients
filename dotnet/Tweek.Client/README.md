@@ -71,7 +71,7 @@ public class AuthenticatedMessageHandler: DelegatingHandler
 
 // Now we can use it
 var oauth2TokenProvider = () => {...}; // Use your favorite OAuth implementation, for example ADAL
-var tweekClient = new TweekApiClient(new HttpClient(new AuthenticatedMessageHandler(oauth2TokenProvider)) { BaseUri = new Uri("https://example.com") });
+var tweekClient = new TweekApiClient(new HttpClient(new AuthenticatedMessageHandler(oauth2TokenProvider)) { BaseAddress = new Uri("https://example.com") });
 
 var myString = tweekClient.Get<string>("/mystring");
 ```
