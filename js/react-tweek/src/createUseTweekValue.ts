@@ -22,7 +22,7 @@ function valueReducer<T>(prevValue: T, nextValue: T) {
 }
 
 function getValueOrDefault<T>(tweekRepository: OptionalTweekRepository, keyPath: string, defaultValue: T): T {
-  if (!tweekRepository) {
+  if (!tweekRepository || !keyPath) {
     return defaultValue;
   }
 
