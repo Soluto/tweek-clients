@@ -55,7 +55,9 @@ export default class TweekManagementClient implements ITweekManagementClient {
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}${queryString}`;
     return this._fetch(url).then((response) => {
       return toJson(response).then((jsonResponse) => {
-        jsonResponse.etag = response.headers.get('ETag');
+        if (response.headers.has('ETag')) {
+          jsonResponse.etag = response.headers.get('ETag');
+        }
         return jsonResponse;
       });
     });
