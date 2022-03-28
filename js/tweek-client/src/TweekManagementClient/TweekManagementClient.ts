@@ -63,13 +63,14 @@ export default class TweekManagementClient implements ITweekManagementClient {
     });
   }
 
-  saveKeyDefinition(path: string, keyDefinition: KeyDefinition, etag?: string): Promise<void> {
+  saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}`;
+    const { etag, ...definition } = keyDefinition;
     const headers = etag ? { ...jsonHeaders, 'If-Match': etag } : jsonHeaders;
     const config = {
       method: 'PUT',
       headers,
-      body: JSON.stringify(keyDefinition),
+      body: JSON.stringify(definition),
     };
 
     return this._fetch(url, config).then(noop);

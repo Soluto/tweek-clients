@@ -102,7 +102,7 @@ describe('TweekManagementClient', () => {
   describe('saveKeyDefinition', () => {
     runTest({
       method: 'saveKeyDefinition',
-      args: ['some/key_path', { a: 'a' }, 'some-etag'],
+      args: ['some/key_path', { a: 'a', etag: 'some-etag' }],
       expectedUrl: '/api/v2/keys/some/key_path',
       expectedRequestInit: {
         method: 'PUT',
