@@ -53,25 +53,35 @@ export default class TweekManagementClient implements ITweekManagementClient {
     const queryParamsObject: InputParams = { revision };
     const queryString = toQueryString(queryParamsObject);
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}${queryString}`;
-    return this._fetch(url).then(toJson);
+    return this._fetch(url).then((response) => {
+      return toJson(response).then((jsonResponse) => {
+        if (response.headers.has('ETag')) {
+          jsonResponse.etag = response.headers.get('ETag');
+        }
+        return jsonResponse;
+      });
+    });
   }
 
   saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}`;
+    const { etag, ...definition } = keyDefinition;
+    const headers = etag ? { ...jsonHeaders, 'If-Match': etag } : jsonHeaders;
     const config = {
       method: 'PUT',
-      headers: jsonHeaders,
-      body: JSON.stringify(keyDefinition),
+      headers,
+      body: JSON.stringify(definition),
     };
 
     return this._fetch(url, config).then(noop);
   }
 
-  deleteKey(path: string, aliases: string[] = []): Promise<void> {
+  deleteKey(path: string, aliases: string[] = [], etag?: string): Promise<void> {
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}`;
+    const headers = etag ? { ...jsonHeaders, 'If-Match': etag } : jsonHeaders;
     const config = {
       method: 'DELETE',
-      headers: jsonHeaders,
+      headers,
       body: JSON.stringify(aliases),
     };
 

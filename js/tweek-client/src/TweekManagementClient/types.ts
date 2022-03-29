@@ -26,6 +26,7 @@ export type KeyManifest = {
 export type KeyDefinition = {
   manifest: KeyManifest;
   implementation?: string;
+  etag?: string;
 };
 
 export type KeyDependents = {

@@ -8,6 +8,7 @@ type TestCase = {
   expectedUrl: string;
   expectedRequestInit?: RequestInit;
   response?: any;
+  responseHeaders?: Record<string, string>;
   transformedResult?: any;
 };
 
@@ -24,11 +25,19 @@ describe('TweekManagementClient', () => {
     });
   });
 
-  const runTest = ({ method, args = [], expectedUrl, expectedRequestInit, response, transformedResult }: TestCase) => {
+  const runTest = ({
+    method,
+    args = [],
+    expectedUrl,
+    expectedRequestInit,
+    response,
+    transformedResult,
+    responseHeaders = {},
+  }: TestCase) => {
     const expectedFetchArgs = [baseServiceUrl + expectedUrl, expectedRequestInit];
 
     it(`should execute ${String(method)} correctly`, async () => {
-      fetchStub.resolves(new Response(response && JSON.stringify(response)));
+      fetchStub.resolves(new Response(response && JSON.stringify(response), { headers: responseHeaders }));
 
       const result = await (tweekClient[method] as any)(...args);
 
@@ -77,6 +86,8 @@ describe('TweekManagementClient', () => {
       args: ['some/key_path'],
       expectedUrl: '/api/v2/keys/some/key_path',
       response: { a: 'b' },
+      responseHeaders: { ETag: 'some-etag' },
+      transformedResult: { a: 'b', etag: 'some-etag' },
     });
 
     runTest({
@@ -84,16 +95,18 @@ describe('TweekManagementClient', () => {
       args: ['other/_', 'somerevision'],
       expectedUrl: '/api/v2/keys/other/_?revision=somerevision',
       response: { c: 'd' },
+      responseHeaders: { ETag: 'some-etag' },
+      transformedResult: { c: 'd', etag: 'some-etag' },
     });
   });
   describe('saveKeyDefinition', () => {
     runTest({
       method: 'saveKeyDefinition',
-      args: ['some/key_path', { a: 'a' }],
+      args: ['some/key_path', { a: 'a', etag: 'some-etag' }],
       expectedUrl: '/api/v2/keys/some/key_path',
       expectedRequestInit: {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'If-Match': 'some-etag' },
         body: JSON.stringify({ a: 'a' }),
       },
     });
@@ -101,9 +114,13 @@ describe('TweekManagementClient', () => {
   describe('deleteKey', () => {
     runTest({
       method: 'deleteKey',
-      args: ['some/key_path'],
+      args: ['some/key_path', [], 'some-etag'],
       expectedUrl: '/api/v2/keys/some/key_path',
-      expectedRequestInit: { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: '[]' },
+      expectedRequestInit: {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'If-Match': 'some-etag' },
+        body: '[]',
+      },
     });
 
     runTest({
