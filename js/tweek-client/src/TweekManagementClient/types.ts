@@ -153,7 +153,7 @@ export interface ITweekManagementClient {
   getKeyManifest(keyPath: string): Promise<KeyManifest>;
   getKeyDependents(keyPath: string): Promise<KeyDependents>;
   getKeyDefinition(keyPath: string, revision?: string): Promise<KeyDefinition>;
-  saveKeyDefinition(keyPath: string, keyDefinition: KeyDefinition): Promise<void>;
+  saveKeyDefinition(keyPath: string, keyDefinition: KeyDefinition): Promise<string | undefined>;
   deleteKey(keyPath: string, additionalKeyPaths?: string[]): Promise<void>;
   getKeyRevisionHistory(keyPath: string, since?: string): Promise<Revision[]>;
 
