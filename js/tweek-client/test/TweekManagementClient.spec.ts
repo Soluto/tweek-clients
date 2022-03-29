@@ -104,6 +104,9 @@ describe('TweekManagementClient', () => {
       method: 'saveKeyDefinition',
       args: ['some/key_path', { a: 'a', etag: 'some-etag' }],
       expectedUrl: '/api/v2/keys/some/key_path',
+      response: {},
+      responseHeaders: { ETag: 'some-etag' },
+      transformedResult: 'some-etag',
       expectedRequestInit: {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'If-Match': 'some-etag' },

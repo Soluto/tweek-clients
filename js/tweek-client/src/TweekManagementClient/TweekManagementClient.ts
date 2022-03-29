@@ -63,7 +63,7 @@ export default class TweekManagementClient implements ITweekManagementClient {
     });
   }
 
-  saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<void> {
+  saveKeyDefinition(path: string, keyDefinition: KeyDefinition): Promise<string | undefined> {
     const url = `${this.config.baseServiceUrl}/api/v2/keys/${path}`;
     const { etag, ...definition } = keyDefinition;
     const headers = etag ? { ...jsonHeaders, 'If-Match': etag } : jsonHeaders;
@@ -73,7 +73,12 @@ export default class TweekManagementClient implements ITweekManagementClient {
       body: JSON.stringify(definition),
     };
 
-    return this._fetch(url, config).then(noop);
+    return this._fetch(url, config).then((response) => {
+      if (response.headers.has('ETag')) {
+        return response.headers.get('ETag') || undefined;
+      }
+      return undefined;
+    });
   }
 
   deleteKey(path: string, aliases: string[] = [], etag?: string): Promise<void> {
