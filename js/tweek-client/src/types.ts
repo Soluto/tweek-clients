@@ -28,5 +28,5 @@ export type NoCredentialsOptions = {
 export type FetchClientConfig = (BearerAuthenticationOptions | ClientCredentialsOptions | NoCredentialsOptions) & {
   fetch?: typeof fetch;
   requestTimeoutInMillis?: number;
-  onError?(response: Error): void;
+  onError?(response: unknown): void;
 };

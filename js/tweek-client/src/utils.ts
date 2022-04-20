@@ -3,33 +3,32 @@ import qs from 'query-string';
 import { FetchClientConfig } from './types';
 import { FetchError } from './FetchError';
 
-const createFetchWithTimeout = (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch => (
-  input: RequestInfo,
-  init?: RequestInit,
-) => {
-  let timeout: any;
+const createFetchWithTimeout =
+  (timeoutInMillis: number, fetchFn: typeof fetch): typeof fetch =>
+  (input: RequestInfo, init?: RequestInit) => {
+    let timeout: any;
 
-  return Promise.race([
-    fetchFn(input, init),
-    new Promise<Response>((res) => {
-      timeout = setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis);
-    }),
-  ])
-    .then((response) => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
+    return Promise.race([
+      fetchFn(input, init),
+      new Promise<Response>((res) => {
+        timeout = setTimeout(() => res(new Response(null, { status: 408 })), timeoutInMillis);
+      }),
+    ])
+      .then((response) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
 
-      return response;
-    })
-    .catch((error) => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
+        return response;
+      })
+      .catch((error) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
 
-      throw error;
-    });
-};
+        throw error;
+      });
+  };
 
 export const createFetchClient = ({
   fetch = globalFetch,
