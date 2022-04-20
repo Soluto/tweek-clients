@@ -29,7 +29,7 @@ describe('tweek repo behavior test', function (this: Mocha.Suite) {
         return;
       } catch (err) {
         error = err;
-        console.log('tweek api not ready yet:', err.message);
+        console.log('tweek api not ready yet:', (err as Error).message);
         await delay(1000);
       }
     }
