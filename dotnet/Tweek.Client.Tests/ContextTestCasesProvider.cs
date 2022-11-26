@@ -106,7 +106,7 @@ namespace Tweek.Client.Tests
             };
         }
 
-        internal static IEnumerable<object[]> INCLUDE_TEST_CASES()
+        public static IEnumerable<object[]> INCLUDE_TEST_CASES()
         {
             yield return new object[] {
                 "@tweek_clients_tests/test_category/_",
@@ -121,7 +121,7 @@ namespace Tweek.Client.Tests
             };
         }
 
-        internal static IEnumerable<object[]> FLATTEN_TEST_CASES()
+        public static IEnumerable<object[]> FLATTEN_TEST_CASES()
         {
             yield return new object[] {
                 "@tweek_clients_tests/_",
@@ -133,7 +133,7 @@ namespace Tweek.Client.Tests
             };
         }
 
-        internal static IEnumerable<object[]> IGNORE_KEY_TYPES_TEST_CASES()
+        public static IEnumerable<object[]> IGNORE_KEY_TYPES_TEST_CASES()
         {
             yield return new object[] {
                 "@tweek_clients_tests/test_category/test_key2",
